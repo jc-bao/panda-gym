@@ -18,12 +18,12 @@ class Tower(Task):
         distance_threshold=0.1,
         goal_xy_range=0.3,
         obj_xy_range=0.3,
-        num_obj = 1,
+        num_blocks = 1,
     ) -> None:
         super().__init__(sim)
         self.distance_threshold = distance_threshold
         self.object_size = 0.04
-        self.num_obj = num_obj
+        self.num_blocks = num_blocks
         self.get_ee_position = get_ee_position
         self.goal_range_low = np.array([-goal_xy_range / 2, -goal_xy_range / 2, 0])
         self.goal_range_high = np.array([goal_xy_range / 2, goal_xy_range / 2, 0])
@@ -36,7 +36,7 @@ class Tower(Task):
     def _create_scene(self) -> None:
         self.sim.create_plane(z_offset=-0.4)
         self.sim.create_table(length=1.1, width=0.7, height=0.4, x_offset=-0.3)
-        for i in range(self.num_obj):
+        for i in range(self.num_blocks):
             color = np.random.rand(3)
             self.sim.create_box(
                 body_name="object"+str(i),
@@ -57,8 +57,9 @@ class Tower(Task):
     def get_obs(self) -> np.ndarray:
         # position, rotation of the object
         obj_pos = []
-        for i in range(self.num_obj):
+        for i in range(self.num_blocks):
             obj_pos.append(np.array(self.sim.get_base_position("object"+str(i))))
+            obj_pos.append(np.array(self.sim.get_base_position("object"+str(i)))-self.get_ee_position())
             obj_pos.append(np.array(self.sim.get_base_rotation("object"+str(i))))
             obj_pos.append(np.array(self.sim.get_base_velocity("object"+str(i))))
             obj_pos.append(np.array(self.sim.get_base_angular_velocity("object"+str(i))))
@@ -67,7 +68,7 @@ class Tower(Task):
 
     def get_achieved_goal(self) -> np.ndarray:
         ag = []
-        for i in range(self.num_obj):
+        for i in range(self.num_blocks):
             ag.append(np.array(self.sim.get_base_position("object"+str(i))))
         ag.append(self.get_ee_position())
         achieved_goal = np.array(ag).flatten()
@@ -76,21 +77,21 @@ class Tower(Task):
     def reset(self) -> None:
         self.goal = self._sample_goal()
         obj_pos = self._sample_objects()
-        for i in range(self.num_obj):
+        for i in range(self.num_blocks):
             self.sim.set_base_pose("target"+str(i), self.goal[i*3:(i+1)*3], np.array([0.0, 0.0, 0.0, 1.0]))
             self.sim.set_base_pose("object"+str(i), obj_pos[i*3:(i+1)*3], np.array([0.0, 0.0, 0.0, 1.0]))
 
     def _sample_goal(self) -> np.ndarray:
         goals = []
         noise = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
-        for i in range(self.num_obj):
+        for i in range(self.num_blocks):
             goals.append(np.array([0.0, 0.0, self.object_size / 2* (2*i+1)])+noise)  # z offset for the cube center
         goals.append([0.0, 0.0, 0.0]) # Note: this one is used to calculate the gripper distance
         return np.array(goals).flatten()
 
     def _sample_objects(self) -> np.ndarray:
         obj_pos = [self.np_random.uniform(self.obj_range_low, self.obj_range_high)+[0.0, 0.0, self.object_size / 2]]
-        for _ in range(self.num_obj-1):
+        for _ in range(self.num_blocks-1):
             pos = self.np_random.uniform(self.obj_range_low, self.obj_range_high) + [0.0, 0.0, self.object_size / 2]
             while min(np.linalg.norm(obj_pos - pos, axis = 1)) < self.object_size*2:
                 pos =  + self.np_random.uniform(self.obj_range_low, self.obj_range_high)+[0.0, 0.0, self.object_size / 2]
@@ -107,20 +108,20 @@ class Tower(Task):
         # Part1: number of stacked blocks
         rew = sum([(d < self.distance_threshold).astype(np.float32) for d in subgoal_distances])
         # Part2: if all block are set, encourage arm to move away
-        if abs(rew - self.num_obj)<0.01:
+        if abs(rew - self.num_blocks)<0.01:
             rew += self.gripper_pos_far_from_goals(achieved_goal, desired_goal)
         return rew
 
     def subgoal_distances(self, goal_a, goal_b):
         return [
             np.linalg.norm(goal_a[i * 3:(i + 1) * 3] - goal_b[i * 3:(i + 1) * 3], axis=-1) for i in
-            range(self.num_obj)
+            range(self.num_blocks)
         ]
     
     def gripper_pos_far_from_goals(self, achieved_goal, goal):
         gripper_pos = achieved_goal[-3:]
         block_goals = goal[:-3]
         distances = [
-            np.linalg.norm(gripper_pos - block_goals[i*3:(i+1)*3], axis=-1) for i in range(self.num_obj)
+            np.linalg.norm(gripper_pos - block_goals[i*3:(i+1)*3], axis=-1) for i in range(self.num_blocks)
         ]
         return float(np.all([d > self.distance_threshold * 2 for d in distances], axis=0))

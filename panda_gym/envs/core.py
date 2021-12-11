@@ -229,6 +229,10 @@ class RobotTaskEnv(gym.GoalEnv):
         self.sim = robot.sim
         self.robot = robot
         self.task = task
+        try: 
+            self.num_blocks = task.num_blocks
+        except:
+            print('num_blocks dose not exist')
         self.seed()  # required for init; can be changed later
         obs = self.reset()
         observation_shape = obs["observation"].shape
