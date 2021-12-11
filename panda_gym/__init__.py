@@ -52,9 +52,10 @@ for reward_type in ["sparse", "dense"]:
             kwargs=kwargs,
             max_episode_steps=50,
         )
-
-register(
-    id="PandaTower-v0",
-    entry_point="panda_gym.envs:PandaTowerEnv",
-    kwargs={"reward_type": 'sparse', "control_type": 'ee'},
-)
+for i in range(1,7):
+    register(
+        id="PandaTower-v"+str(i),
+        entry_point="panda_gym.envs:PandaTowerEnv",
+        kwargs={"reward_type": 'sparse', "control_type": 'ee', 'num_obj': i},
+        max_episode_steps=50*i,
+    )
