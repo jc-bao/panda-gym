@@ -21,7 +21,7 @@ class TowerBimanual(Task):
         obj_xy_range=0.2,
         num_blocks = 1,
         target_shape = 'any', 
-        goal_center = 0.23,
+        goal_center = 0.2,
         same_side_rate = 1
     ) -> None:
         super().__init__(sim)
@@ -43,8 +43,8 @@ class TowerBimanual(Task):
 
     def _create_scene(self) -> None:
         self.sim.create_plane(z_offset=-0.4)
-        self.sim.create_table(length=1., width=0.7, height=0.4, x_offset=-0.6)
-        self.sim.create_table(length=1., width=0.7, height=0.4, x_offset=0.6)
+        self.sim.create_table(length=1., width=0.7, height=0.4, x_offset=-0.575)
+        self.sim.create_table(length=1., width=0.7, height=0.4, x_offset=0.575)
         for i in range(self.num_blocks):
             color = np.random.rand(3)
             self.sim.create_box(
@@ -67,13 +67,16 @@ class TowerBimanual(Task):
         # position, rotation of the object
         obj_pos = []
         for i in range(self.num_blocks):
-            pos = np.array(self.sim.get_base_position("object"+str(i)))
+            # [NOTE]trick: reset object orientation to aviod z rotation
+            pos = self.sim.get_base_position("object"+str(i))
+            ori = [0, self.sim.get_base_rotation("object"+str(i))[1], 0]
+            self.sim.set_base_pose("object"+str(i), pos, ori)
             obj_pos.append(pos)
             obj_pos.append(pos - self.get_ee_position0())
             obj_pos.append(pos - self.get_ee_position1())
-            obj_pos.append(np.array(self.sim.get_base_rotation("object"+str(i))))
-            obj_pos.append(np.array(self.sim.get_base_velocity("object"+str(i))))
-            obj_pos.append(np.array(self.sim.get_base_angular_velocity("object"+str(i))))
+            obj_pos.append(ori)
+            obj_pos.append(self.sim.get_base_velocity("object"+str(i)))
+            obj_pos.append(self.sim.get_base_angular_velocity("object"+str(i)))
         observation = np.array(obj_pos).flatten()
         return observation
 
