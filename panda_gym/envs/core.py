@@ -443,3 +443,7 @@ class BimanualTaskEnv(gym.GoalEnv):
             pitch=pitch,
             roll=roll,
         )
+
+    def change(self,config = None):
+        if config != None:
+            self.task.change(config)

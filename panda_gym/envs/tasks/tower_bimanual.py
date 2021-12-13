@@ -132,22 +132,25 @@ class TowerBimanual(Task):
     def compute_reward(self, achieved_goal, desired_goal, info: Dict[str, Any]) -> Union[np.ndarray, float]:
         subgoal_distances = self.subgoal_distances(achieved_goal, desired_goal)
         # Part1: number of stacked blocks
-        rew = sum([(d < self.distance_threshold).astype(np.float32) for d in subgoal_distances])
-        # Part2: if all block are set, encourage arm to move away
-        if abs(rew - self.num_blocks)<0.01:
-            rew += self.gripper_pos_far_from_goals(achieved_goal, desired_goal)
+        rew = np.sum([(d < self.distance_threshold).astype(np.float32) for d in subgoal_distances])
+        # Part2: if all block are set, encourage arm to move away [Note: use musk to boost relabel]
+        rew += self.gripper_pos_far_from_goals(achieved_goal, desired_goal) * (np.abs(rew - self.num_blocks)<0.01).astype(float)
         return rew
 
     def subgoal_distances(self, goal_a, goal_b):
         return [
-            np.linalg.norm(goal_a[i * 3:(i + 1) * 3] - goal_b[i * 3:(i + 1) * 3], axis=-1) for i in
+            np.linalg.norm(goal_a[..., i * 3:(i + 1) * 3] - goal_b[..., i * 3:(i + 1) * 3], axis=-1) for i in
             range(self.num_blocks)
         ]
     
     def gripper_pos_far_from_goals(self, achieved_goal, goal):
-        gripper_pos = achieved_goal[-3:]
-        block_goals = goal[:-3]
+        gripper_pos = achieved_goal[...,-3:]
+        block_goals = goal[...,:-3]
         distances = [
-            np.linalg.norm(gripper_pos - block_goals[i*3:(i+1)*3], axis=-1) for i in range(self.num_blocks)
+            np.linalg.norm(gripper_pos - block_goals[...,i*3:(i+1)*3], axis=-1) for i in range(self.num_blocks)
         ]
-        return float(np.all([d > self.distance_threshold * 2 for d in distances], axis=0))
+        return np.all([d > self.distance_threshold * 2 for d in distances], axis=0).astype(float)
+
+    def change(self, config = None):
+        if config != None:
+            self.same_side_rate = config['same_side_rate']
