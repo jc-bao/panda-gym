@@ -21,7 +21,9 @@ class Panda(PyBulletRobot):
         sim: PyBullet,
         block_gripper: bool = False,
         base_position: np.ndarray = np.array([0.0, 0.0, 0.0]),
+        base_orientation: np.ndarray=np.array([0,0,0,1]),
         control_type: str = "ee",
+        index: int = 0,
     ) -> None:
         self.block_gripper = block_gripper
         self.control_type = control_type
@@ -30,9 +32,10 @@ class Panda(PyBulletRobot):
         action_space = spaces.Box(-1.0, 1.0, shape=(n_action,), dtype=np.float32)
         super().__init__(
             sim,
-            body_name="panda",
+            body_name="panda"+str(index),
             file_name="franka_panda/panda.urdf",
             base_position=base_position,
+            base_orientation = base_orientation,
             action_space=action_space,
             joint_indices=np.array([0, 1, 2, 3, 4, 5, 6, 9, 10]),
             joint_forces=np.array([87.0, 87.0, 87.0, 87.0, 12.0, 120.0, 120.0, 170.0, 170.0]),
