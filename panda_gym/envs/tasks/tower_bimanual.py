@@ -16,7 +16,7 @@ class TowerBimanual(Task):
         sim,
         get_ee_position0,
         get_ee_position1,
-        distance_threshold=0.1,
+        distance_threshold=0.05,
         goal_xy_range=0.2,
         obj_xy_range=0.2,
         num_blocks = 1,
@@ -33,8 +33,8 @@ class TowerBimanual(Task):
         self.target_shape = target_shape
         self.get_ee_position0 = get_ee_position0
         self.get_ee_position1 = get_ee_position1
-        self.goal_range_low = np.array([-goal_xy_range / 2, -goal_xy_range / 2, 0])
-        self.goal_range_high = np.array([goal_xy_range / 2, goal_xy_range / 2, 0])
+        self.goal_range_low = np.array([-goal_xy_range / 2, -goal_xy_range / 1.8, 0])
+        self.goal_range_high = np.array([goal_xy_range / 2, goal_xy_range / 1.8, 0])
         self.obj_range_low = np.array([-obj_xy_range / 2, -obj_xy_range / 2, 0])
         self.obj_range_high = np.array([obj_xy_range / 2, obj_xy_range / 2, 0])
         with self.sim.no_rendering():
@@ -116,10 +116,12 @@ class TowerBimanual(Task):
     def _sample_objects(self) -> np.ndarray:
         x_pos = self.goal_center * (float(self.goal[0]>0)*2-1) * (float(np.random.random_sample()<self.same_side_rate)*2-1)
         obj_pos = [self.np_random.uniform(self.obj_range_low, self.obj_range_high)+[x_pos, 0.0, self.object_size / 2]]
+        while min(np.linalg.norm(obj_pos - self.goal.reshape(-1,3), axis = 1)) < self.distance_threshold*1.2:
+            obj_pos = [self.np_random.uniform(self.obj_range_low, self.obj_range_high)+[x_pos, 0.0, self.object_size / 2]]
         for i in range(1, self.num_blocks):
             x_pos = self.goal_center * (float(self.goal[3*i]>0)*2-1) * (float(np.random.random_sample()<self.same_side_rate)*2-1)
             pos =  self.np_random.uniform(self.obj_range_low, self.obj_range_high)+[x_pos, 0.0, self.object_size / 2]
-            while min(np.linalg.norm(obj_pos - pos, axis = 1)) < self.object_size*2:
+            while min(np.linalg.norm(obj_pos - pos, axis = 1)) < self.object_size*2 or min(np.linalg.norm(obj_pos - self.goal.reshape(-1,3), axis = 1)) < self.distance_threshold*1.2:
                 pos =  self.np_random.uniform(self.obj_range_low, self.obj_range_high)+[x_pos, 0.0, self.object_size / 2]
             obj_pos.append(pos)
         return np.array(obj_pos).flatten()
