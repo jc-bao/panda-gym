@@ -6,3 +6,4 @@ from panda_gym.envs.panda_tasks.panda_stack import PandaStackEnv
 from panda_gym.envs.panda_tasks.panda_flip import PandaFlipEnv
 from panda_gym.envs.panda_tasks.panda_tower import PandaTowerEnv
 from panda_gym.envs.panda_tasks.panda_tower_bimanual import PandaTowerBimanualEnv
+from panda_gym.envs.panda_tasks.panda_rearrange import PandaRearrangeEnv

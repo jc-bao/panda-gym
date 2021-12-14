@@ -65,3 +65,9 @@ for i in range(1,7):
         kwargs={"reward_type": 'sparse', "control_type": 'ee', 'num_blocks': i},
         max_episode_steps=50*i,
     )
+
+register(
+    id="PandaRearrange-v2",
+    entry_point="panda_gym.envs:PandaRearrangeEnv",
+    max_episode_steps=50,
+)

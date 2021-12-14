@@ -2,7 +2,7 @@ import gym
 import panda_gym
 import time
 
-env = gym.make("PandaTowerBimanual-v2", render=True)
+env = gym.make("PandaRearrange-v2", render=True)
 
 obs = env.reset()
 done = False
