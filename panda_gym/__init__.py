@@ -38,7 +38,7 @@ for reward_type in ["sparse", "dense"]:
             kwargs=kwargs,
             max_episode_steps=50,
         )
-
+        
         register(
             id="PandaStack{}{}-v2".format(control_suffix, reward_suffix),
             entry_point="panda_gym.envs:PandaStackEnv",

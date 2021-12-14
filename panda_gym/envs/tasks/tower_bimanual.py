@@ -84,8 +84,8 @@ class TowerBimanual(Task):
         ag = []
         for i in range(self.num_blocks):
             ag.append(np.array(self.sim.get_base_position("object"+str(i))))
-        ag.append(self.get_ee_position0())
-        ag.append(self.get_ee_position1())
+        # ag.append(self.get_ee_position0())
+        # ag.append(self.get_ee_position1())
         achieved_goal = np.array(ag).flatten()
         return achieved_goal
 
@@ -113,7 +113,7 @@ class TowerBimanual(Task):
                     goal =  self.np_random.uniform(self.obj_range_low, self.obj_range_high)+[x_pos, 0.0, self.object_size / 2]
             goals.append(goal)
             goals = np.array(goals).flatten()
-            goals = np.append(goals, [0]*6) # Note: this one is used to calculate the gripper distance
+            # goals = np.append(goals, [0]*6) # Note: this one is used to calculate the gripper distance
         return np.array(goals)
 
     def _sample_objects(self) -> np.ndarray:
@@ -131,30 +131,24 @@ class TowerBimanual(Task):
 
     def is_success(self, achieved_goal: np.ndarray, desired_goal: np.ndarray) -> Union[np.ndarray, float]:
         # must be vectorized !!
-        subgoal_distances = self.subgoal_distances(achieved_goal, desired_goal)
-        return float(np.all([d < self.distance_threshold for d in subgoal_distances]))
+        dists = [
+            np.linalg.norm(achieved_goal[..., i * 3:(i + 1) * 3] - desired_goal[..., i * 3:(i + 1) * 3], axis=-1)
+            for i in range(self.num_blocks)
+        ]
+        return float(np.all([d < self.distance_threshold for d in dists]))
 
     def compute_reward(self, achieved_goal, desired_goal, info: Dict[str, Any]) -> Union[np.ndarray, float]:
-        subgoal_distances = self.subgoal_distances(achieved_goal, desired_goal)
-        # Part1: number of stacked blocks
-        rew = np.sum([(d < self.distance_threshold).astype(np.float32) for d in subgoal_distances])
-        # Part2: if all block are set, encourage arm to move away [Note: use musk to boost relabel]
-        rew += self.gripper_pos_far_from_goals(achieved_goal, desired_goal) * (np.abs(rew - self.num_blocks)<0.01).astype(float)
+        try: # to support vec input
+            rew = np.zeros(size = achieved_goal.shape[1])
+        except:
+            rew = 0
+        rew -= self.num_blocks
+        for i in range(self.num_blocks):
+            dist_block2goal = np.linalg.norm(achieved_goal[..., i * 3:(i + 1) * 3] - desired_goal[..., i * 3:(i + 1) * 3], axis=-1)
+            # dist_grip2goal = np.linalg.norm(achieved_goal[...,-3:] - desired_goal[..., i * 3:(i + 1) * 3], axis=-1)
+            rew += 1 * (dist_block2goal < self.distance_threshold).astype(float)
+            # rew += 0.0 * np.logical_and(dist_grip2goal > self.distance_threshold*2, dist_block2goal < self.distance_threshold).astype(float)
         return rew
-
-    def subgoal_distances(self, goal_a, goal_b):
-        return [
-            np.linalg.norm(goal_a[..., i * 3:(i + 1) * 3] - goal_b[..., i * 3:(i + 1) * 3], axis=-1) for i in
-            range(self.num_blocks)
-        ]
-    
-    def gripper_pos_far_from_goals(self, achieved_goal, goal):
-        gripper_pos = achieved_goal[...,-3:]
-        block_goals = goal[...,:-3]
-        distances = [
-            np.linalg.norm(gripper_pos - block_goals[...,i*3:(i+1)*3], axis=-1) for i in range(self.num_blocks)
-        ]
-        return np.all([d > self.distance_threshold * 2 for d in distances], axis=0).astype(float)
 
     def change(self, config = None):
         if config != None:
