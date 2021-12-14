@@ -71,7 +71,7 @@ class PickAndPlace2(Task):
         object1_rotation = np.array(self.sim.get_base_rotation("object1"))
         object1_velocity = np.array(self.sim.get_base_velocity("object1"))
         object1_angular_velocity = np.array(self.sim.get_base_angular_velocity("object1"))
-        object2_position = np.array(self.sim.get_base_position("object2")) - 1.1 # trick: make center the same
+        object2_position = np.array(self.sim.get_base_position("object2")) - [1.1,0,0] # trick: make center the same
         object2_rotation = np.array(self.sim.get_base_rotation("object2"))
         object2_velocity = np.array(self.sim.get_base_velocity("object2"))
         object2_angular_velocity = np.array(self.sim.get_base_angular_velocity("object2"))
@@ -91,7 +91,7 @@ class PickAndPlace2(Task):
 
     def get_achieved_goal(self) -> np.ndarray:
         object1_position = self.sim.get_base_position("object1")
-        object2_position = self.sim.get_base_position("object2")  - 1.1 # trick: make center the same
+        object2_position = self.sim.get_base_position("object2")  - [1.1,0,0] # trick: make center the same
         achieved_goal = np.concatenate((object1_position, object2_position))
         return achieved_goal
 
@@ -104,7 +104,7 @@ class PickAndPlace2(Task):
         self.goal = self._sample_goal()
         object1_position, object2_position = self._sample_objects()
         self.sim.set_base_pose("target1", self.goal[:3], np.array([0.0, 0.0, 0.0, 1.0]))
-        self.sim.set_base_pose("target2", self.goal[3:], np.array([0.0, 0.0, 0.0, 1.0])) # trick: make center the same
+        self.sim.set_base_pose("target2", self.goal[3:], np.array([0.0, 0.0, 0.0, 1.0]))
         self.sim.set_base_pose("object1", object1_position, np.array([0.0, 0.0, 0.0, 1.0]))
         self.sim.set_base_pose("object2", object2_position, np.array([0.0, 0.0, 0.0, 1.0]))
 
@@ -122,7 +122,7 @@ class PickAndPlace2(Task):
     def _sample_objects(self) -> Tuple[np.ndarray, np.ndarray]:
         # while True:  # make sure that cubes are distant enough
         object1_position = np.array([0.0, 0.0, self.object_size / 2])
-        object2_position = np.array([1.1, 0.0, 3 * self.object_size / 2])
+        object2_position = np.array([1.1, 0.0, self.object_size / 2])
         noise1 = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
         noise2 = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
         object1_position += noise1

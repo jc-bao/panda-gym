@@ -30,6 +30,7 @@ class Panda(PyBulletRobot):
         n_action = 3 if self.control_type == "ee" else 7  # control (x, y z) if "ee", else, control the 7 joints
         n_action += 0 if self.block_gripper else 1
         action_space = spaces.Box(-1.0, 1.0, shape=(n_action,), dtype=np.float32)
+        self.index = index # CHANGE
         super().__init__(
             sim,
             body_name="panda"+str(index),
@@ -108,7 +109,7 @@ class Panda(PyBulletRobot):
 
     def get_obs(self) -> np.ndarray:
         # end-effector position and velocity
-        ee_position = np.array(self.get_ee_position())
+        ee_position = np.array(self.get_ee_position()) - [1.1*self.index, 0, 0]
         ee_velocity = np.array(self.get_ee_velocity())
         # fingers opening
         if not self.block_gripper:
