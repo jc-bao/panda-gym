@@ -74,7 +74,7 @@ class TowerBimanual(Task):
             obj_pos.append(pos)
             obj_pos.append(pos - self.get_ee_position0())
             obj_pos.append(pos - self.get_ee_position1())
-            obj_pos.append(ori)
+            obj_pos.append(ori[1])
             obj_pos.append(self.sim.get_base_velocity("object"+str(i)))
             obj_pos.append(self.sim.get_base_angular_velocity("object"+str(i)))
         observation = np.array(obj_pos).flatten()
@@ -103,7 +103,7 @@ class TowerBimanual(Task):
             for i in range(self.num_blocks):
                 goals.append(np.array([self.goal_center*np.random.choice([-1,1]), 0.0, self.object_size / 2* (2*i+1)])+noise)  # z offset for the cube center
             goals = np.array(goals).flatten()
-            goals = np.append(goals, [0]*6) # Note: this one is used to calculate the gripper distance
+            # goals = np.append(goals, [0]*6) # Note: this one is used to calculate the gripper distance
         elif self.target_shape == 'any':
             goals = [self.np_random.uniform(self.goal_range_low, self.goal_range_high)+[self.goal_center*np.random.choice([-1,1]), 0.0, self.object_size / 2]]
             for i in range(1, self.num_blocks):
@@ -111,7 +111,7 @@ class TowerBimanual(Task):
                 goal =  self.np_random.uniform(self.goal_range_low, self.goal_range_high)+[x_pos, 0.0, self.object_size / 2]
                 while min(np.linalg.norm(goals - goal, axis = 1)) < self.object_size*2:
                     goal =  self.np_random.uniform(self.obj_range_low, self.obj_range_high)+[x_pos, 0.0, self.object_size / 2]
-            goals.append(goal)
+                goals.append(goal)
             goals = np.array(goals).flatten()
             # goals = np.append(goals, [0]*6) # Note: this one is used to calculate the gripper distance
         return np.array(goals)
@@ -138,17 +138,13 @@ class TowerBimanual(Task):
         return float(np.all([d < self.distance_threshold for d in dists]))
 
     def compute_reward(self, achieved_goal, desired_goal, info: Dict[str, Any]) -> Union[np.ndarray, float]:
-        try: # to support vec input
-            rew = np.zeros(size = achieved_goal.shape[1])
-        except:
-            rew = 0
-        rew -= self.num_blocks
-        for i in range(self.num_blocks):
-            dist_block2goal = np.linalg.norm(achieved_goal[..., i * 3:(i + 1) * 3] - desired_goal[..., i * 3:(i + 1) * 3], axis=-1)
-            # dist_grip2goal = np.linalg.norm(achieved_goal[...,-3:] - desired_goal[..., i * 3:(i + 1) * 3], axis=-1)
-            rew += 1 * (dist_block2goal < self.distance_threshold).astype(float)
-            # rew += 0.0 * np.logical_and(dist_grip2goal > self.distance_threshold*2, dist_block2goal < self.distance_threshold).astype(float)
-        return rew
+        delta = (achieved_goal - desired_goal).reshape(-1, self.num_blocks ,3)
+        dist_block2goal = np.linalg.norm(delta, axis=-1)
+        rew = -np.sum(dist_block2goal>self.distance_threshold, axis=-1, dtype = float)
+        if len(rew) == 1 :
+            return rew[0]
+        else: # to process multi dimension input
+            return rew
 
     def change(self, config = None):
         if config != None:
