@@ -65,19 +65,19 @@ class TowerBimanual(Task):
 
     def get_obs(self) -> np.ndarray:
         # position, rotation of the object
-        obj_pos = []
+        obs = []
         for i in range(self.num_blocks):
             # [NOTE]trick: reset object orientation to aviod z rotation
             pos = self.sim.get_base_position("object"+str(i))
-            ori = [0, self.sim.get_base_rotation("object"+str(i))[1], 0]
+            ori = np.array([0, self.sim.get_base_rotation("object"+str(i))[1], 0])
             self.sim.set_base_pose("object"+str(i), pos, ori)
-            obj_pos.append(pos)
-            obj_pos.append(pos - self.get_ee_position0())
-            obj_pos.append(pos - self.get_ee_position1())
-            obj_pos.append(ori[1])
-            obj_pos.append(self.sim.get_base_velocity("object"+str(i)))
-            obj_pos.append(self.sim.get_base_angular_velocity("object"+str(i)))
-        observation = np.array(obj_pos).flatten()
+            obs.append(pos)
+            obs.append(pos - self.get_ee_position0())
+            obs.append(pos - self.get_ee_position1())
+            obs.append(ori)
+            obs.append(self.sim.get_base_velocity("object"+str(i)))
+            obs.append(self.sim.get_base_angular_velocity("object"+str(i)))
+        observation = np.array(obs).flatten()
         return observation
 
     def get_achieved_goal(self) -> np.ndarray:
@@ -114,7 +114,7 @@ class TowerBimanual(Task):
                 goals.append(goal)
             goals = np.array(goals).flatten()
             # goals = np.append(goals, [0]*6) # Note: this one is used to calculate the gripper distance
-        return np.array(goals)
+        return goals
 
     def _sample_objects(self) -> np.ndarray:
         x_pos = self.goal_center * (float(self.goal[0]>0)*2-1) * (float(np.random.random_sample()<self.same_side_rate)*2-1)

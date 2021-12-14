@@ -91,6 +91,6 @@ class PickAndPlace(Task):
     def compute_reward(self, achieved_goal, desired_goal, info: Dict[str, Any]) -> Union[np.ndarray, float]:
         d = distance(achieved_goal, desired_goal)
         if self.reward_type == "sparse":
-            return -np.array(d > self.distance_threshold, dtype=np.float64) + 1 # CHANGE
+            return -np.array(d > self.distance_threshold, dtype=np.float64)
         else:
             return -d
