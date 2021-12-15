@@ -12,7 +12,7 @@ for _ in range(1000):
     action = env.action_space.sample()
     obs, reward, done, info = env.step(action)
     total_rew += reward
-    print(obs)
+    print(action)
     env.render()
     if done: 
         env.reset()

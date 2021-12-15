@@ -360,7 +360,7 @@ class BimanualTaskEnv(gym.GoalEnv):
             )
         )
         self.robot0_action_shape = self.robot0.action_space.shape[0]
-        self.robot1_action_shape = self.robot0.action_space.shape[0]
+        self.robot1_action_shape = self.robot1.action_space.shape[0]
         action_shape = self.robot0_action_shape + self.robot1_action_shape
         self.action_space = gym.spaces.Box(-1.0, 1.0, shape=(action_shape,), dtype=np.float32)
         self.compute_reward = self.task.compute_reward
@@ -386,7 +386,7 @@ class BimanualTaskEnv(gym.GoalEnv):
 
     def step(self, action: np.ndarray) -> Tuple[Dict[str, np.ndarray], float, bool, Dict[str, Any]]:
         self.robot0.set_action(action[:self.robot0_action_shape])
-        self.robot1.set_action(action[self.robot0_action_shape:])
+        # self.robot1.set_action(action[self.robot0_action_shape:])
         self.sim.step()
         obs = self._get_obs()
         done = False
