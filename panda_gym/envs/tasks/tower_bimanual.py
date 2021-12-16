@@ -22,12 +22,12 @@ class TowerBimanual(Task):
         num_blocks = 1,
         target_shape = 'any', 
         goal_center = 0.2,
-        same_side_rate = 1
+        other_side_rate = 1
     ) -> None:
         super().__init__(sim)
         self.distance_threshold = distance_threshold
         self.object_size = 0.04
-        self.same_side_rate = same_side_rate
+        self.other_side_rate = other_side_rate
         self.goal_center = goal_center
         self.num_blocks = num_blocks
         self.target_shape = target_shape
@@ -117,12 +117,13 @@ class TowerBimanual(Task):
         return goals
 
     def _sample_objects(self) -> np.ndarray:
-        x_pos = self.goal_center * (float(self.goal[0]>0)*2-1) * (float(np.random.random_sample()<self.same_side_rate)*2-1)
+        same_side_rate = 1 - self.other_side_rate
+        x_pos = self.goal_center * (float(self.goal[0]>0)*2-1) * (float(np.random.random_sample()<same_side_rate)*2-1)
         obj_pos = [self.np_random.uniform(self.obj_range_low, self.obj_range_high)+[x_pos, 0.0, self.object_size / 2]]
         while min(np.linalg.norm(obj_pos - self.goal.reshape(-1,3), axis = 1)) < self.distance_threshold*1.2:
             obj_pos = [self.np_random.uniform(self.obj_range_low, self.obj_range_high)+[x_pos, 0.0, self.object_size / 2]]
         for i in range(1, self.num_blocks):
-            x_pos = self.goal_center * (float(self.goal[3*i]>0)*2-1) * (float(np.random.random_sample()<self.same_side_rate)*2-1)
+            x_pos = self.goal_center * (float(self.goal[3*i]>0)*2-1) * (float(np.random.random_sample()<same_side_rate)*2-1)
             pos =  self.np_random.uniform(self.obj_range_low, self.obj_range_high)+[x_pos, 0.0, self.object_size / 2]
             while min(np.linalg.norm(obj_pos - pos, axis = 1)) < self.object_size*2 or min(np.linalg.norm(obj_pos - self.goal.reshape(-1,3), axis = 1)) < self.distance_threshold*1.2:
                 pos =  self.np_random.uniform(self.obj_range_low, self.obj_range_high)+[x_pos, 0.0, self.object_size / 2]
@@ -148,4 +149,4 @@ class TowerBimanual(Task):
 
     def change(self, config = None):
         if config != None:
-            self.same_side_rate = config['same_side_rate']
+            self.other_side_rate = config

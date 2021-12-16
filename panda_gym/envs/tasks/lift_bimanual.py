@@ -105,4 +105,4 @@ class LiftBimanual(Task):
 
     def change(self, config = None):
         if config != None:
-            self.heavy_object_rate = config['heavy_object_rate']
+            self.heavy_object_rate = config
