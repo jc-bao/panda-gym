@@ -76,3 +76,8 @@ register(
     entry_point="panda_gym.envs:PandaPickAndPlace2Env",
     max_episode_steps=50,
 )
+register(
+    id="PandaLiftBimanual-v0",
+    entry_point="panda_gym.envs:PandaLiftBimanualEnv",
+    max_episode_steps=50,
+)

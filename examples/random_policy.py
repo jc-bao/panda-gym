@@ -1,8 +1,8 @@
 import gym
 import panda_gym
-import time
+import numpy as np
 
-env = gym.make("PandaPickAndPlace2-v2", render=True)
+env = gym.make("PandaLiftBimanual-v0", render=True)
 
 obs = env.reset()
 done = False
@@ -12,7 +12,6 @@ for _ in range(1000):
     action = env.action_space.sample()
     obs, reward, done, info = env.step(action)
     total_rew += reward
-    print(action)
     env.render()
     if done: 
         env.reset()

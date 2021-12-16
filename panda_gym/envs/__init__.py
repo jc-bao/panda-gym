@@ -8,3 +8,4 @@ from panda_gym.envs.panda_tasks.panda_tower import PandaTowerEnv
 from panda_gym.envs.panda_tasks.panda_tower_bimanual import PandaTowerBimanualEnv
 from panda_gym.envs.panda_tasks.panda_rearrange import PandaRearrangeEnv
 from panda_gym.envs.panda_tasks.panda_pick_and_place_2 import PandaPickAndPlace2Env
+from panda_gym.envs.panda_tasks.panda_lift_bimanual import PandaLiftBimanualEnv

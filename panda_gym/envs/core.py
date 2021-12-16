@@ -386,7 +386,7 @@ class BimanualTaskEnv(gym.GoalEnv):
 
     def step(self, action: np.ndarray) -> Tuple[Dict[str, np.ndarray], float, bool, Dict[str, Any]]:
         self.robot0.set_action(action[:self.robot0_action_shape])
-        # self.robot1.set_action(action[self.robot0_action_shape:])
+        self.robot1.set_action(action[self.robot0_action_shape:])
         self.sim.step()
         obs = self._get_obs()
         done = False

@@ -86,9 +86,14 @@ class Panda(PyBulletRobot):
         # Clip the height target. For some reason, it has a great impact on learning
         target_ee_position[2] = np.max((0, target_ee_position[2]))
         # compute the new joint angles
-        target_arm_angles = self.inverse_kinematics(
-            link=self.ee_link, position=target_ee_position, orientation=np.array([1.0, 0.0, 0.0, 0.0])
-        )
+        if self.index == 0:
+            target_arm_angles = self.inverse_kinematics(
+                link=self.ee_link, position=target_ee_position, orientation=np.array([1.0, 0.0, 0.0, 0.0])
+            )
+        else: 
+            target_arm_angles = self.inverse_kinematics(
+                link=self.ee_link, position=target_ee_position, orientation=np.array([0.0, -1.0, 0.0, 0.0])
+            )
         target_arm_angles = target_arm_angles[:7]  # remove fingers angles
         return target_arm_angles
 
@@ -109,7 +114,7 @@ class Panda(PyBulletRobot):
 
     def get_obs(self) -> np.ndarray:
         # end-effector position and velocity
-        ee_position = np.array(self.get_ee_position()) - [1.1*self.index, 0, 0]
+        ee_position = np.array(self.get_ee_position())
         ee_velocity = np.array(self.get_ee_velocity())
         # fingers opening
         if not self.block_gripper:
