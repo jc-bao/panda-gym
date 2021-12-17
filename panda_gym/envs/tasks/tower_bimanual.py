@@ -22,7 +22,7 @@ class TowerBimanual(Task):
         num_blocks = 1,
         target_shape = 'any', 
         goal_center = 0.2,
-        other_side_rate = 1
+        other_side_rate = 0
     ) -> None:
         super().__init__(sim)
         self.distance_threshold = distance_threshold
