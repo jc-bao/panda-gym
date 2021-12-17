@@ -125,7 +125,7 @@ class TowerBimanual(Task):
         for i in range(1, self.num_blocks):
             x_pos = self.goal_center * (float(self.goal[3*i]>0)*2-1) * (float(np.random.random_sample()<same_side_rate)*2-1)
             pos =  self.np_random.uniform(self.obj_range_low, self.obj_range_high)+[x_pos, 0.0, self.object_size / 2]
-            while min(np.linalg.norm(obj_pos - pos, axis = 1)) < self.object_size*2 or min(np.linalg.norm(obj_pos - self.goal.reshape(-1,3), axis = 1)) < self.distance_threshold*1.2:
+            while min(np.linalg.norm(obj_pos - pos, axis = 1)) < self.object_size*2 or min(np.linalg.norm(self.goal.reshape(-1,3) - pos, axis = 1)) < self.distance_threshold*1.2:
                 pos =  self.np_random.uniform(self.obj_range_low, self.obj_range_high)+[x_pos, 0.0, self.object_size / 2]
             obj_pos.append(pos)
         return np.array(obj_pos).flatten()
