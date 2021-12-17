@@ -20,12 +20,16 @@ class TowerBimanual(Task):
         num_blocks = 1,
         target_shape = 'any', 
         goal_center = 0.2,
-        other_side_rate = 0
+        curriculum_type = None,
+        other_side_rate = 0.5,
+        has_gravaty_rate = 1,
     ) -> None:
         super().__init__(sim)
         self.distance_threshold = distance_threshold
         self.object_size = 0.04
         self.other_side_rate = other_side_rate
+        self.has_gravaty_rate = has_gravaty_rate
+        self.curriculum_type = curriculum_type # gravity or other_side
         self.goal_center = goal_center
         self.num_blocks = num_blocks
         self.target_shape = target_shape
@@ -87,6 +91,11 @@ class TowerBimanual(Task):
         for i in range(self.num_blocks):
             self.sim.set_base_pose("target"+str(i), self.goal[i*3:(i+1)*3], np.array([0.0, 0.0, 0.0, 1.0]))
             self.sim.set_base_pose("object"+str(i), obj_pos[i*3:(i+1)*3], np.array([0.0, 0.0, 0.0, 1.0]))
+        # set gravity
+        if np.random.random_sample() < self.has_gravaty_rate:
+            self.sim.physics_client.setGravity(0, 0, -9.81)
+        else:
+            self.sim.physics_client.setGravity(0, 0, 0)
 
     def _sample_goal(self) -> np.ndarray:
         goals = []
@@ -140,5 +149,7 @@ class TowerBimanual(Task):
             return rew
 
     def change(self, config = None):
-        if config != None:
+        if self.curriculum_type == 'gravity':
+            self.has_gravaty_rate = config
+        elif self.curriculum_type == 'other_side':
             self.other_side_rate = config

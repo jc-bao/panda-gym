@@ -16,9 +16,18 @@ class PandaTowerBimanualEnv(BimanualTaskEnv):
             Defaults to "ee".
     """
 
-    def __init__(self, render: bool = False, num_blocks: int = 1, control_type: str = "ee", reward_type = 'sparse') -> None:
+    def __init__(self, render: bool = False, num_blocks: int = 1, control_type: str = "ee", curriculum_type = None) -> None:
         sim = PyBullet(render=render)
         robot0 = Panda(sim, index=0,block_gripper=False, base_position=np.array([-0.775, 0.0, 0.0]), control_type=control_type, base_orientation = [0,0,0,1])
         robot1 = Panda(sim, index=1, block_gripper=False, base_position=np.array([0.775, 0.0, 0.0]),control_type=control_type, base_orientation = [0,0,1,0])
-        task = TowerBimanual(sim, num_blocks = num_blocks, get_ee_position0=robot0.get_ee_position, get_ee_position1=robot1.get_ee_position)
+        if curriculum_type == 'gravity':
+            has_gravaty_rate = 0
+            other_side_rate = 0.5
+        elif curriculum_type == 'other_side':
+            has_gravaty_rate = 1
+            other_side_rate = 0
+        else:
+            has_gravaty_rate = 1
+            other_side_rate = 0.5
+        task = TowerBimanual(sim, num_blocks = num_blocks, curriculum_type = curriculum_type, other_side_rate = other_side_rate, has_gravaty_rate = has_gravaty_rate)
         super().__init__(robot0, robot1, task)
