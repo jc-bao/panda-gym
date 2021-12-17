@@ -66,12 +66,13 @@ class LiftBimanual(Task):
 
     def get_achieved_goal(self) -> np.ndarray:
         object_position = np.array(self.sim.get_base_position("object"))
-        return object_position
+        object_rotation = np.array([0, self.sim.get_base_rotation("object")[1], 0])
+        return np.concatenate((object_position, object_rotation))
 
     def reset(self) -> None:
         self.goal = self._sample_goal()
         object_position = self._sample_object()
-        self.sim.set_base_pose("target", self.goal, np.array([0.0, 0.0, 0.0, 1.0]))
+        self.sim.set_base_pose("target", self.goal[:3], np.array([0.0, 0.0, 0.0, 1.0]))
         self.sim.set_base_pose("object", object_position, np.array([0.0, 0.0, 0.0, 1.0]))
         self.num_step = 0
         # change weight to change task chellenage
@@ -83,10 +84,11 @@ class LiftBimanual(Task):
 
     def _sample_goal(self) -> np.ndarray:
         """Sample a goal."""
-        goal = np.array([0.0, 0.0, self.object_size / 2])  # z offset for the cube center
+        goal_pos = np.array([0.0, 0.0, self.object_size / 2])  # z offset for the cube center
         noise = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
-        goal += noise
-        return goal
+        goal_pos += noise
+        goal_rot = [0]*3
+        return np.concatenate((goal_pos, goal_rot))
 
     def _sample_object(self) -> np.ndarray:
         """Randomize start position of object."""
@@ -96,12 +98,13 @@ class LiftBimanual(Task):
         return object_position
 
     def is_success(self, achieved_goal: np.ndarray, desired_goal: np.ndarray) -> Union[np.ndarray, float]:
-        d = distance(achieved_goal, desired_goal)
-        return np.array(d < self.distance_threshold, dtype=np.float64)
+        d = distance(achieved_goal[...,:3], desired_goal[...,:3])
+        d_angle = distance(achieved_goal[...,3:], desired_goal[...,3:])
+        success = np.logical_and(d<self.distance_threshold, d_angle<self.distance_threshold*3).astype(float)
+        return success
 
     def compute_reward(self, achieved_goal, desired_goal, info: Dict[str, Any]) -> Union[np.ndarray, float]:
-        d = distance(achieved_goal, desired_goal)
-        return -np.array(d > self.distance_threshold, dtype=np.float64)
+        return self.is_success(achieved_goal, desired_goal) - 1
 
     def change(self, config = None):
         if config != None:

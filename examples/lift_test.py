@@ -36,14 +36,14 @@ done = False
 total_rew = 0
 rate = 0
 for i in range(1000):
-    env.change({'heavy_object_rate': rate})
-    rate = 1 - rate
     action = env.action_space.sample()
     action = policy(obs, i)
     obs, reward, done, info = env.step(action)
     total_rew += reward
     env.render()
     if done: 
+        rate = 1 - rate
+        env.change(rate)
         env.reset()
         print(total_rew)
         total_rew = 0
