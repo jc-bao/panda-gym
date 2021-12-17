@@ -14,8 +14,6 @@ class TowerBimanual(Task):
     def __init__(
         self,
         sim,
-        get_ee_position0,
-        get_ee_position1,
         distance_threshold=0.05,
         goal_xy_range=0.2,
         obj_xy_range=0.2,
@@ -31,8 +29,6 @@ class TowerBimanual(Task):
         self.goal_center = goal_center
         self.num_blocks = num_blocks
         self.target_shape = target_shape
-        self.get_ee_position0 = get_ee_position0
-        self.get_ee_position1 = get_ee_position1
         self.goal_range_low = np.array([-goal_xy_range / 2, -goal_xy_range / 1.8, 0])
         self.goal_range_high = np.array([goal_xy_range / 2, goal_xy_range / 1.8, 0])
         self.obj_range_low = np.array([-obj_xy_range / 2, -obj_xy_range / 2, 0])
@@ -72,8 +68,6 @@ class TowerBimanual(Task):
             ori = np.array([0, self.sim.get_base_rotation("object"+str(i))[1], 0])
             self.sim.set_base_pose("object"+str(i), pos, ori)
             obs.append(pos)
-            obs.append(pos - self.get_ee_position0())
-            obs.append(pos - self.get_ee_position1())
             obs.append(ori)
             obs.append(self.sim.get_base_velocity("object"+str(i)))
             obs.append(self.sim.get_base_angular_velocity("object"+str(i)))
@@ -84,8 +78,6 @@ class TowerBimanual(Task):
         ag = []
         for i in range(self.num_blocks):
             ag.append(np.array(self.sim.get_base_position("object"+str(i))))
-        # ag.append(self.get_ee_position0())
-        # ag.append(self.get_ee_position1())
         achieved_goal = np.array(ag).flatten()
         return achieved_goal
 
