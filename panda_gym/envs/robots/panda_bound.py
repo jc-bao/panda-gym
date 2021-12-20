@@ -85,7 +85,7 @@ class PandaBound(PyBulletRobot):
         target_ee_position = ee_position + ee_displacement
         # Clip the height target. For some reason, it has a great impact on learning
         # target_ee_position[2] = np.max((0, target_ee_position[2])) CHANGE: bound the higher, not move too far
-        target_ee_position = np.clip(target_ee_position, [-100, -100, 0], [100, 100, 0.12])
+        target_ee_position = np.clip(target_ee_position, [-100, -100, 0], [100, 100, 0.27])
         # compute the new joint angles
         if self.index == 0:
             target_arm_angles = self.inverse_kinematics(

@@ -34,7 +34,7 @@ class TowerBimanual(Task):
         self.num_blocks = num_blocks
         self.target_shape = target_shape
         self.goal_range_low = np.array([-goal_xy_range / 2, -goal_xy_range / 1.8, 0])
-        self.goal_range_high = np.array([goal_xy_range / 2, goal_xy_range / 1.8, 0])
+        self.goal_range_high = np.array([goal_xy_range / 2, goal_xy_range / 1.8, 0.2])
         self.obj_range_low = np.array([-obj_xy_range / 2, -obj_xy_range / 2, 0])
         self.obj_range_high = np.array([obj_xy_range / 2, obj_xy_range / 2, 0])
         with self.sim.no_rendering():
