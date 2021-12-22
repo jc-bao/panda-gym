@@ -1,7 +1,7 @@
 import numpy as np
 
 from panda_gym.envs.core import RobotTaskEnv, BimanualTaskEnv
-from panda_gym.envs.robots.panda_bound import PandaBound
+from panda_gym.envs.robots.panda import Panda
 from panda_gym.envs.tasks.tower_bimanual import TowerBimanual
 from panda_gym.pybullet import PyBullet
 
@@ -18,8 +18,8 @@ class PandaTowerBimanualEnv(BimanualTaskEnv):
 
     def __init__(self, render: bool = False, num_blocks: int = 1, control_type: str = "ee", curriculum_type = None) -> None:
         sim = PyBullet(render=render)
-        robot0 = PandaBound(sim, index=0,block_gripper=False, base_position=np.array([-0.775, 0.0, 0.0]), control_type=control_type, base_orientation = [0,0,0,1])
-        robot1 = PandaBound(sim, index=1, block_gripper=False, base_position=np.array([0.775, 0.0, 0.0]),control_type=control_type, base_orientation = [0,0,1,0])
+        robot0 = Panda(sim, index=0,block_gripper=False, base_position=np.array([-0.775, 0.0, 0.0]), control_type=control_type, base_orientation = [0,0,0,1])
+        robot1 = Panda(sim, index=1, block_gripper=False, base_position=np.array([0.775, 0.0, 0.0]),control_type=control_type, base_orientation = [0,0,1,0])
         if curriculum_type == 'gravity':
             has_gravaty_rate = 0
             other_side_rate = 0.5

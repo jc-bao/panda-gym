@@ -15,11 +15,10 @@ class TowerBimanual(Task):
         self,
         sim,
         distance_threshold=0.05,
-        goal_xy_range=0.2,
-        obj_xy_range=0.2,
+        goal_xyz_range=[0.4, 0.3, 0.2],
+        obj_xyz_range=[0.3, 0.3, 0],
         num_blocks = 1,
         target_shape = 'any', 
-        goal_center = 0.2,
         curriculum_type = None,
         other_side_rate = 0.5,
         has_gravaty_rate = 1,
@@ -30,13 +29,12 @@ class TowerBimanual(Task):
         self.other_side_rate = other_side_rate
         self.has_gravaty_rate = has_gravaty_rate
         self.curriculum_type = curriculum_type # gravity or other_side
-        self.goal_center = goal_center
         self.num_blocks = num_blocks
         self.target_shape = target_shape
-        self.goal_range_low = np.array([-goal_xy_range / 2, -goal_xy_range / 1.8, 0])
-        self.goal_range_high = np.array([goal_xy_range / 2, goal_xy_range / 1.8, 0.2])
-        self.obj_range_low = np.array([-obj_xy_range / 2, -obj_xy_range / 2, 0])
-        self.obj_range_high = np.array([obj_xy_range / 2, obj_xy_range / 2, 0])
+        self.goal_range_low = np.array([0, -goal_xyz_range[1]/2, self.object_size/2])
+        self.goal_range_high = np.array(goal_xyz_range) + self.goal_range_low
+        self.obj_range_low = np.array([0.1, -obj_xyz_range / 2, self.object_size/2])
+        self.obj_range_high = np.array(obj_xyz_range) + self.obj_range_low
         with self.sim.no_rendering():
             self._create_scene()
             self.sim.place_visualizer(target_position=np.zeros(3), distance=0.9, yaw=45, pitch=-30)
@@ -100,34 +98,48 @@ class TowerBimanual(Task):
     def _sample_goal(self) -> np.ndarray:
         goals = []
         if self.target_shape == 'tower':
-            noise = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
+            base_pos = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
+            base_pos[0] = np.random.choice([-1,1])* base_pos[0]
             for i in range(self.num_blocks):
-                goals.append(np.array([self.goal_center*np.random.choice([-1,1]), 0.0, self.object_size / 2* (2*i+1)])+noise)  # z offset for the cube center
+                goals.append(np.array([0, 0, self.object_size*i])+base_pos)  # z offset for the cube center
             goals = np.array(goals).flatten()
             # goals = np.append(goals, [0]*6) # Note: this one is used to calculate the gripper distance
         elif self.target_shape == 'any':
-            goals = [self.np_random.uniform(self.goal_range_low, self.goal_range_high)+[self.goal_center*np.random.choice([-1,1]), 0.0, self.object_size / 2]]
+            goal = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
+            goal[0] = np.random.choice([-1,1])* goal[0]
+            num_goal_in_air = int(abs(goal[-1]-self.object_size / 2)>0.001)
+            goals.append(goal)
             for i in range(1, self.num_blocks):
-                x_pos = self.goal_center * np.random.choice([-1,1])
-                goal =  self.np_random.uniform(self.goal_range_low, self.goal_range_high)+[x_pos, 0.0, self.object_size / 2]
+                if num_goal_in_air >= 2: # make sure the max number of goal in the air <=2
+                    goal = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
+                else:
+                    goal = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
+                goal[0] = np.random.choice([-1,1])* goal[0]
                 while min(np.linalg.norm(goals - goal, axis = 1)) < self.object_size*2:
-                    goal =  self.np_random.uniform(self.obj_range_low, self.obj_range_high)+[x_pos, 0.0, self.object_size / 2]
+                    if num_goal_in_air >= 2: # make sure the max number of goal in the air <=2
+                        goal = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
+                    else:
+                        goal = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
+                    goal[0] = np.random.choice([-1,1])* goal[0]
                 goals.append(goal)
+                num_goal_in_air += int(abs(goals[-1]-self.object_size / 2)>0.001)
             goals = np.array(goals).flatten()
-            # goals = np.append(goals, [0]*6) # Note: this one is used to calculate the gripper distance
         return goals
 
     def _sample_objects(self) -> np.ndarray:
         same_side_rate = 1 - self.other_side_rate
-        x_pos = self.goal_center * (float(self.goal[0]>0)*2-1) * (float(np.random.random_sample()<same_side_rate)*2-1)
-        obj_pos = [self.np_random.uniform(self.obj_range_low, self.obj_range_high)+[x_pos, 0.0, self.object_size / 2]]
-        while min(np.linalg.norm(obj_pos - self.goal.reshape(-1,3), axis = 1)) < self.distance_threshold*1.2:
-            obj_pos = [self.np_random.uniform(self.obj_range_low, self.obj_range_high)+[x_pos, 0.0, self.object_size / 2]]
-        for i in range(1, self.num_blocks):
-            x_pos = self.goal_center * (float(self.goal[3*i]>0)*2-1) * (float(np.random.random_sample()<same_side_rate)*2-1)
-            pos =  self.np_random.uniform(self.obj_range_low, self.obj_range_high)+[x_pos, 0.0, self.object_size / 2]
-            while min(np.linalg.norm(obj_pos - pos, axis = 1)) < self.object_size*2 or min(np.linalg.norm(self.goal.reshape(-1,3) - pos, axis = 1)) < self.distance_threshold*1.2:
-                pos =  self.np_random.uniform(self.obj_range_low, self.obj_range_high)+[x_pos, 0.0, self.object_size / 2]
+        obj_pos = []
+        for i in range(self.num_blocks):
+            # get target object side
+            goal_side = (float(self.goal[0]>0)*2-1)
+            if_same_side = (float(np.random.random_sample()<same_side_rate)*2-1)
+            obj_side = goal_side * if_same_side
+            pos = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
+            pos[0] = obj_side * pos[0]
+            while (np.linalg.norm(pos - self.goal[i*3:i*3+3])) < self.distance_threshold*1.2 or min(np.linalg.norm(obj_pos - pos, axis = 1)) < self.object_size*2:
+                pos = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
+                obj_side = goal_side * if_same_side
+                pos[0] = obj_side * pos[0]
             obj_pos.append(pos)
         return np.array(obj_pos).flatten()
 
