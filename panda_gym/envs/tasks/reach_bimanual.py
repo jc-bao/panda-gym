@@ -117,8 +117,9 @@ class ReachBimanual(Task):
     def reset(self) -> None:
         self.goal = self._sample_goal()
         object0_position, object1_position = self._sample_objects()
-        self.sim.set_base_pose("object0", object0_position, np.array([0.0, 0.0, 0.0, 1.0]))
-        self.sim.set_base_pose("object1", object1_position, np.array([0.0, 0.0, 0.0, 1.0]))
+        if self.has_object:
+            self.sim.set_base_pose("object0", object0_position, np.array([0.0, 0.0, 0.0, 1.0]))
+            self.sim.set_base_pose("object1", object1_position, np.array([0.0, 0.0, 0.0, 1.0]))
 
     def _sample_goal(self) -> np.ndarray:
         """Randomize goal."""
