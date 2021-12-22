@@ -33,7 +33,7 @@ class TowerBimanual(Task):
         self.target_shape = target_shape
         self.goal_range_low = np.array([0, -goal_xyz_range[1]/2, self.object_size/2])
         self.goal_range_high = np.array(goal_xyz_range) + self.goal_range_low
-        self.obj_range_low = np.array([0.1, -obj_xyz_range / 2, self.object_size/2])
+        self.obj_range_low = np.array([0.1, -obj_xyz_range[1] / 2, self.object_size/2])
         self.obj_range_high = np.array(obj_xyz_range) + self.obj_range_low
         with self.sim.no_rendering():
             self._create_scene()
@@ -43,6 +43,46 @@ class TowerBimanual(Task):
         self.sim.create_plane(z_offset=-0.4)
         self.sim.create_table(length=1., width=0.7, height=0.4, x_offset=-0.575)
         self.sim.create_table(length=1., width=0.7, height=0.4, x_offset=0.575)
+        obj_range_size_half = (self.obj_range_high - self.obj_range_low)/ 2
+        obj_range_pos_0 = (self.obj_range_high + self.obj_range_low)/ 2
+        obj_range_pos_1 = (self.obj_range_high + self.obj_range_low)/ 2
+        obj_range_pos_1[0] = -obj_range_pos_1[0]
+        self.sim.create_box(
+            body_name="debug_obj_0",
+            half_extents=obj_range_size_half,
+            mass=0.0,
+            ghost=True,
+            position=obj_range_pos_0,
+            rgba_color=np.array([0, 0, 1, 0.1]),
+        )
+        self.sim.create_box(
+            body_name="debug_obj_1",
+            half_extents=obj_range_size_half,
+            mass=0.0,
+            ghost=True,
+            position=obj_range_pos_1,
+            rgba_color=np.array([0, 0, 1, 0.1]),
+        )
+        goal_range_size_half = (self.goal_range_high - self.goal_range_low)/ 2
+        goal_range_pos_0 = (self.goal_range_high + self.goal_range_low)/ 2
+        goal_range_pos_1 = (self.goal_range_high + self.goal_range_low)/ 2
+        goal_range_pos_1[0] = -goal_range_pos_1[0]
+        self.sim.create_box(
+            body_name="debug_goal_0",
+            half_extents=goal_range_size_half,
+            mass=0.0,
+            ghost=True,
+            position=goal_range_pos_0,
+            rgba_color=np.array([0, 1, 0, 0.1]),
+        )
+        self.sim.create_box(
+            body_name="debug_goal_1",
+            half_extents=goal_range_size_half,
+            mass=0.0,
+            ghost=True,
+            position=goal_range_pos_1,
+            rgba_color=np.array([0, 1, 0, 0.1]),
+        )
         for i in range(self.num_blocks):
             color = np.random.rand(3)
             self.sim.create_box(
@@ -105,24 +145,31 @@ class TowerBimanual(Task):
             goals = np.array(goals).flatten()
             # goals = np.append(goals, [0]*6) # Note: this one is used to calculate the gripper distance
         elif self.target_shape == 'any':
-            goal = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
-            goal[0] = np.random.choice([-1,1])* goal[0]
-            num_goal_in_air = int(abs(goal[-1]-self.object_size / 2)>0.001)
-            goals.append(goal)
-            for i in range(1, self.num_blocks):
-                if num_goal_in_air >= 2: # make sure the max number of goal in the air <=2
-                    goal = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
-                else:
-                    goal = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
-                goal[0] = np.random.choice([-1,1])* goal[0]
-                while min(np.linalg.norm(goals - goal, axis = 1)) < self.object_size*2:
-                    if num_goal_in_air >= 2: # make sure the max number of goal in the air <=2
-                        goal = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
-                    else:
-                        goal = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
-                    goal[0] = np.random.choice([-1,1])* goal[0]
-                goals.append(goal)
-                num_goal_in_air += int(abs(goals[-1]-self.object_size / 2)>0.001)
+            num_goal_in_air_0 = 0 
+            num_goal_in_air_1 = 0
+            for i in range(self.num_blocks):
+                while True:
+                    # sample goal
+                    if np.random.random_sample()<0.5: # choose to positive side
+                        if num_goal_in_air_0 >= 1: # make sure the max number of goal in the air in one side <=1
+                            goal = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
+                        else:
+                            goal = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
+                            num_goal_in_air_0 += 1
+                    else: # choose to positive side
+                        if num_goal_in_air_1 >= 1: # make sure the max number of goal in the air in one side <=1
+                            goal = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
+                        else:
+                            goal = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
+                            num_goal_in_air_1 += 1
+                        goal[0] = -goal[0]
+                    if len(goals) == 0:
+                        goals.append(goal)
+                        break
+                    # if goal is satisfied, append
+                    elif min(np.linalg.norm(goals - goal, axis = 1)) > self.object_size*2:
+                        goals.append(goal)
+                        break
             goals = np.array(goals).flatten()
         return goals
 
@@ -134,12 +181,15 @@ class TowerBimanual(Task):
             goal_side = (float(self.goal[0]>0)*2-1)
             if_same_side = (float(np.random.random_sample()<same_side_rate)*2-1)
             obj_side = goal_side * if_same_side
-            pos = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
-            pos[0] = obj_side * pos[0]
-            while (np.linalg.norm(pos - self.goal[i*3:i*3+3])) < self.distance_threshold*1.2 or min(np.linalg.norm(obj_pos - pos, axis = 1)) < self.object_size*2:
+            while True:
                 pos = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
                 obj_side = goal_side * if_same_side
                 pos[0] = obj_side * pos[0]
+                if (np.linalg.norm(pos - self.goal[i*3:i*3+3])) > self.distance_threshold*1.2:
+                    if len(obj_pos) == 0:
+                        break
+                    elif min(np.linalg.norm(obj_pos - pos, axis = 1)) > self.object_size*2:
+                        break
             obj_pos.append(pos)
         return np.array(obj_pos).flatten()
 
