@@ -33,7 +33,7 @@ class TowerBimanual(Task):
         self.target_shape = target_shape
         self.goal_range_low = np.array([0, -goal_xyz_range[1]/2, self.object_size/2])
         self.goal_range_high = np.array(goal_xyz_range) + self.goal_range_low
-        self.obj_range_low = np.array([0.1, -obj_xyz_range / 2, self.object_size/2])
+        self.obj_range_low = np.array([0.1, -obj_xyz_range[1] / 2, self.object_size/2])
         self.obj_range_high = np.array(obj_xyz_range) + self.obj_range_low
         with self.sim.no_rendering():
             self._create_scene()
@@ -43,6 +43,14 @@ class TowerBimanual(Task):
         self.sim.create_plane(z_offset=-0.4)
         self.sim.create_table(length=1., width=0.7, height=0.4, x_offset=-0.575)
         self.sim.create_table(length=1., width=0.7, height=0.4, x_offset=0.575)
+        self.sim.create_box(
+            body_name="debug_obj",
+            half_extents=(self.obj_range_high - self.obj_range_low)/ 2,
+            mass=0.0,
+            ghost=True,
+            position=np.mean(self.obj_range_high, self.obj_range_low),
+            rgba_color=np.array([0, 0, 1, 0.5]),
+        )
         for i in range(self.num_blocks):
             color = np.random.rand(3)
             self.sim.create_box(
