@@ -9,3 +9,4 @@ from panda_gym.envs.panda_tasks.panda_tower_bimanual import PandaTowerBimanualEn
 from panda_gym.envs.panda_tasks.panda_rearrange import PandaRearrangeEnv
 from panda_gym.envs.panda_tasks.panda_pick_and_place_2 import PandaPickAndPlace2Env
 from panda_gym.envs.panda_tasks.panda_lift_bimanual import PandaLiftBimanualEnv
+from panda_gym.envs.panda_tasks.panda_reach_bimanual import PandaReachBimanualEnv

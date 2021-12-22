@@ -2,7 +2,7 @@ import gym
 import panda_gym
 import numpy as np
 
-env = gym.make("PandaTowerBimanual-v2", render=True)
+env = gym.make("PandaReachBimanual-v0", render=True)
 # env = gym.make("PandaTowerBimanual-v2", render=True)
 
 obs = env.reset()

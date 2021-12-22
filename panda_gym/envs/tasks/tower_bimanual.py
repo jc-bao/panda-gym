@@ -73,7 +73,7 @@ class TowerBimanual(Task):
             mass=0.0,
             ghost=True,
             position=goal_range_pos_0,
-            rgba_color=np.array([0, 1, 0, 0.1]),
+            rgba_color=np.array([0, 1, 0, 0.05]),
         )
         self.sim.create_box(
             body_name="debug_goal_1",
@@ -81,7 +81,7 @@ class TowerBimanual(Task):
             mass=0.0,
             ghost=True,
             position=goal_range_pos_1,
-            rgba_color=np.array([0, 1, 0, 0.1]),
+            rgba_color=np.array([0, 1, 0, 0.05]),
         )
         for i in range(self.num_blocks):
             color = np.random.rand(3)

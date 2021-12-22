@@ -7,7 +7,7 @@ from panda_gym.envs.core import Task
 from panda_gym.utils import distance
 
 
-class Reach(Task):
+class ReachBimanual(Task):
     def __init__(
         self,
         sim,
@@ -15,15 +15,15 @@ class Reach(Task):
         get_ee_position1,
         reward_type="sparse",
         distance_threshold=0.05,
-        goal_range=0.2,
+        goal_range=0.3,
     ) -> None:
         super().__init__(sim)
         self.reward_type = reward_type
         self.distance_threshold = distance_threshold
         self.get_ee_position0 = get_ee_position0
         self.get_ee_position1 = get_ee_position1
-        self.goal_range_low = np.array([goal_range / 5, goal_range / 5, -goal_range/2])
-        self.goal_range_high = np.array([goal_range, goal_range, goal_range/2])
+        self.goal_range_low = np.array([goal_range / 4, goal_range / 4, -goal_range/2.5])
+        self.goal_range_high = np.array([goal_range, goal_range, goal_range/2.5])
         with self.sim.no_rendering():
             self._create_scene()
             self.sim.place_visualizer(target_position=np.zeros(3), distance=0.9, yaw=45, pitch=-30)
@@ -55,7 +55,10 @@ class Reach(Task):
     def get_achieved_goal(self) -> np.ndarray:
         ee_position0 = np.array(self.get_ee_position0())
         ee_position1 = np.array(self.get_ee_position1())
-        return np.concatenate(ee_position0, ee_position1)
+        ee_center = (ee_position0 + ee_position1)/2
+        self.sim.set_base_pose("target0", -self.goal/2 + ee_center, np.array([0.0, 0.0, 0.0, 1.0]))
+        self.sim.set_base_pose("target1", self.goal/2 + ee_center, np.array([0.0, 0.0, 0.0, 1.0]))
+        return (ee_position1 - ee_position0)
 
     def reset(self) -> None:
         self.goal = self._sample_goal()
@@ -80,3 +83,7 @@ class Reach(Task):
             return -np.array(d > self.distance_threshold, dtype=np.float64)
         else:
             return -d
+
+    def change(self, config = None):
+        print('change called!')
+

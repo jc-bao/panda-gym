@@ -93,3 +93,8 @@ register(
     entry_point="panda_gym.envs:PandaLiftBimanualEnv",
     max_episode_steps=50,
 )
+register(
+    id="PandaReachBimanual-v0",
+    entry_point="panda_gym.envs:PandaReachBimanualEnv",
+    max_episode_steps=50,
+)
