@@ -101,6 +101,6 @@ register(
 register(
     id="PandaRelativePNPBimanual-v0",
     entry_point="panda_gym.envs:PandaReachBimanualEnv",
-    kwargs={'has_obj': True}
+    kwargs={'has_object': True},
     max_episode_steps=50,
 )
