@@ -110,3 +110,9 @@ register(
     kwargs={"control_type": 'ee', 'num_blocks': 2},
     max_episode_steps=50,
 )
+register(
+    id="PandaTowerBimanualBound-v2",
+    entry_point="panda_gym.envs:PandaTowerBimanualEnv",
+    kwargs={"control_type": 'ee', 'num_blocks': 2, 'use_bound': True},
+    max_episode_steps=100,
+)

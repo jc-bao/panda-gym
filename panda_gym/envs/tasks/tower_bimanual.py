@@ -18,7 +18,7 @@ class TowerBimanual(Task):
         goal_xyz_range=[0.4, 0.3, 0.2],
         obj_xyz_range=[0.3, 0.3, 0],
         num_blocks = 1,
-        target_shape = 'any', 
+        target_shape = 'any',
         curriculum_type = None,
         other_side_rate = 0.5,
         has_gravaty_rate = 1,
