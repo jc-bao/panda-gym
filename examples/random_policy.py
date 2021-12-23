@@ -2,8 +2,8 @@ import gym
 import panda_gym
 import numpy as np
 
-# env = gym.make("PandaTowerBimanual-v2", render=True)
-env = gym.make("PandaRelativePNPBimanual-v0", render=True)
+env = gym.make("PandaTowerBimanual-v2", render=True)
+# env = gym.make("PandaRelativePNPBimanual-v0", render=True)
 
 obs = env.reset()
 origin_ag = obs['achieved_goal']
@@ -14,7 +14,6 @@ total_rew = 0
 for i in range(1000):
     action = env.action_space.sample()
     obs, reward, done, info = env.step(action)
-    env.reset()
     ag = obs['achieved_goal']
     total_rew += reward
     env.render()

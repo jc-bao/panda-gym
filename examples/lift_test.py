@@ -25,8 +25,8 @@ def policy(obs, timestep):
     if timestep>=35:
         act1 = np.array([0,0,0,-1])
         act2 = np.array([0,0,0,-1])
-    # return np.concatenate((act1, act2))
-    return np.concatenate((act1, [0]*4))
+    return np.concatenate((act1, act2))
+    # return np.concatenate((act1, [0]*4))
 
 env = gym.make("PandaLiftBimanual-v0", render=True)
 
