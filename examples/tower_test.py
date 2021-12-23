@@ -28,7 +28,7 @@ def policy(obs, timestep):
     return np.concatenate((act1, act2))
     # return np.concatenate((act1, [0]*4))
 
-env = gym.make("PandaTowerBimanualGravity-v2", render=True)
+env = gym.make("PandaTowerBimanual-v2", render=True)
 
 obs = env.reset()
 done = False
@@ -48,4 +48,3 @@ for i in range(1000):
         print(total_rew)
         total_rew = 0
 env.close()
-
