@@ -104,3 +104,9 @@ register(
     kwargs={'has_object': True},
     max_episode_steps=50,
 )
+register(
+    id="PandaTowerBimanualShort-v2",
+    entry_point="panda_gym.envs:PandaTowerBimanualEnv",
+    kwargs={"control_type": 'ee', 'num_blocks': 2},
+    max_episode_steps=50,
+)
