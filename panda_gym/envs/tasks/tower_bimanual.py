@@ -88,7 +88,7 @@ class TowerBimanual(Task):
             self.sim.create_box(
                 body_name="object"+str(i),
                 half_extents=np.array([3,1,1]) * self.object_size / 2,
-                mass=2.0,
+                mass=0.5,
                 position=np.array([0.5*i, 0.0, self.object_size / 2]),
                 rgba_color=np.append(color, 1),
             )

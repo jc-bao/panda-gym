@@ -15,7 +15,7 @@ class ReachBimanual(Task):
         get_ee_position1,
         reward_type="sparse",
         distance_threshold=0.05,
-        goal_range=0.3,
+        goal_range=0.35,
         has_object = False,
     ) -> None:
         super().__init__(sim)
@@ -25,8 +25,8 @@ class ReachBimanual(Task):
         self.distance_threshold = distance_threshold
         self.get_ee_position0 = get_ee_position0
         self.get_ee_position1 = get_ee_position1
-        self.goal_range_low = np.array([goal_range / 4, goal_range / 4, -goal_range/2])
-        self.goal_range_high = np.array([goal_range, goal_range, goal_range/2])
+        self.goal_range_low = np.array([goal_range / 4, goal_range / 4, -goal_range/1.5])
+        self.goal_range_high = np.array([goal_range, goal_range, goal_range/1.5])
         obj_xyz_range=[0.3, 0.3, 0]
         self.obj_range_low = np.array([0.1, -obj_xyz_range[1] / 2, self.object_size/2])
         self.obj_range_high = np.array(obj_xyz_range) + self.obj_range_low

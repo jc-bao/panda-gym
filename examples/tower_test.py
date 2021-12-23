@@ -11,8 +11,8 @@ def policy(obs, timestep):
     obj_pos = task_obs[:3]
     robot1_pos = robot1_obs[:3]
     robot2_pos = robot2_obs[:3]
-    delta1 = obj_pos + [-0.05,0,0.003] - robot1_pos
-    delta2 = obj_pos + [0.05,0,0.003] - robot2_pos
+    delta1 = obj_pos + [-0.04,0,0.003] - robot1_pos
+    delta2 = obj_pos + [0.04,0,0.003] - robot2_pos
     if timestep<20:
         act1 = np.append(delta1/np.linalg.norm(delta1)*0.3, 1)
         act2 = np.append(delta2/np.linalg.norm(delta2)*0.3, 1)
