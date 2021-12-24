@@ -153,12 +153,14 @@ class TowerBimanual(Task):
                     if np.random.random_sample()<0.5: # choose to positive side
                         if num_goal_in_air_0 >= 1: # make sure the max number of goal in the air in one side <=1
                             goal = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
+                            goal[-1] = self.object_size/2
                         else:
                             goal = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
                             num_goal_in_air_0 += 1
-                    else: # choose to positive side
+                    else: # choose to negative side
                         if num_goal_in_air_1 >= 1: # make sure the max number of goal in the air in one side <=1
                             goal = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
+                            goal[-1] = self.object_size/2
                         else:
                             goal = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
                             num_goal_in_air_1 += 1
@@ -178,12 +180,11 @@ class TowerBimanual(Task):
         obj_pos = []
         for i in range(self.num_blocks):
             # get target object side
-            goal_side = (float(self.goal[0]>0)*2-1)
+            goal_side = (float(self.goal[i*3]>0)*2-1)
             if_same_side = (float(np.random.random_sample()<same_side_rate)*2-1)
             obj_side = goal_side * if_same_side
             while True:
                 pos = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
-                obj_side = goal_side * if_same_side
                 pos[0] = obj_side * pos[0]
                 if (np.linalg.norm(pos - self.goal[i*3:i*3+3])) > self.distance_threshold*1.2:
                     if len(obj_pos) == 0:
