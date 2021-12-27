@@ -22,10 +22,12 @@ class TowerBimanual(Task):
         curriculum_type = None,
         other_side_rate = 0.5,
         has_gravaty_rate = 1,
+        use_musk = False
     ) -> None:
         super().__init__(sim)
         self.distance_threshold = distance_threshold
         self.object_size = 0.04
+        self.use_musk = use_musk
         self.other_side_rate = other_side_rate
         self.has_gravaty_rate = has_gravaty_rate
         self.curriculum_type = curriculum_type # gravity or other_side
@@ -121,6 +123,8 @@ class TowerBimanual(Task):
         for i in range(self.num_blocks):
             ag.append(np.array(self.sim.get_base_position("object"+str(i))))
         achieved_goal = np.array(ag).flatten()
+        if self.use_musk:
+            achieved_goal[-3:] = 0
         return achieved_goal
 
     def reset(self) -> None:
@@ -179,6 +183,8 @@ class TowerBimanual(Task):
                         goals.append(goal)
                         break
             goals = np.array(goals).flatten()
+        if self.use_musk:
+            goals[-3:] = 0
         return goals
 
     def _sample_objects(self) -> np.ndarray:
