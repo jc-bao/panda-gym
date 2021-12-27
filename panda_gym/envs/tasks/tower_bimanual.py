@@ -130,7 +130,7 @@ class TowerBimanual(Task):
             self.sim.set_base_pose("target"+str(i), self.goal[i*3:(i+1)*3], np.array([0.0, 0.0, 0.0, 1.0]))
             self.sim.set_base_pose("object"+str(i), obj_pos[i*3:(i+1)*3], np.array([0.0, 0.0, 0.0, 1.0]))
         # set gravity
-        if np.random.random_sample() < self.has_gravaty_rate:
+        if self.np_random.uniform() < self.has_gravaty_rate:
             self.sim.physics_client.setGravity(0, 0, -9.81)
         else:
             self.sim.physics_client.setGravity(0, 0, 0)
@@ -150,20 +150,26 @@ class TowerBimanual(Task):
             for i in range(self.num_blocks):
                 while True:
                     # sample goal
-                    if np.random.random_sample()<0.5: # choose to positive side
+                    if self.np_random.uniform()<0.5: # choose to positive side
                         if num_goal_in_air_0 >= 1: # make sure the max number of goal in the air in one side <=1
                             goal = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
                             goal[-1] = self.object_size/2
                         else:
                             goal = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
-                            num_goal_in_air_0 += 1
+                            if self.np_random.uniform() < 0.3:
+                                goal[-1] = self.object_size/2
+                            else:
+                                num_goal_in_air_0 += 1
                     else: # choose to negative side
                         if num_goal_in_air_1 >= 1: # make sure the max number of goal in the air in one side <=1
                             goal = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
                             goal[-1] = self.object_size/2
                         else:
                             goal = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
-                            num_goal_in_air_1 += 1
+                            if self.np_random.uniform() < 0.3:
+                                goal[-1] = self.object_size/2
+                            else:
+                                num_goal_in_air_1 += 1
                         goal[0] = -goal[0]
                     if len(goals) == 0:
                         goals.append(goal)
@@ -181,7 +187,7 @@ class TowerBimanual(Task):
         for i in range(self.num_blocks):
             # get target object side
             goal_side = (float(self.goal[i*3]>0)*2-1)
-            if_same_side = (float(np.random.random_sample()<same_side_rate)*2-1)
+            if_same_side = (float(self.np_random.uniform()<same_side_rate)*2-1)
             obj_side = goal_side * if_same_side
             while True:
                 pos = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
