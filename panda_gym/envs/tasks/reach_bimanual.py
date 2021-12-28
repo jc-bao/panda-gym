@@ -17,12 +17,14 @@ class ReachBimanual(Task):
         distance_threshold=0.05,
         goal_range=0.35,
         has_object = False,
+        obj_not_in_hand_rate = 1, 
     ) -> None:
         super().__init__(sim)
         self.has_object = has_object
         self.object_size = 0.04
         self.reward_type = reward_type
         self.distance_threshold = distance_threshold
+        self.obj_not_in_hand_rate = obj_not_in_hand_rate
         self.get_ee_position0 = get_ee_position0
         self.get_ee_position1 = get_ee_position1
         self.goal_range_low = np.array([goal_range / 4, goal_range / 4, -goal_range/1.5])
@@ -128,9 +130,13 @@ class ReachBimanual(Task):
 
     def _sample_objects(self):
         # while True:  # make sure that cubes are distant enough
-        object0_position = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
-        object0_position[0] = - object0_position[0]
-        object1_position = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
+        if self.np_random.uniform()<self.obj_not_in_hand_rate:
+            object0_position = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
+            object0_position[0] = - object0_position[0]
+            object1_position = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
+        else:
+            object0_position = np.array(self.get_ee_position0())
+            object1_position = np.array(self.get_ee_position1())
         return object0_position, object1_position
 
     def is_success(self, achieved_goal: np.ndarray, desired_goal: np.ndarray) -> Union[np.ndarray, float]:
@@ -145,5 +151,5 @@ class ReachBimanual(Task):
             return -d
 
     def change(self, config = None):
-        print('change called!')
+        self.obj_not_in_hand_rate = config
 

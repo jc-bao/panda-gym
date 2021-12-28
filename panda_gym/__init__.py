@@ -101,7 +101,13 @@ register(
 register(
     id="PandaRelativePNPBimanual-v0",
     entry_point="panda_gym.envs:PandaReachBimanualEnv",
-    kwargs={'has_object': True},
+    kwargs={'has_object': True, 'obj_not_in_hand_rate': 1},
+    max_episode_steps=50,
+)
+register(
+    id="PandaRelativePNPBimanualObjInHand-v0",
+    entry_point="panda_gym.envs:PandaReachBimanualEnv",
+    kwargs={'has_object': True, 'obj_not_in_hand_rate': 0},
     max_episode_steps=50,
 )
 register(
