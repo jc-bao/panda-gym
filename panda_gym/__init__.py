@@ -128,3 +128,9 @@ register(
     kwargs={"control_type": 'ee', 'num_blocks': 2, 'use_musk': True},
     max_episode_steps=50,
 )
+register(
+    id="PandaTowerBimanualInHand-v2",
+    entry_point="panda_gym.envs:PandaTowerBimanualEnv",
+    kwargs={"control_type": 'ee', 'num_blocks': 2, 'curriculum_type': 'in_hand'},
+    max_episode_steps=50,
+)

@@ -14,6 +14,8 @@ class TowerBimanual(Task):
     def __init__(
         self,
         sim,
+        get_ee_position0,
+        get_ee_position1,
         distance_threshold=0.05,
         goal_xyz_range=[0.4, 0.3, 0.2],
         obj_xyz_range=[0.3, 0.3, 0],
@@ -22,15 +24,19 @@ class TowerBimanual(Task):
         curriculum_type = None,
         other_side_rate = 0.5,
         has_gravaty_rate = 1,
-        use_musk = False
+        use_musk = False,
+        obj_not_in_hand_rate = 1, 
     ) -> None:
         super().__init__(sim)
         self.distance_threshold = distance_threshold
+        self.get_ee_position0 = get_ee_position0
+        self.get_ee_position1 = get_ee_position1
         self.object_size = 0.04
         self.use_musk = use_musk
         self.other_side_rate = other_side_rate
         self.has_gravaty_rate = has_gravaty_rate
         self.curriculum_type = curriculum_type # gravity or other_side
+        self.obj_not_in_hand_rate = obj_not_in_hand_rate
         self.num_blocks = num_blocks
         self.target_shape = target_shape
         self.goal_range_low = np.array([0, -goal_xyz_range[1]/2, self.object_size/2])
@@ -204,6 +210,11 @@ class TowerBimanual(Task):
                     elif min(np.linalg.norm(obj_pos - pos, axis = 1)) > self.object_size*2:
                         break
             obj_pos.append(pos)
+        choosed_block_id = np.random.choice(np.arange(self.num_blocks),size=2, replace=False)
+        if self.np_random.uniform()>self.obj_not_in_hand_rate: # arm0 in hand
+            obj_pos[choosed_block_id[0]] = self.get_ee_position0()
+        if self.np_random.uniform()>self.obj_not_in_hand_rate: # arm1 in hand
+            obj_pos[choosed_block_id[1]] = self.get_ee_position1()
         return np.array(obj_pos).flatten()
 
     def is_success(self, achieved_goal: np.ndarray, desired_goal: np.ndarray) -> Union[np.ndarray, float]:
@@ -228,3 +239,5 @@ class TowerBimanual(Task):
             self.has_gravaty_rate = config
         elif self.curriculum_type == 'other_side':
             self.other_side_rate = config
+        elif self.curriculum_type == 'in_hand':
+            self.obj_not_in_hand_rate = config

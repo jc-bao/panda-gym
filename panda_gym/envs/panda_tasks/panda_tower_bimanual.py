@@ -30,11 +30,18 @@ class PandaTowerBimanualEnv(BimanualTaskEnv):
         if curriculum_type == 'gravity':
             has_gravaty_rate = 0
             other_side_rate = 0.5
+            obj_not_in_hand_rate = 1
         elif curriculum_type == 'other_side':
             has_gravaty_rate = 1
             other_side_rate = 0
+            obj_not_in_hand_rate = 1
+        elif curriculum_type == 'in_hand':
+            has_gravaty_rate = 1
+            other_side_rate = 0.5
+            obj_not_in_hand_rate = 0
         else:
             has_gravaty_rate = 1
             other_side_rate = 0.5
-        task = TowerBimanual(sim, num_blocks = num_blocks, curriculum_type = curriculum_type, other_side_rate = other_side_rate, has_gravaty_rate = has_gravaty_rate, use_musk = use_musk)
+            obj_not_in_hand_rate = 1
+        task = TowerBimanual(sim, robot0.get_ee_position, robot1.get_ee_position, num_blocks = num_blocks, curriculum_type = curriculum_type, other_side_rate = other_side_rate, has_gravaty_rate = has_gravaty_rate, use_musk = use_musk, obj_not_in_hand_rate = obj_not_in_hand_rate)
         super().__init__(robot0, robot1, task)

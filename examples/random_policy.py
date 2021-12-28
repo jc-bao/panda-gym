@@ -3,7 +3,7 @@ import panda_gym
 import numpy as np
 
 # env = gym.make("PandaTowerBimanualMusk-v2", render=True)
-env = gym.make("PandaRelativePNPBimanualObjInHand-v0", render=True)
+env = gym.make("PandaTowerBimanualInHand-v2", render=True)
 
 obs = env.reset()
 origin_ag = obs['achieved_goal']
@@ -21,7 +21,7 @@ for i in range(1000):
     total_rew += reward
     env.render()
     if done: 
-        param += 0.3
+        param += 0.1
         env.change(param)
         obs = env.reset()
         origin_ag = obs['achieved_goal']
