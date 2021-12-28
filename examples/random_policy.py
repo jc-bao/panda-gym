@@ -3,7 +3,8 @@ import panda_gym
 import numpy as np
 
 # env = gym.make("PandaTowerBimanualMusk-v2", render=True)
-env = gym.make("PandaTowerBimanualInHand-v2", render=True)
+# env = gym.make("PandaTowerBimanualInHand-v2", render=True)
+env = gym.make("PandaTowerBimanualOtherSide-v2", render=True)
 
 obs = env.reset()
 origin_ag = obs['achieved_goal']
