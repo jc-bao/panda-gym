@@ -1,10 +1,11 @@
 import gym
 import panda_gym
 import numpy as np
+import time
 
 # env = gym.make("PandaTowerBimanualMusk-v2", render=True)
 # env = gym.make("PandaTowerBimanualInHand-v2", render=True)
-env = gym.make("PandaTowerBimanualOtherSide-v2", render=True)
+env = gym.make("PandaTowerBimanualGoalZ-v2", render=True)
 
 obs = env.reset()
 origin_ag = obs['achieved_goal']
@@ -17,7 +18,6 @@ for i in range(1000):
     action[-1]=-1
     action[3]=-1
     obs, reward, done, info = env.step(action)
-    # env.reset()
     ag = obs['achieved_goal']
     total_rew += reward
     env.render()

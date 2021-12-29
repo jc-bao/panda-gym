@@ -39,6 +39,7 @@ class TowerBimanual(Task):
         self.obj_not_in_hand_rate = obj_not_in_hand_rate
         self.num_blocks = num_blocks
         self.target_shape = target_shape
+        self.goal_xyz_range = goal_xyz_range
         self.goal_range_low = np.array([0, -goal_xyz_range[1]/2, self.object_size/2])
         self.goal_range_high = np.array(goal_xyz_range) + self.goal_range_low
         self.obj_range_low = np.array([0.1, -obj_xyz_range[1] / 2, self.object_size/2])
@@ -241,3 +242,6 @@ class TowerBimanual(Task):
             self.other_side_rate = config
         elif self.curriculum_type == 'in_hand':
             self.obj_not_in_hand_rate = config
+        elif self.curriculum_type == 'goal_z':
+            self.goal_xyz_range[-1] = config*0.2
+            self.goal_range_high = np.array(self.goal_xyz_range) + self.goal_range_low
