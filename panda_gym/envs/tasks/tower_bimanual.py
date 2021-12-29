@@ -40,6 +40,7 @@ class TowerBimanual(Task):
         self.num_blocks = num_blocks
         self.target_shape = target_shape
         self.goal_xyz_range = goal_xyz_range
+        self.num_not_musk = 1
         self.goal_range_low = np.array([0, -goal_xyz_range[1]/2, self.object_size/2])
         self.goal_range_high = np.array(goal_xyz_range) + self.goal_range_low
         self.obj_range_low = np.array([0.1, -obj_xyz_range[1] / 2, self.object_size/2])
@@ -129,9 +130,10 @@ class TowerBimanual(Task):
         ag = []
         for i in range(self.num_blocks):
             ag.append(np.array(self.sim.get_base_position("object"+str(i))))
-        achieved_goal = np.array(ag).flatten()
+        ag = np.array(ag)
         if self.use_musk:
-            achieved_goal[-3:] = 0
+            ag[self.musk_index] = np.zeros(3)
+        achieved_goal = (ag).flatten()
         return achieved_goal
 
     def reset(self) -> None:
@@ -189,9 +191,12 @@ class TowerBimanual(Task):
                     elif min(np.linalg.norm(goals - goal, axis = 1)) > self.object_size*2:
                         goals.append(goal)
                         break
-            goals = np.array(goals).flatten()
+        goals = np.array(goals)
         if self.use_musk:
-            goals[-3:] = 0
+            num_musk = self.num_blocks - self.num_not_musk
+            self.musk_index = self.np_random.choice(np.arange(self.num_blocks), num_musk, replace=False)
+            goals[self.musk_index] = np.zeros(3)
+        goals = (goals).flatten()
         return goals
 
     def _sample_objects(self) -> np.ndarray:
@@ -245,3 +250,6 @@ class TowerBimanual(Task):
         elif self.curriculum_type == 'goal_z':
             self.goal_xyz_range[-1] = config*0.2
             self.goal_range_high = np.array(self.goal_xyz_range) + self.goal_range_low
+        elif self.curriculum_type == 'musk':
+            if self.num_not_musk < self.num_blocks:
+                self.num_not_musk = int(config*self.num_blocks)+1

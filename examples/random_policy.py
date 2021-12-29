@@ -5,7 +5,7 @@ import time
 
 # env = gym.make("PandaTowerBimanualMusk-v2", render=True)
 # env = gym.make("PandaTowerBimanualInHand-v2", render=True)
-env = gym.make("PandaTowerBimanualGoalZ-v2", render=True)
+env = gym.make("PandaTowerBimanualMusk-v2", render=True)
 
 obs = env.reset()
 origin_ag = obs['achieved_goal']
@@ -15,10 +15,9 @@ param = 0
 total_rew = 0
 for i in range(1000):
     action = env.action_space.sample()
-    action[-1]=-1
-    action[3]=-1
     obs, reward, done, info = env.step(action)
     ag = obs['achieved_goal']
+    print(param, obs['achieved_goal'], obs['desired_goal'])
     total_rew += reward
     env.render()
     if done: 
