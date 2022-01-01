@@ -137,8 +137,8 @@ class TowerBimanual(Task):
         return achieved_goal
 
     def reset(self) -> None:
-        self.goal = self._sample_goal()
         obj_pos = self._sample_objects()
+        self.goal = self._sample_goal(obj_pos)
         for i in range(self.num_blocks):
             self.sim.set_base_pose("target"+str(i), self.goal[i*3:(i+1)*3], np.array([0.0, 0.0, 0.0, 1.0]))
             self.sim.set_base_pose("object"+str(i), obj_pos[i*3:(i+1)*3], np.array([0.0, 0.0, 0.0, 1.0]))
@@ -148,7 +148,7 @@ class TowerBimanual(Task):
         else:
             self.sim.physics_client.setGravity(0, 0, 0)
 
-    def _sample_goal(self) -> np.ndarray:
+    def _sample_goal(self, obj_pos) -> np.ndarray:
         goals = []
         if self.target_shape == 'tower':
             base_pos = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
@@ -158,39 +158,35 @@ class TowerBimanual(Task):
             goals = np.array(goals).flatten()
             # goals = np.append(goals, [0]*6) # Note: this one is used to calculate the gripper distance
         elif self.target_shape == 'any':
-            num_goal_in_air_0 = 0 
-            num_goal_in_air_1 = 0
+            num_goal_in_air = 0 
+            need_handover = False
             for i in range(self.num_blocks):
+                obj_side = (float(obj_pos[i*3]>0)*2-1)
+                if_same_side = (float(self.np_random.uniform()>self.other_side_rate)*2-1)
+                goal_side = obj_side * if_same_side
+                need_handover = need_handover or (if_same_side < 0)
                 while True:
                     # sample goal
-                    if self.np_random.uniform()<0.5: # choose to positive side
-                        if num_goal_in_air_0 >= 1: # make sure the max number of goal in the air in one side <=1
-                            goal = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
+                    if if_same_side > 0:
+                        goal = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
+                        if num_goal_in_air >= 1 or self.np_random.uniform() < 0.3: # max num in air: 1
                             goal[-1] = self.object_size/2
                         else:
-                            goal = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
-                            if self.np_random.uniform() < 0.3:
-                                goal[-1] = self.object_size/2
-                            else:
-                                num_goal_in_air_0 += 1
-                    else: # choose to negative side
-                        if num_goal_in_air_1 >= 1: # make sure the max number of goal in the air in one side <=1
-                            goal = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
-                            goal[-1] = self.object_size/2
-                        else:
-                            goal = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
-                            if self.np_random.uniform() < 0.3:
-                                goal[-1] = self.object_size/2
-                            else:
-                                num_goal_in_air_1 += 1
-                        goal[0] = -goal[0]
+                            num_goal_in_air += 1
+                    else:
+                        goal = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
+                    goal[0] = goal_side*goal[0]
                     if len(goals) == 0:
                         goals.append(goal)
                         break
                     # if goal is satisfied, append
-                    elif min(np.linalg.norm(goals - goal, axis = 1)) > self.object_size*2:
+                    elif min(np.linalg.norm(goals - goal, axis = 1)) > self.object_size*2 \
+                        and (np.linalg.norm(goal - obj_pos[i*3:i*3+3])) > self.distance_threshold*1.2:
                         goals.append(goal)
                         break
+            if need_handover:
+                for i, g in enumerate(goals):
+                    goals[i][-1] = self.object_size/2
         goals = np.array(goals)
         if self.use_musk:
             num_musk = self.num_blocks - self.num_not_musk
@@ -200,21 +196,33 @@ class TowerBimanual(Task):
         return goals
 
     def _sample_objects(self) -> np.ndarray:
-        same_side_rate = 1 - self.other_side_rate
         obj_pos = []
+        # old version: sample obj according to goal
+        # same_side_rate = 1 - self.other_side_rate
+        # for i in range(self.num_blocks):
+        #     # get target object side
+        #     goal_side = (float(self.goal[i*3]>0)*2-1)
+        #     if_same_side = (float(self.np_random.uniform()<same_side_rate)*2-1)
+        #     self.if_same_side.append(if_same_side)
+        #     obj_side = goal_side * if_same_side
+        #     while True:
+        #         pos = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
+        #         pos[0] = obj_side * pos[0]
+        #         if (np.linalg.norm(pos - self.goal[i*3:i*3+3])) > self.distance_threshold*1.2:
+        #             if len(obj_pos) == 0:
+        #                 break
+        #             elif min(np.linalg.norm(obj_pos - pos, axis = 1)) > self.object_size*2:
+        #                 break
+        #     obj_pos.append(pos)
         for i in range(self.num_blocks):
             # get target object side
-            goal_side = (float(self.goal[i*3]>0)*2-1)
-            if_same_side = (float(self.np_random.uniform()<same_side_rate)*2-1)
-            obj_side = goal_side * if_same_side
             while True:
                 pos = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
-                pos[0] = obj_side * pos[0]
-                if (np.linalg.norm(pos - self.goal[i*3:i*3+3])) > self.distance_threshold*1.2:
-                    if len(obj_pos) == 0:
-                        break
-                    elif min(np.linalg.norm(obj_pos - pos, axis = 1)) > self.object_size*2:
-                        break
+                pos[0] = (self.np_random.choice([-1,1])) * pos[0]
+                if len(obj_pos) == 0:
+                    break
+                elif min(np.linalg.norm(obj_pos - pos, axis = 1)) > self.object_size*2:
+                    break
             obj_pos.append(pos)
         choosed_block_id = np.random.choice(np.arange(self.num_blocks),size=2, replace=False)
         if self.np_random.uniform()>self.obj_not_in_hand_rate: # arm0 in hand
