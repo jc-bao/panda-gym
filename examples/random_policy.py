@@ -3,15 +3,15 @@ import panda_gym
 import numpy as np
 import time
 
-env = gym.make("PandaTowerBimanual-v2", render=True)
-# env = gym.make("PandaTowerBimanualInHand-v2", render=True)
+# env = gym.make("PandaTowerBimanual-v2", render=True)
+env = gym.make("PandaTowerBimanualInHand-v1", render=True)
 # env = gym.make("PandaTowerBimanualMusk-v2", render=True)
 
 obs = env.reset()
 origin_ag = obs['achieved_goal']
 done = False
 
-param = 0
+param = 0.5
 total_rew = 0
 for i in range(1000):
     action = env.action_space.sample()
@@ -21,9 +21,7 @@ for i in range(1000):
     env.render()
     if done: 
         obj_0_air = int(abs(g[2]-0.02)>0.001)
-        obj_1_air = int(abs(g[5]-0.02)>0.001)
-        print(f'num in air {obj_0_air+obj_1_air}')
-        param += 0.1
+        # param += 0.1
         env.change(param)
         obs = env.reset()
         origin_ag = obs['achieved_goal']

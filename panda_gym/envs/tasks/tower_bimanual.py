@@ -224,11 +224,18 @@ class TowerBimanual(Task):
                 elif min(np.linalg.norm(obj_pos - pos, axis = 1)) > self.object_size*2:
                     break
             obj_pos.append(pos)
-        choosed_block_id = np.random.choice(np.arange(self.num_blocks),size=2, replace=False)
-        if self.np_random.uniform()>self.obj_not_in_hand_rate: # arm0 in hand
-            obj_pos[choosed_block_id[0]] = self.get_ee_position0()
-        if self.np_random.uniform()>self.obj_not_in_hand_rate: # arm1 in hand
-            obj_pos[choosed_block_id[1]] = self.get_ee_position1()
+        choosed_block_id = np.random.choice(np.arange(self.num_blocks),size=min(self.num_blocks, 2), replace=False)
+        if self.num_blocks == 1:
+            if self.np_random.uniform()>self.obj_not_in_hand_rate:
+                if self.np_random.uniform()>0.5: 
+                    obj_pos[choosed_block_id[0]] = self.get_ee_position0()
+                else:
+                    obj_pos[choosed_block_id[0]] = self.get_ee_position1()
+        else:
+            if self.np_random.uniform()>self.obj_not_in_hand_rate: # arm0 in hand
+                obj_pos[choosed_block_id[0]] = self.get_ee_position0()
+            if self.np_random.uniform()>self.obj_not_in_hand_rate: # arm1 in hand
+                obj_pos[choosed_block_id[1]] = self.get_ee_position1()
         return np.array(obj_pos).flatten()
 
     def is_success(self, achieved_goal: np.ndarray, desired_goal: np.ndarray) -> Union[np.ndarray, float]:
