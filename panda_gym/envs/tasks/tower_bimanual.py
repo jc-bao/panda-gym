@@ -26,6 +26,7 @@ class TowerBimanual(Task):
         has_gravaty_rate = 1,
         use_musk = False,
         obj_not_in_hand_rate = 1, 
+        goal_not_in_obj_rate = 1, 
     ) -> None:
         super().__init__(sim)
         self.distance_threshold = distance_threshold
@@ -37,6 +38,7 @@ class TowerBimanual(Task):
         self.has_gravaty_rate = has_gravaty_rate
         self.curriculum_type = curriculum_type # gravity or other_side
         self.obj_not_in_hand_rate = obj_not_in_hand_rate
+        self.goal_not_in_obj_rate = goal_not_in_obj_rate
         self.num_blocks = num_blocks
         self.target_shape = target_shape
         self.goal_xyz_range = goal_xyz_range
@@ -185,8 +187,11 @@ class TowerBimanual(Task):
                         goals.append(goal)
                         break
             if need_handover:
-                for i, g in enumerate(goals):
-                    goals[i][-1] = self.object_size/2
+                for j, g in enumerate(goals):
+                    goals[j][-1] = self.object_size/2
+            for j in self.np_random.choice(np.arange(self.num_blocks), size=(self.num_blocks-1), replace=False):
+                if self.np_random.uniform() > self.goal_not_in_obj_rate: # get goal to obj
+                    goals[j] = obj_pos[j*3:j*3+3]
         goals = np.array(goals)
         if self.use_musk:
             num_musk = self.num_blocks - self.num_not_musk
@@ -256,6 +261,8 @@ class TowerBimanual(Task):
             self.other_side_rate = config
         elif self.curriculum_type == 'in_hand':
             self.obj_not_in_hand_rate = config
+        elif self.curriculum_type == 'goal_in_obj':
+            self.goal_not_in_obj_rate = config
         elif self.curriculum_type == 'goal_z':
             self.goal_xyz_range[-1] = config*0.2
             self.goal_range_high = np.array(self.goal_xyz_range) + self.goal_range_low
