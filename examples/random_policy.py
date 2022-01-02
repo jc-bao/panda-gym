@@ -4,7 +4,7 @@ import numpy as np
 import time
 
 # env = gym.make("PandaTowerBimanual-v2", render=True)
-env = gym.make("PandaTowerBimanualInHand-v1", render=True)
+env = gym.make("PandaTowerBimanualInHand-v2", render=True)
 # env = gym.make("PandaTowerBimanualMusk-v2", render=True)
 
 obs = env.reset()
