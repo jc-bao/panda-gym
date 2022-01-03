@@ -3,7 +3,7 @@ import panda_gym
 import numpy as np
 import time
 
-env = gym.make("PandaTowerBimanualOtherSide-v2", render=True)
+env = gym.make("PandaRearrange-v2", render=True)
 # env = gym.make("PandaTowerBimanualInHand-v2", render=True)
 # env = gym.make("PandaTowerBimanualGoalInObj-v2", render=True)
 # env = gym.make("PandaTowerBimanualMusk-v2", render=True)
