@@ -160,8 +160,9 @@ class TowerBimanual(Task):
             goals = np.array(goals).flatten()
             # goals = np.append(goals, [0]*6) # Note: this one is used to calculate the gripper distance
         elif self.target_shape == 'any':
-            num_goal_in_air = 0 
             need_handover = False
+            positive_side_goal_idx = []
+            negative_side_goal_idx = []
             for i in range(self.num_blocks):
                 obj_side = (float(obj_pos[i*3]>0)*2-1)
                 if_same_side = (float(self.np_random.uniform()>self.other_side_rate)*2-1)
@@ -169,14 +170,7 @@ class TowerBimanual(Task):
                 need_handover = need_handover or (if_same_side < 0)
                 while True:
                     # sample goal
-                    if if_same_side > 0:
-                        goal = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
-                        if num_goal_in_air >= 1 or self.np_random.uniform() < 0.3: # max num in air: 1
-                            goal[-1] = self.object_size/2
-                        else:
-                            num_goal_in_air += 1
-                    else:
-                        goal = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
+                    goal = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
                     goal[0] = goal_side*goal[0]
                     if len(goals) == 0:
                         goals.append(goal)
@@ -185,10 +179,21 @@ class TowerBimanual(Task):
                     elif min(np.linalg.norm(goals - goal, axis = 1)) > self.object_size*2 \
                         and (np.linalg.norm(goal - obj_pos[i*3:i*3+3])) > self.distance_threshold*1.2:
                         goals.append(goal)
+                        if goal_side > 0:
+                            positive_side_goal_idx.append(i)
+                        else:
+                            negative_side_goal_idx.append(i)
                         break
-            if need_handover:
-                for j, g in enumerate(goals):
-                    goals[j][-1] = self.object_size/2
+            if not need_handover: # make object in the air to learn pnp
+                if len(positive_side_goal_idx) > 0:
+                    idx = np.random.choice(positive_side_goal_idx)
+                    goals[idx] = np.random.uniform(self.goal_range_low, self.goal_range_high)
+                if len(negative_side_goal_idx) > 0: 
+                    idx = np.random.choice(negative_side_goal_idx)
+                    new_goal = np.random.uniform(self.goal_range_low, self.goal_range_high)
+                    new_goal[0] = -new_goal[0]
+                    goals[idx] = new_goal
+            # goal in object rate, curriculum trick
             for j in self.np_random.choice(np.arange(self.num_blocks), size=(self.num_blocks-1), replace=False):
                 if self.np_random.uniform() > self.goal_not_in_obj_rate: # get goal to obj
                     goals[j] = obj_pos[j*3:j*3+3]
