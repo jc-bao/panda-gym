@@ -127,3 +127,6 @@ class Rearrange(Task):
             return rew[0]
         else: # to process multi dimension input
             return rew
+
+    def change(self, config):
+        print('no change')

@@ -326,6 +326,10 @@ class RobotTaskEnv(gym.GoalEnv):
             roll=roll,
         )
 
+    def change(self,config = None):
+        if config != None:
+            self.task.change(config)
+
 class BimanualTaskEnv(gym.GoalEnv):
     """Bimanual task goal env, as the junction of a task and a robot.
 
