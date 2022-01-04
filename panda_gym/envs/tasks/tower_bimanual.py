@@ -173,16 +173,20 @@ class TowerBimanual(Task):
                     goal = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
                     goal[0] = goal_side*goal[0]
                     if len(goals) == 0:
+                        if goal_side > 0:
+                            positive_side_goal_idx.append(i)
+                        else:
+                            negative_side_goal_idx.append(i)
                         goals.append(goal)
                         break
                     # if goal is satisfied, append
                     elif min(np.linalg.norm(goals - goal, axis = 1)) > self.object_size*2 \
                         and (np.linalg.norm(goal - obj_pos[i*3:i*3+3])) > self.distance_threshold*1.2:
-                        goals.append(goal)
                         if goal_side > 0:
                             positive_side_goal_idx.append(i)
                         else:
                             negative_side_goal_idx.append(i)
+                        goals.append(goal)
                         break
             if not need_handover: # make object in the air to learn pnp
                 if len(positive_side_goal_idx) > 0:
