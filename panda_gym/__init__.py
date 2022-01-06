@@ -84,8 +84,14 @@ register(
     max_episode_steps=50,
 )
 register(
+    id="PandaRearrange-v0",
+    entry_point="panda_gym.envs:PandaRearrangeEnv",
+    max_episode_steps=50,
+)
+register(
     id="PandaPickAndPlace2-v2",
     entry_point="panda_gym.envs:PandaPickAndPlace2Env",
+    kwargs={'curriculum_type': 'num_obj'},
     max_episode_steps=50,
 )
 register(

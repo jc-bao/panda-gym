@@ -197,10 +197,19 @@ class TowerBimanual(Task):
                     new_goal = np.random.uniform(self.goal_range_low, self.goal_range_high)
                     new_goal[0] = -new_goal[0]
                     goals[idx] = new_goal
-            # goal in object rate, curriculum trick
-            for j in self.np_random.choice(np.arange(self.num_blocks), size=(self.num_blocks-1), replace=False):
-                if self.np_random.uniform() > self.goal_not_in_obj_rate: # get goal to obj
-                    goals[j] = obj_pos[j*3:j*3+3]
+            if self.curriculum_type == 'goal_in_obj':
+                # goal in object rate, curriculum trick
+                new_idx = np.arange(self.num_blocks)
+                np.random.shuffle(new_idx)
+                relabel_num = 0
+                for j in new_idx[1:]:
+                    if self.np_random.uniform() > self.goal_not_in_obj_rate: # get goal to obj
+                        goals[j] = obj_pos[j*3:j*3+3]
+                        relabel_num += 1
+                if relabel_num == (self.num_blocks - 1):
+                    new_goal = np.random.uniform(self.goal_range_low, self.goal_range_high)
+                    new_goal[0] = np.random.choice([-1,1])*new_goal[0]
+                    goals[new_idx[0]] = new_goal
         goals = np.array(goals)
         if self.use_musk:
             num_musk = self.num_blocks - self.num_not_musk

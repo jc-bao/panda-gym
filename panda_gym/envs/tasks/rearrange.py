@@ -129,4 +129,4 @@ class Rearrange(Task):
             return rew
 
     def change(self, config):
-        print('no change')
+        print('change called!')
