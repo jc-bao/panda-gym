@@ -26,7 +26,7 @@ class TowerBimanual(Task):
         has_gravaty_rate = 1,
         use_musk = False,
         obj_not_in_hand_rate = 1, 
-        goal_not_in_obj_rate = 1, 
+        goal_not_in_obj_rate = 1
     ) -> None:
         super().__init__(sim)
         self.distance_threshold = distance_threshold
@@ -39,7 +39,9 @@ class TowerBimanual(Task):
         self.curriculum_type = curriculum_type # gravity or other_side
         self.obj_not_in_hand_rate = obj_not_in_hand_rate
         self.goal_not_in_obj_rate = goal_not_in_obj_rate
+        self.max_num_blocks = 6
         self.num_blocks = num_blocks
+        self._max_episode_steps = 50*self.num_blocks
         self.target_shape = target_shape
         self.goal_xyz_range = goal_xyz_range
         self.num_not_musk = 1
@@ -50,6 +52,8 @@ class TowerBimanual(Task):
         with self.sim.no_rendering():
             self._create_scene()
             self.sim.place_visualizer(target_position=np.zeros(3), distance=0.9, yaw=45, pitch=-30)
+        self.ignore_goal_size = 0
+        self.goal_size = 3
 
     def _create_scene(self) -> None:
         self.sim.create_plane(z_offset=-0.4)
@@ -95,13 +99,13 @@ class TowerBimanual(Task):
         #     position=goal_range_pos_1,
         #     rgba_color=np.array([0, 1, 0, 0.05]),
         # )
-        for i in range(self.num_blocks):
+        for i in range(self.max_num_blocks):
             color = np.random.rand(3)
             self.sim.create_box(
                 body_name="object"+str(i),
                 half_extents=np.array([3,1,1]) * self.object_size / 2,
                 mass=0.5,
-                position=np.array([0.5*i, 0.0, self.object_size / 2]),
+                position=np.array([1, 0.1*i - 0.3, self.object_size / 2]),
                 rgba_color=np.append(color, 1),
             )
             self.sim.create_box(
@@ -109,7 +113,7 @@ class TowerBimanual(Task):
                 half_extents=np.ones(3) * self.object_size / 1.9,
                 mass=0.0,
                 ghost=True,
-                position=np.array([0.5*i, 0.0, 0.05]),
+                position=np.array([1, 0.1*i-0.3, 0.05]),
                 rgba_color=np.append(color, 0.5),
             )
 
@@ -149,6 +153,9 @@ class TowerBimanual(Task):
             self.sim.physics_client.setGravity(0, 0, -9.81)
         else:
             self.sim.physics_client.setGravity(0, 0, 0)
+        assert len(obj_pos)%self.num_blocks==0, 'task observation shape linear to num blocks'
+        obs = self.get_obs()
+        self.obj_obs_size = int(len(obs)/self.num_blocks)
 
     def _sample_goal(self, obj_pos) -> np.ndarray:
         goals = []
@@ -284,6 +291,9 @@ class TowerBimanual(Task):
         elif self.curriculum_type == 'goal_z':
             self.goal_xyz_range[-1] = config*0.2
             self.goal_range_high = np.array(self.goal_xyz_range) + self.goal_range_low
+        elif self.curriculum_type == 'num_blocks':
+            self.num_blocks = int(config)
+            self._max_episode_steps = 50 * self.num_blocks
         elif self.curriculum_type == 'musk':
             if self.num_not_musk < self.num_blocks:
                 self.num_not_musk = int(config*self.num_blocks)+1

@@ -158,3 +158,8 @@ register(
     kwargs={"control_type": 'ee', 'num_blocks': 2, 'curriculum_type': 'goal_z'},
     max_episode_steps=50,
 )
+register(
+    id="PandaTowerBimanualNumBlocks-v2",
+    entry_point="panda_gym.envs:PandaTowerBimanualEnv",
+    kwargs={"control_type": 'ee', 'num_blocks': 1, 'curriculum_type': 'num_blocks'}
+)

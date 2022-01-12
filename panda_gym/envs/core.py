@@ -363,11 +363,13 @@ class BimanualTaskEnv(gym.GoalEnv):
                 achieved_goal=gym.spaces.Box(-10.0, 10.0, shape=desired_goal_shape, dtype=np.float32),
             )
         )
+        self.robot_obs_size = len(self.robot0.get_obs()) + len(self.robot1.get_obs())
         self.robot0_action_shape = self.robot0.action_space.shape[0]
         self.robot1_action_shape = self.robot1.action_space.shape[0]
         action_shape = self.robot0_action_shape + self.robot1_action_shape
         self.action_space = gym.spaces.Box(-1.0, 1.0, shape=(action_shape,), dtype=np.float32)
         self.compute_reward = self.task.compute_reward
+        self._max_episode_steps = self.task._max_episode_steps
 
     def _get_obs(self) -> Dict[str, np.ndarray]:
         robot0_obs = self.robot0.get_obs()  # robot state
@@ -451,3 +453,4 @@ class BimanualTaskEnv(gym.GoalEnv):
     def change(self,config = None):
         if config != None:
             self.task.change(config)
+            self._max_episode_steps = self.task._max_episode_steps
