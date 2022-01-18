@@ -3,6 +3,7 @@ from typing import Any, Dict, Union
 import numpy as np
 from numpy.core.defchararray import center
 
+import panda_gym
 from panda_gym.envs.core import Task
 from panda_gym.utils import distance
 
@@ -35,6 +36,7 @@ class ReachBimanual(Task):
         with self.sim.no_rendering():
             self._create_scene()
             self.sim.place_visualizer(target_position=np.zeros(3), distance=0.9, yaw=45, pitch=-30)
+        self._max_episode_steps = 50
 
     def _create_scene(self) -> None:
         self.sim.create_plane(z_offset=-0.4)
@@ -71,6 +73,22 @@ class ReachBimanual(Task):
                 position=np.array([0.0, 0.0, self.object_size / 2]),
                 rgba_color=np.array([0.9, 0.1, 0.1, 1.0]),
             )
+            # LOAD SHAPE
+            # self.sim.physics_client.setAdditionalSearchPath(panda_gym.assets.get_data_path())
+            # self.sim.loadURDF(
+            #     body_name='object01',
+            #     fileName='plate.urdf',
+            #     basePosition=[-0.2,0,0.02],
+            #     baseOrientation = [0,0,0,1],
+            #     useFixedBase=False,
+            # )
+            # self.sim.loadURDF(
+            #     body_name='object11',
+            #     fileName='cup.urdf',
+            #     basePosition=[0.2,0,0.02],
+            #     baseOrientation = [0,0,0,1],
+            #     useFixedBase=False,
+            # )
 
     def get_obs(self) -> np.ndarray:
         if self.has_object:
@@ -107,6 +125,12 @@ class ReachBimanual(Task):
             self.sim.set_base_pose("target0", -self.goal/2 + obj_center, np.array([0.0, 0.0, 0.0, 1.0]))
             self.sim.set_base_pose("target1", self.goal/2 + obj_center, np.array([0.0, 0.0, 0.0, 1.0]))
             ag = (object1_position - object0_position)
+            # CHANGE
+            # for i in range(2):
+            #     pos = self.sim.get_base_position("object"+str(i))
+            #     ori = np.array([0, self.sim.get_base_rotation("object"+str(i))[1], 0])
+            #     self.sim.set_base_pose("object"+str(i), pos, ori)
+            #     self.sim.set_base_pose("object"+str(i)+"1",pos,np.array([0.0, 0.0, 0.0, 1.0]))
         else:
             ee_position0 = np.array(self.get_ee_position0())
             ee_position1 = np.array(self.get_ee_position1())

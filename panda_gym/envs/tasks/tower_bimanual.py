@@ -1,6 +1,7 @@
 from typing import Any, Dict, Tuple, Union
 
 import numpy as np
+import panda_gym
 
 from panda_gym.envs.core import Task
 from panda_gym.utils import distance
@@ -26,9 +27,12 @@ class TowerBimanual(Task):
         has_gravaty_rate = 1,
         use_musk = False,
         obj_not_in_hand_rate = 1, 
-        goal_not_in_obj_rate = 1
+        goal_not_in_obj_rate = 1, 
+        shared_op_space = False
     ) -> None:
         super().__init__(sim)
+        self.load_tabel = True
+        self.shared_op_space = shared_op_space
         self.distance_threshold = distance_threshold
         self.get_ee_position0 = get_ee_position0
         self.get_ee_position1 = get_ee_position1
@@ -47,7 +51,7 @@ class TowerBimanual(Task):
         self.num_not_musk = 1
         self.goal_range_low = np.array([0, -goal_xyz_range[1]/2, self.object_size/2])
         self.goal_range_high = np.array(goal_xyz_range) + self.goal_range_low
-        self.obj_range_low = np.array([0.1, -obj_xyz_range[1] / 2, self.object_size/2])
+        self.obj_range_low = np.array([0.1*(not self.shared_op_space), -obj_xyz_range[1] / 2, self.object_size/2])
         self.obj_range_high = np.array(obj_xyz_range) + self.obj_range_low
         with self.sim.no_rendering():
             self._create_scene()
@@ -57,48 +61,49 @@ class TowerBimanual(Task):
 
     def _create_scene(self) -> None:
         self.sim.create_plane(z_offset=-0.4)
-        self.sim.create_table(length=1., width=0.7, height=0.4, x_offset=-0.575)
-        self.sim.create_table(length=1., width=0.7, height=0.4, x_offset=0.575)
-        # obj_range_size_half = (self.obj_range_high - self.obj_range_low)/ 2
-        # obj_range_pos_0 = (self.obj_range_high + self.obj_range_low)/ 2
-        # obj_range_pos_1 = (self.obj_range_high + self.obj_range_low)/ 2
-        # obj_range_pos_1[0] = -obj_range_pos_1[0]
-        # self.sim.create_box(
-        #     body_name="debug_obj_0",
-        #     half_extents=obj_range_size_half,
-        #     mass=0.0,
-        #     ghost=True,
-        #     position=obj_range_pos_0,
-        #     rgba_color=np.array([0, 0, 1, 0.1]),
-        # )
-        # self.sim.create_box(
-        #     body_name="debug_obj_1",
-        #     half_extents=obj_range_size_half,
-        #     mass=0.0,
-        #     ghost=True,
-        #     position=obj_range_pos_1,
-        #     rgba_color=np.array([0, 0, 1, 0.1]),
-        # )
-        # goal_range_size_half = (self.goal_range_high - self.goal_range_low)/ 2
-        # goal_range_pos_0 = (self.goal_range_high + self.goal_range_low)/ 2
-        # goal_range_pos_1 = (self.goal_range_high + self.goal_range_low)/ 2
-        # goal_range_pos_1[0] = -goal_range_pos_1[0]
-        # self.sim.create_box(
-        #     body_name="debug_goal_0",
-        #     half_extents=goal_range_size_half,
-        #     mass=0.0,
-        #     ghost=True,
-        #     position=goal_range_pos_0,
-        #     rgba_color=np.array([0, 1, 0, 0.05]),
-        # )
-        # self.sim.create_box(
-        #     body_name="debug_goal_1",
-        #     half_extents=goal_range_size_half,
-        #     mass=0.0,
-        #     ghost=True,
-        #     position=goal_range_pos_1,
-        #     rgba_color=np.array([0, 1, 0, 0.05]),
-        # )
+        table_x = 0.3 if self.shared_op_space else 0.575
+        self.sim.create_table(length=1., width=0.7, height=0.4, x_offset=(-table_x))
+        self.sim.create_table(length=1., width=0.7, height=0.4, x_offset=(table_x))
+        obj_range_size_half = (self.obj_range_high - self.obj_range_low)/ 2
+        obj_range_pos_0 = (self.obj_range_high + self.obj_range_low)/ 2
+        obj_range_pos_1 = (self.obj_range_high + self.obj_range_low)/ 2
+        obj_range_pos_1[0] = -obj_range_pos_1[0]
+        self.sim.create_box(
+            body_name="debug_obj_0",
+            half_extents=obj_range_size_half,
+            mass=0.0,
+            ghost=True,
+            position=obj_range_pos_0,
+            rgba_color=np.array([0, 0, 1, 0.1]),
+        )
+        self.sim.create_box(
+            body_name="debug_obj_1",
+            half_extents=obj_range_size_half,
+            mass=0.0,
+            ghost=True,
+            position=obj_range_pos_1,
+            rgba_color=np.array([0, 0, 1, 0.1]),
+        )
+        goal_range_size_half = (self.goal_range_high - self.goal_range_low)/ 2
+        goal_range_pos_0 = (self.goal_range_high + self.goal_range_low)/ 2
+        goal_range_pos_1 = (self.goal_range_high + self.goal_range_low)/ 2
+        goal_range_pos_1[0] = -goal_range_pos_1[0]
+        self.sim.create_box(
+            body_name="debug_goal_0",
+            half_extents=goal_range_size_half,
+            mass=0.0,
+            ghost=True,
+            position=goal_range_pos_0,
+            rgba_color=np.array([0, 1, 0, 0.05]),
+        )
+        self.sim.create_box(
+            body_name="debug_goal_1",
+            half_extents=goal_range_size_half,
+            mass=0.0,
+            ghost=True,
+            position=goal_range_pos_1,
+            rgba_color=np.array([0, 1, 0, 0.05]),
+        )
         for i in range(self.max_num_blocks):
             color = np.random.rand(3)
             self.sim.create_box(
@@ -274,6 +279,11 @@ class TowerBimanual(Task):
         delta = (achieved_goal - desired_goal).reshape(-1, self.num_blocks ,3)
         dist_block2goal = np.linalg.norm(delta, axis=-1)
         rew = -np.sum(dist_block2goal>self.distance_threshold, axis=-1, dtype = float)
+        if self.shared_op_space:
+            ee_dis = info['ee_pos'][0] - info['ee_pos'][1]
+            d = np.sqrt(0.5*(np.square(ee_dis[0]/0.12) + np.square(ee_dis[1]/0.24)))
+            dis_rew = max(1.5-d, 0)
+            rew -= dis_rew
         if len(rew) == 1 :
             return rew[0]
         else: # to process multi dimension input

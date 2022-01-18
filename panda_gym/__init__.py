@@ -163,3 +163,8 @@ register(
     entry_point="panda_gym.envs:PandaTowerBimanualEnv",
     kwargs={"control_type": 'ee', 'num_blocks': 1, 'curriculum_type': 'num_blocks'}
 )
+register(
+    id="PandaTowerBimanualSharedOpSpace-v4",
+    entry_point="panda_gym.envs:PandaTowerBimanualEnv",
+    kwargs={"control_type": 'ee', 'num_blocks': 4, 'shared_op_space': True}
+)

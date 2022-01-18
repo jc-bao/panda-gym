@@ -1,3 +1,4 @@
+from turtle import position
 import numpy as np
 
 from panda_gym.envs.core import RobotTaskEnv, BimanualTaskEnv
@@ -17,11 +18,18 @@ class PandaTowerBimanualEnv(BimanualTaskEnv):
             Defaults to "ee".
     """
 
-    def __init__(self, render: bool = False, num_blocks: int = 1, control_type: str = "ee", curriculum_type = None, use_bound = False, use_musk = False) -> None:
+    def __init__(self, render: bool = False, num_blocks: int = 1, control_type: str = "ee", curriculum_type = None, use_bound = False, use_musk = False, shared_op_space = False) -> None:
         sim = PyBullet(render=render)
         if use_bound:
             robot0 = PandaBound(sim, index=0,block_gripper=False, base_position=np.array([-0.775, 0.0, 0.0]), control_type=control_type, base_orientation = [0,0,0,1])
             robot1 = PandaBound(sim, index=1, block_gripper=False, base_position=np.array([0.775, 0.0, 0.0]),control_type=control_type, base_orientation = [0,0,1,0])
+        if shared_op_space:
+            robot0 = Panda(sim, index=0,block_gripper=False, base_position=np.array([-0.5, 0.0, 0.0]), control_type=control_type, base_orientation = [0,0,0,1])
+            robot1 = Panda(sim, index=1, block_gripper=False, base_position=np.array([0.5, 0.0, 0.0]),control_type=control_type, base_orientation = [0,0,1,0])
+            robot0.neutral_joint_values = np.array([-8.62979537e-04, 6.67109107e-02, 8.93407819e-04, -2.71219648e+00, \
+                -1.67254799e-04, 2.77888080e+00, 7.85577202e-01, 0, 0])
+            robot1.neutral_joint_values = np.array([-8.62979537e-04, 6.67109107e-02, 8.93407819e-04, -2.71219648e+00, \
+                -1.67254799e-04, 2.77888080e+00, 7.85577202e-01, 0, 0])
         else:
             robot0 = Panda(sim, index=0,block_gripper=False, base_position=np.array([-0.775, 0.0, 0.0]), control_type=control_type, base_orientation = [0,0,0,1])
             robot1 = Panda(sim, index=1, block_gripper=False, base_position=np.array([0.775, 0.0, 0.0]),control_type=control_type, base_orientation = [0,0,1,0])
@@ -32,36 +40,45 @@ class PandaTowerBimanualEnv(BimanualTaskEnv):
             other_side_rate = 0.5
             obj_not_in_hand_rate = 1
             goal_xyz_range=[0.4, 0.3, 0.2]
+            obj_xyz_range=[0.3, 0.3, 0]
             goal_not_in_obj_rate = 1
         elif curriculum_type == 'other_side':
             has_gravaty_rate = 1
             other_side_rate = 0
             obj_not_in_hand_rate = 0.5
             goal_xyz_range=[0.4, 0.3, 0.2]
+            obj_xyz_range=[0.3, 0.3, 0]
             goal_not_in_obj_rate = 1
         elif curriculum_type == 'in_hand':
             has_gravaty_rate = 1
             other_side_rate = 0.5
             obj_not_in_hand_rate = 0
             goal_xyz_range=[0.4, 0.3, 0.2]
+            obj_xyz_range=[0.3, 0.3, 0]
             goal_not_in_obj_rate = 1
         elif curriculum_type == 'goal_z':
             has_gravaty_rate = 1
             other_side_rate = 0.5
             obj_not_in_hand_rate = 1
             goal_xyz_range=[0.4, 0.3, 0]
+            obj_xyz_range=[0.3, 0.3, 0]
             goal_not_in_obj_rate = 1
         elif curriculum_type == 'goal_in_obj':
             has_gravaty_rate = 1
             other_side_rate = 0.5
             obj_not_in_hand_rate = 1
             goal_xyz_range=[0.4, 0.3, 0.2]
+            obj_xyz_range=[0.3, 0.3, 0]
             goal_not_in_obj_rate = 0
         else:
             has_gravaty_rate = 1
             other_side_rate = 0.5
             obj_not_in_hand_rate = 1
-            goal_xyz_range=[0.4, 0.3, 0.2]
+            goal_xyz_range=[0.3, 0.4, 0] if shared_op_space else [0.4, 0.3, 0.2]
+            obj_xyz_range= [0.3, 0.4, 0] if shared_op_space else [0.3, 0.3, 0]
             goal_not_in_obj_rate = 1
-        task = TowerBimanual(sim, robot0.get_ee_position, robot1.get_ee_position, num_blocks = num_blocks, curriculum_type = curriculum_type, other_side_rate = other_side_rate, has_gravaty_rate = has_gravaty_rate, use_musk = use_musk, obj_not_in_hand_rate = obj_not_in_hand_rate, goal_xyz_range=goal_xyz_range, goal_not_in_obj_rate = goal_not_in_obj_rate)
+        task = TowerBimanual(sim, robot0.get_ee_position, robot1.get_ee_position, num_blocks = num_blocks, \
+            curriculum_type = curriculum_type, other_side_rate = other_side_rate, has_gravaty_rate = has_gravaty_rate, \
+                use_musk = use_musk, obj_not_in_hand_rate = obj_not_in_hand_rate, goal_xyz_range=goal_xyz_range, \
+                    obj_xyz_range = obj_xyz_range, goal_not_in_obj_rate = goal_not_in_obj_rate, shared_op_space = shared_op_space)
         super().__init__(robot0, robot1, task)
