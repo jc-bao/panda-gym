@@ -1,4 +1,3 @@
-from turtle import position
 import numpy as np
 
 from panda_gym.envs.core import RobotTaskEnv, BimanualTaskEnv
