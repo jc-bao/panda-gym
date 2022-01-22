@@ -1,4 +1,5 @@
 import os
+from .render import PyBulletRecorder
 
 from gym.envs.registration import register
 
@@ -168,5 +169,11 @@ for i in range(7):
         id="PandaTowerBimanualSharedOpSpace-v"+str(i),
         entry_point="panda_gym.envs:PandaTowerBimanualEnv",
         kwargs={"control_type": 'ee', 'num_blocks':1 if i==0 else i, 'shared_op_space': True, 'curriculum_type': 'num_blocks'}, 
+        max_episode_steps=50 if i==0 else 50*i,
+    )
+    register(
+        id="PandaTowerBimanualNoGap-v"+str(i),
+        entry_point="panda_gym.envs:PandaTowerBimanualEnv",
+        kwargs={"control_type": 'ee', 'num_blocks':1 if i==0 else i, 'shared_op_space': True, 'curriculum_type': 'num_blocks', 'gap_distance': 0}, 
         max_episode_steps=50 if i==0 else 50*i,
     )

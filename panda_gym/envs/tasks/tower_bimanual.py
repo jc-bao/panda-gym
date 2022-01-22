@@ -28,10 +28,12 @@ class TowerBimanual(Task):
         use_musk = False,
         obj_not_in_hand_rate = 1, 
         goal_not_in_obj_rate = 1, 
-        shared_op_space = False
+        shared_op_space = False, 
+        gap_distance = 0.15, 
     ) -> None:
         super().__init__(sim)
         self.load_tabel = True
+        self.gap_distance = gap_distance
         self.shared_op_space = shared_op_space
         self.distance_threshold = distance_threshold
         self.get_ee_position0 = get_ee_position0
@@ -61,7 +63,7 @@ class TowerBimanual(Task):
 
     def _create_scene(self) -> None:
         self.sim.create_plane(z_offset=-0.4)
-        table_x = 0.3 if self.shared_op_space else 0.575
+        table_x = 0.3 if self.shared_op_space else 0.5 + self.gap_distance/2
         self.sim.create_table(length=1., width=0.7, height=0.4, x_offset=(-table_x))
         self.sim.create_table(length=1., width=0.7, height=0.4, x_offset=(table_x))
         # obj_range_size_half = (self.obj_range_high - self.obj_range_low)/ 2
@@ -104,18 +106,19 @@ class TowerBimanual(Task):
         #     position=goal_range_pos_1,
         #     rgba_color=np.array([0, 1, 0, 0.05]),
         # )
+        use_small_obj = (self.gap_distance==0 or self.shared_op_space)
         for i in range(self.max_num_blocks):
             color = np.random.rand(3)
             self.sim.create_box(
                 body_name="object"+str(i),
-                half_extents=np.array([3,1,1]) * self.object_size / 2,
+                half_extents=np.array([1 if use_small_obj else 3,1,1]) * self.object_size / 2,
                 mass=0.5,
                 position=np.array([1, 0.1*i - 0.3, self.object_size / 2]),
                 rgba_color=np.append(color, 1),
             )
-            self.sim.create_box(
+            self.sim.create_sphere(
                 body_name="target"+str(i),
-                half_extents=np.ones(3) * self.object_size / 1.9,
+                radius=self.object_size / 1.9,
                 mass=0.0,
                 ghost=True,
                 position=np.array([1, 0.1*i-0.3, 0.05]),
@@ -256,7 +259,7 @@ class TowerBimanual(Task):
                 pos[0] = (self.np_random.choice([-1,1])) * pos[0]
                 if len(obj_pos) == 0:
                     break
-                elif min(np.linalg.norm(obj_pos - pos, axis = 1)) > self.object_size*2:
+                elif min(np.linalg.norm(obj_pos - pos, axis = -1)) > self.object_size*4:
                     break
             obj_pos.append(pos)
         choosed_block_id = np.random.choice(np.arange(self.num_blocks))
