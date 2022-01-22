@@ -169,6 +169,7 @@ for i in range(7):
         id="PandaTowerBimanualSharedOpSpace-v"+str(i),
         entry_point="panda_gym.envs:PandaTowerBimanualEnv",
         kwargs={"control_type": 'ee', 'num_blocks':1 if i==0 else i, 'shared_op_space': True, 'curriculum_type': 'num_blocks'}, 
+<<<<<<< HEAD
         max_episode_steps=50 if i==0 else 50*i,
     )
     register(
@@ -176,4 +177,7 @@ for i in range(7):
         entry_point="panda_gym.envs:PandaTowerBimanualEnv",
         kwargs={"control_type": 'ee', 'num_blocks':1 if i==0 else i, 'shared_op_space': True, 'curriculum_type': 'num_blocks', 'gap_distance': 0}, 
         max_episode_steps=50 if i==0 else 50*i,
+=======
+        # max_episode_steps=50 if i==0 else 50*i,
+>>>>>>> 06bc3f84c2b144c24c7704768103a1fba6eccf69
     )

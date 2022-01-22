@@ -282,7 +282,7 @@ class TowerBimanual(Task):
         delta = (achieved_goal - desired_goal).reshape(-1, self.num_blocks ,3)
         dist_block2goal = np.linalg.norm(delta, axis=-1)
         rew = -np.sum(dist_block2goal>self.distance_threshold, axis=-1, dtype = float)
-        if self.shared_op_space:
+        if self.shared_op_space or self.gap_distance == 0:
             ee_dis = info['ee_pos'][0] - info['ee_pos'][1]
             d = np.sqrt(0.5*(np.square(ee_dis[0]/0.12) + np.square(ee_dis[1]/0.24)))
             dis_rew = max(1.5-d, 0)

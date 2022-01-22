@@ -23,7 +23,7 @@ class PandaTowerBimanualEnv(BimanualTaskEnv):
             robot0 = PandaBound(sim, index=0,block_gripper=False, base_position=np.array([-0.775, 0.0, 0.0]), control_type=control_type, base_orientation = [0,0,0,1])
             robot1 = PandaBound(sim, index=1, block_gripper=False, base_position=np.array([0.775, 0.0, 0.0]),control_type=control_type, base_orientation = [0,0,1,0])
         if shared_op_space:
-            base_x = 0.75 if gap_distance==0 else 0.5
+            base_x = 0.72 if gap_distance==0 else 0.5
             robot0 = Panda(sim, index=0,block_gripper=False, base_position=np.array([-base_x, 0.0, 0.0]), control_type=control_type, base_orientation = [0,0,0,1])
             robot1 = Panda(sim, index=1, block_gripper=False, base_position=np.array([base_x, 0.0, 0.0]),control_type=control_type, base_orientation = [0,0,1,0])
             robot0.neutral_joint_values = np.array([-8.62979537e-04, 6.67109107e-02, 8.93407819e-04, -2.71219648e+00, \
