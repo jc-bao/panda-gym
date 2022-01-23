@@ -340,13 +340,14 @@ class BimanualTaskEnv(gym.GoalEnv):
 
     metadata = {"render.modes": ["human", "rgb_array"]}
 
-    def __init__(self, robot0: PyBulletRobot, robot1: PyBulletRobot, task: Task) -> None:
+    def __init__(self, robot0: PyBulletRobot, robot1: PyBulletRobot, task: Task, max_delay_steps=0) -> None:
         assert robot0.sim == task.sim, "The robot and the task must belong to the same simulation."
         assert robot0.sim == robot1.sim, "The robot must belong to the same simulation."
         self.sim = robot0.sim
         self.robot0 = robot0
         self.robot1 = robot1
         self.task = task
+        self.max_delay_steps = max_delay_steps
         try: 
             self.num_blocks = task.num_blocks
         except:
@@ -388,11 +389,22 @@ class BimanualTaskEnv(gym.GoalEnv):
             self.robot0.reset()
             self.robot1.reset()
             self.task.reset()
+        self.num_steps = 0
+        self.delay_steps = np.random.randint(self.max_delay_steps)
+        self.delay_arm0 = np.random.uniform(0, 1)<0.5
+        print(self.delay_steps, self.delay_arm0)
         return self._get_obs()
 
     def step(self, action: np.ndarray) -> Tuple[Dict[str, np.ndarray], float, bool, Dict[str, Any]]:
-        self.robot0.set_action(action[:self.robot0_action_shape])
-        self.robot1.set_action(action[self.robot0_action_shape:])
+        act0 = action[:self.robot0_action_shape]
+        act1 = action[self.robot0_action_shape:]
+        if self.delay_steps > self.num_steps:
+            if self.delay_arm0:
+                act0 = np.zeros_like(act0)
+            else:
+                act1 = np.zeros_like(act1)
+        self.robot0.set_action(act0)
+        self.robot1.set_action(act1)
         self.sim.step()
         obs = self._get_obs()
         done = False
@@ -402,6 +414,7 @@ class BimanualTaskEnv(gym.GoalEnv):
             }
         reward = self.task.compute_reward(obs["achieved_goal"], self.task.get_goal(), info)
         assert isinstance(reward, float)  # needed for pytype cheking
+        self.num_steps += 1
         return obs, reward, done, info
 
     def seed(self, seed: Optional[int] = None) -> int:

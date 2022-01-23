@@ -47,7 +47,7 @@ class TowerBimanual(Task):
         self.goal_not_in_obj_rate = goal_not_in_obj_rate
         self.max_num_blocks = 6
         self.num_blocks = num_blocks
-        self._max_episode_steps = 50*self.num_blocks
+        self._max_episode_steps = 70*self.num_blocks
         self.target_shape = target_shape
         self.goal_xyz_range = goal_xyz_range
         self.num_not_musk = 1
@@ -106,12 +106,12 @@ class TowerBimanual(Task):
         #     position=goal_range_pos_1,
         #     rgba_color=np.array([0, 1, 0, 0.05]),
         # )
-        use_small_obj = (self.gap_distance==0 or self.shared_op_space)
+        self.use_small_obj = (self.gap_distance==0 or self.shared_op_space)
         for i in range(self.max_num_blocks):
             color = np.random.rand(3)
             self.sim.create_box(
                 body_name="object"+str(i),
-                half_extents=np.array([1 if use_small_obj else 3,1,1]) * self.object_size / 2,
+                half_extents=np.array([1 if self.use_small_obj else 3,1,1]) * self.object_size / 2,
                 mass=0.5,
                 position=np.array([1, 0.1*i - 0.3, self.object_size / 2]),
                 rgba_color=np.append(color, 1),
@@ -195,14 +195,16 @@ class TowerBimanual(Task):
                         goals.append(goal)
                         break
                     # if goal is satisfied, append
-                    elif min(np.linalg.norm(goals - goal, axis = 1)) > self.object_size*2 \
-                        and (np.linalg.norm(goal - obj_pos[i*3:i*3+3])) > self.distance_threshold*1.2:
-                        if goal_side > 0:
-                            positive_side_goal_idx.append(i)
-                        else:
-                            negative_side_goal_idx.append(i)
-                        goals.append(goal)
-                        break
+                    elif (np.linalg.norm(goal - obj_pos[i*3:i*3+3])) > self.distance_threshold*1.2:
+                        x_size = self.object_size*1.5 if self.use_small_obj else self.object_size*4.5
+                        if  min(abs(goals - goal)[..., 0]) > x_size or \
+                            min(abs(goals - goal)[..., 1]) > self.object_size*1.5:
+                            if goal_side > 0:
+                                positive_side_goal_idx.append(i)
+                            else:
+                                negative_side_goal_idx.append(i)
+                            goals.append(goal)
+                            break
             if not need_handover: # make object in the air to learn pnp
                 if len(positive_side_goal_idx) > 0:
                     idx = np.random.choice(positive_side_goal_idx)
@@ -306,7 +308,7 @@ class TowerBimanual(Task):
             self.goal_range_high = np.array(self.goal_xyz_range) + self.goal_range_low
         elif self.curriculum_type == 'num_blocks':
             self.num_blocks = int(config)
-            self._max_episode_steps = 50 * self.num_blocks
+            self._max_episode_steps = 70 * self.num_blocks
         elif self.curriculum_type == 'musk':
             if self.num_not_musk < self.num_blocks:
                 self.num_not_musk = int(config*self.num_blocks)+1
@@ -318,3 +320,4 @@ class TowerBimanual(Task):
             else: # expand otherside rate
                 self.other_side_rate = 0.72 # 50%need two handover
                 self._max_episode_steps = 80 * self.num_blocks
+        
