@@ -310,3 +310,11 @@ class TowerBimanual(Task):
         elif self.curriculum_type == 'musk':
             if self.num_not_musk < self.num_blocks:
                 self.num_not_musk = int(config*self.num_blocks)+1
+        elif self.curriculum_type == 'mix':
+            # expand number of block first
+            if self.num_blocks < 6:
+                self.num_blocks = int(config)
+                self._max_episode_steps = 50 * self.num_blocks
+            else: # expand otherside rate
+                self.other_side_rate = 0.72 # 50%need two handover
+                self._max_episode_steps = 80 * self.num_blocks
