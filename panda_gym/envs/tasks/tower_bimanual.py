@@ -315,7 +315,10 @@ class TowerBimanual(Task):
         elif self.curriculum_type == 'mix': # learn 1pnp -> expand num
             # learn pick and place first
             if config == 1:
-                self.other_side_rate = 0 # 50%need two handover
+                self.other_side_rate = 0 
+                self.num_blocks = 1
+            elif config > 1 and config < 2:
+                self.other_side_rate = 0.72
                 self.num_blocks = 1
             else: # expand otherside rate
                 self.num_blocks = int(config)
