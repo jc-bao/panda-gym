@@ -390,7 +390,7 @@ class BimanualTaskEnv(gym.GoalEnv):
             self.robot1.reset()
             self.task.reset()
         self.num_steps = 0
-        self.delay_steps = np.random.randint(self.max_delay_steps)
+        self.delay_steps = np.random.randint(self.max_delay_steps + 1)
         self.delay_arm0 = np.random.uniform(0, 1)<0.5
         print(self.delay_steps, self.delay_arm0)
         return self._get_obs()
