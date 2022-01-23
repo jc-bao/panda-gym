@@ -58,42 +58,42 @@ for i in range(1,7):
         id="PandaTower-v"+str(i),
         entry_point="panda_gym.envs:PandaTowerEnv",
         kwargs={"reward_type": 'sparse', "control_type": 'ee', 'num_blocks': i},
-        max_episode_steps=50*i,
+        max_episode_steps=70*i,
     )
     register(
         id="PandaTowerBimanual-v"+str(i),
         entry_point="panda_gym.envs:PandaTowerBimanualEnv",
         kwargs={"control_type": 'ee', 'num_blocks': i},
-        max_episode_steps=50*i,
+        max_episode_steps=70*i,
     )
     register(
         id="PandaTowerBimanualGravity-v"+str(i),
         entry_point="panda_gym.envs:PandaTowerBimanualEnv",
         kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'gravity'},
-        max_episode_steps=50*i,
+        max_episode_steps=70*i,
     )
     register(
         id="PandaTowerBimanualOtherSide-v"+str(i),
         entry_point="panda_gym.envs:PandaTowerBimanualEnv",
         kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'other_side'},
-        max_episode_steps=50*i,
+        max_episode_steps=70*i,
     )
 
 register(
     id="PandaRearrange-v2",
     entry_point="panda_gym.envs:PandaRearrangeEnv",
-    max_episode_steps=50,
+    max_episode_steps=70,
 )
 register(
     id="PandaRearrange-v0",
     entry_point="panda_gym.envs:PandaRearrangeEnv",
-    max_episode_steps=50,
+    max_episode_steps=70,
 )
 register(
     id="PandaPickAndPlace2-v2",
     entry_point="panda_gym.envs:PandaPickAndPlace2Env",
     kwargs={'curriculum_type': 'num_obj'},
-    max_episode_steps=50,
+    max_episode_steps=70,
 )
 register(
     id="PandaLiftBimanual-v0",
@@ -133,31 +133,25 @@ register(
     id="PandaTowerBimanualMusk-v2",
     entry_point="panda_gym.envs:PandaTowerBimanualEnv",
     kwargs={"control_type": 'ee', 'num_blocks': 2, 'use_musk': True, 'curriculum_type': 'musk'},
-    max_episode_steps=50,
+    max_episode_steps=140,
 )
 register(
     id="PandaTowerBimanualInHand-v2",
     entry_point="panda_gym.envs:PandaTowerBimanualEnv",
     kwargs={"control_type": 'ee', 'num_blocks': 2, 'curriculum_type': 'in_hand'},
-    max_episode_steps=50,
+    max_episode_steps=140,
 )
 register(
     id="PandaTowerBimanualInHand-v1",
     entry_point="panda_gym.envs:PandaTowerBimanualEnv",
     kwargs={"control_type": 'ee', 'num_blocks': 1, 'curriculum_type': 'in_hand'},
-    max_episode_steps=50,
+    max_episode_steps=70,
 )
 register(
     id="PandaTowerBimanualGoalInObj-v2",
     entry_point="panda_gym.envs:PandaTowerBimanualEnv",
     kwargs={"control_type": 'ee', 'num_blocks': 2, 'curriculum_type': 'goal_in_obj'},
-    max_episode_steps=50,
-)
-register(
-    id="PandaTowerBimanualGoalZ-v2",
-    entry_point="panda_gym.envs:PandaTowerBimanualEnv",
-    kwargs={"control_type": 'ee', 'num_blocks': 2, 'curriculum_type': 'goal_z'},
-    max_episode_steps=50,
+    max_episode_steps=140,
 )
 register(
     id="PandaTowerBimanualNumBlocks-v2",
