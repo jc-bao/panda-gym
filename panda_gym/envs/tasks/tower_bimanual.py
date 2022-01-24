@@ -313,16 +313,7 @@ class TowerBimanual(Task):
             if self.num_not_musk < self.num_blocks:
                 self.num_not_musk = int(config*self.num_blocks)+1
         elif self.curriculum_type == 'mix': # learn 1pnp -> expand num
-            # learn pick and place first
-            if config == 1:
-                self.other_side_rate = 0 
-                self.num_blocks = 1
-            elif config > 1 and config < 2:
-                self.other_side_rate = 0.72
-                self.num_blocks = 1
-            else: # expand otherside rate
-                self.num_blocks = int(config)
-                self.other_side_rate = 0.72 # 50%need two handover
+            self.num_blocks = min(int(config), 6)
             self._max_episode_steps = 80 * self.num_blocks
         elif self.curriculum_type == 'mix_2': # learn rearrange fisrt -> multi
             # expand number of block first
