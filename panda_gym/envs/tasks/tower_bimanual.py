@@ -317,9 +317,9 @@ class TowerBimanual(Task):
             self._max_episode_steps = 80 * self.num_blocks
         elif self.curriculum_type == 'mix_2': # learn rearrange fisrt -> multi
             # expand number of block first
-            if self.num_blocks < 6:
+            if self.num_blocks < 4:
                 self.num_blocks = int(config)
-                self._max_episode_steps = 50 * self.num_blocks
+                self._max_episode_steps = 60 * self.num_blocks
             else: # expand otherside rate
                 self.other_side_rate = 0.72 # 50%need two handover
                 self._max_episode_steps = 80 * self.num_blocks
