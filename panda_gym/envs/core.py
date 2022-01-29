@@ -392,6 +392,7 @@ class BimanualTaskEnv(gym.GoalEnv):
         self.num_steps = 0
         self.delay_steps = np.random.randint(self.max_delay_steps + 1)
         self.delay_arm0 = np.random.uniform(0, 1)<0.5
+        self.assemble_done = False
         return self._get_obs()
 
     def step(self, action: np.ndarray) -> Tuple[Dict[str, np.ndarray], float, bool, Dict[str, Any]]:
@@ -407,9 +408,16 @@ class BimanualTaskEnv(gym.GoalEnv):
         self.sim.step()
         obs = self._get_obs()
         done = False
+        try: 
+            self.assemble_done = self.assemble_done or \
+                (np.linalg.norm((obs['achieved_goal'][:3]-obs['achieved_goal'][:3])\
+                    - (obs['desired_goal'][:3]-obs['desired_goal'][:3])) < 0.05)
+        except:
+            self.assemble_done = False
         info = {
             "is_success": self.task.is_success(obs["achieved_goal"], self.task.get_goal()), 
-            "ee_pos": np.array([self.robot0.get_ee_position(), self.robot1.get_ee_position()])
+            "ee_pos": np.array([self.robot0.get_ee_position(), self.robot1.get_ee_position()]),
+            "assemble_done": self.assemble_done
             }
         reward = self.task.compute_reward(obs["achieved_goal"], self.task.get_goal(), info)
         assert isinstance(reward, float)  # needed for pytype cheking

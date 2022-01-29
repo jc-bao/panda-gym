@@ -6,7 +6,7 @@ import os
 from pybullet_data import getDataPath
 
 # env = gym.make("PandaTowerBimanualDelay-v0", render=True)
-env = gym.make("PandaTowerBimanualNoGapMixCurri-v0", render=True)
+env = gym.make("PandaTowerBimanualAssemble-v2", render=True)
 # env = gym.make("PandaTowerBimanualSharedOpSpace-v0", render=True)
 # env = gym.make("PandaTowerBimanualMusk-v2", render=True)
 # recorder = panda_gym.PyBulletRecorder()

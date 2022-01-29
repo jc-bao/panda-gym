@@ -18,10 +18,12 @@ class ReachBimanual(Task):
         distance_threshold=0.05,
         goal_range=0.35,
         has_object = False,
+        absolute_pos = False,
         obj_not_in_hand_rate = 1, 
     ) -> None:
         super().__init__(sim)
         self.has_object = has_object
+        self.absolute_pos = absolute_pos
         self.object_size = 0.04
         self.reward_type = reward_type
         self.distance_threshold = distance_threshold
@@ -98,6 +100,7 @@ class ReachBimanual(Task):
             object1_velocity = np.array(self.sim.get_base_velocity("object1"))
             object1_angular_velocity = np.array(self.sim.get_base_angular_velocity("object1"))
             object0_position = np.array(self.sim.get_base_position("object0"))
+
             object0_rotation = np.array(self.sim.get_base_rotation("object0"))
             object0_velocity = np.array(self.sim.get_base_velocity("object0"))
             object0_angular_velocity = np.array(self.sim.get_base_angular_velocity("object0"))
@@ -124,7 +127,10 @@ class ReachBimanual(Task):
             obj_center = (object1_position + object0_position)/2
             self.sim.set_base_pose("target0", -self.goal/2 + obj_center, np.array([0.0, 0.0, 0.0, 1.0]))
             self.sim.set_base_pose("target1", self.goal/2 + obj_center, np.array([0.0, 0.0, 0.0, 1.0]))
-            ag = (object1_position - object0_position)
+            if self.absolute_pos:
+                ag = np.append(object1_position, object0_position)
+            else:
+                ag = (object1_position - object0_position)
             # CHANGE
             # for i in range(2):
             #     pos = self.sim.get_base_position("object"+str(i))
@@ -149,7 +155,11 @@ class ReachBimanual(Task):
 
     def _sample_goal(self) -> np.ndarray:
         """Randomize goal."""
-        goal = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
+        if self.absolute_pos:
+            goal0 = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
+            goal1 = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
+        else:
+            goal = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
         return goal
 
     def _sample_objects(self):
