@@ -174,11 +174,11 @@ for i in range(7):
         entry_point="panda_gym.envs:PandaTowerBimanualEnv",
         kwargs={"control_type": 'ee', 'num_blocks':1 if i==0 else i, 'shared_op_space': True, 'curriculum_type': 'mix_2', 'gap_distance': 0},
     )
-register(
-    id="PandaTowerBimanualDelay-v0",
-    entry_point="panda_gym.envs:PandaTowerBimanualEnv",
-    kwargs={"control_type": 'ee', 'num_blocks': 1, 'curriculum_type': 'mix', 'max_delay_steps': 30}
-)
+    register(
+        id="PandaTowerBimanualDelay-v0",
+        entry_point="panda_gym.envs:PandaTowerBimanualEnv",
+        kwargs={"control_type": 'ee', 'num_blocks':1 if i==0 else i, 'curriculum_type': 'mix', 'max_delay_steps': 30}
+    )
 register(
     id="PandaTowerBimanualAssemble-v2",
     entry_point="panda_gym.envs:PandaTowerBimanualEnv",
