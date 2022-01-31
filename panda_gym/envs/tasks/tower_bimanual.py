@@ -288,9 +288,9 @@ class TowerBimanual(Task):
             choosed_block_id = np.random.choice(np.arange(self.num_blocks))
             if self.np_random.uniform()>self.obj_not_in_hand_rate:
                 if self.np_random.uniform()>0.5:
-                    obj_pos[choosed_block_id] = self.get_ee_position0()+[self.object_size*2,0,0]
+                    obj_pos[choosed_block_id] = self.get_ee_position0()+np.array([self.object_size*2,0,0])*(not self.use_small_obj)
                 else:
-                    obj_pos[choosed_block_id] = self.get_ee_position1()-[self.object_size*2,0,0]
+                    obj_pos[choosed_block_id] = self.get_ee_position1()-np.array([self.object_size*2,0,0])*(not self.use_small_obj)
         return np.array(obj_pos).flatten()
 
     def is_success(self, achieved_goal: np.ndarray, desired_goal: np.ndarray) -> Union[np.ndarray, float]:
@@ -336,10 +336,7 @@ class TowerBimanual(Task):
         elif self.curriculum_type == 'musk':
             if self.num_not_musk < self.num_blocks:
                 self.num_not_musk = int(config*self.num_blocks)+1
-        elif self.curriculum_type == 'mix':
-            self.num_blocks = min(int(config), 6)
-            self._max_episode_steps = 70 * self.num_blocks
-        elif self.curriculum_type == 'mix_2': # learn rearrange fisrt -> multi
+        elif self.curriculum_type == 'mix': # learn rearrange first -> multi
             # expand number of block first
             if self.num_blocks < 4:
                 self.num_blocks = int(config)
