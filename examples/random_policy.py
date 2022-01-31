@@ -5,8 +5,8 @@ import time
 import os
 from pybullet_data import getDataPath
 
-# env = gym.make("PandaTowerBimanualDelay-v0", render=True)
-env = gym.make("PandaTowerBimanualAssemble-v2", render=True)
+env = gym.make("PandaTowerBimanual-v1", render=True)
+# env = gym.make("PandaTowerBimanualAssemble-v2", render=True)
 # env = gym.make("PandaTowerBimanualSharedOpSpace-v0", render=True)
 # env = gym.make("PandaTowerBimanualMusk-v2", render=True)
 # recorder = panda_gym.PyBulletRecorder()
@@ -31,8 +31,8 @@ for _ in range(100):
         if i == env._max_episode_steps-1:
             param = (param + 1)
             # print(((ag[0]>0)==(g[0]>0) and (ag[0]>0)==(g[0]>0)))
-            env.change(param)
             obs = env.reset()
+            env.change(param)
             origin_ag = obs['achieved_goal']
             # print(total_rew)
             total_rew = 0

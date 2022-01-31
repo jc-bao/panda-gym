@@ -23,7 +23,7 @@ class PyBullet:
     """
 
     def __init__(
-        self, render: bool = False, n_substeps: int = 20, background_color: np.ndarray = np.array([223.0, 54.0, 45.0])
+        self, render: bool = False, n_substeps: int = 20, background_color: np.ndarray = np.array([223.0, 54.0, 45.0]), timestep = 1.0/500
     ) -> None:
         self.background_color = background_color.astype(np.float64) / 255
         options = "--background_color_red={} \
@@ -37,7 +37,7 @@ class PyBullet:
         self.physics_client.configureDebugVisualizer(p.COV_ENABLE_MOUSE_PICKING, 0)
 
         self.n_substeps = n_substeps
-        self.timestep = 1.0 / 500
+        self.timestep = timestep
         self.physics_client.setTimeStep(self.timestep)
         self.physics_client.resetSimulation()
         self.physics_client.setAdditionalSearchPath(pybullet_data.getDataPath())
@@ -579,6 +579,7 @@ class PyBullet:
         x_offset: float = 0.0,
         lateral_friction: Optional[float] = None,
         spinning_friction: Optional[float] = None,
+        index = 0, 
     ) -> None:
         """Create a fixed table. Top is z=0, centered in y.
 
@@ -593,7 +594,7 @@ class PyBullet:
                 value. Defaults to None.
         """
         self.create_box(
-            body_name="table",
+            body_name="table"+str(index),
             half_extents=np.array([length, width, height]) / 2,
             mass=0.0,
             position=np.array([x_offset, 0.0, -height / 2]),
