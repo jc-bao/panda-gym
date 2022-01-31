@@ -177,10 +177,10 @@ for i in range(7):
     register(
         id="PandaTowerBimanualDelay-v"+str(i),
         entry_point="panda_gym.envs:PandaTowerBimanualEnv",
-        kwargs={"control_type": 'ee', 'num_blocks':1 if i==0 else i, 'curriculum_type': 'mix', 'max_delay_steps': 30}
+        kwargs={"control_type": 'ee', 'num_blocks':1 if i==0 else i, 'curriculum_type': 'other_side', 'max_delay_steps': 30}
     )
 register(
-    id="PandaTowerBimanualAssemble-v2",
-    entry_point="panda_gym.envs:PandaTowerBimanualEnv",
-    kwargs={"control_type": 'ee', 'num_blocks': 2, 'curriculum_type': 'in_hand', 'assemble_first': True}
+    id="PandaAssembleBimanual-v2",
+    entry_point="panda_gym.envs:PandaAssembleBimanualEnv",
+    kwargs={'obj_not_in_hand_rate': 0.5, 'obj_not_in_plate_rate':0.5}
 )

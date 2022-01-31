@@ -9,7 +9,7 @@
         <!-- <collision>
             <origin rpy="0 0 0" xyz="0 0 0" />
             <geometry>
-                <mesh filename="stl/assemble_p1.stl" scale="0.001 0.001 0.001" />
+                <mesh filename="stl/plate.stl" scale="0.001 0.001 0.001" />
             </geometry>
         </collision> -->
         <inertial>
