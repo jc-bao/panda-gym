@@ -69,30 +69,25 @@ for i in range(1,7):
         id="PandaTowerBimanualGravity-v"+str(i),
         entry_point="panda_gym.envs:PandaTowerBimanualEnv",
         kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'gravity'},
-        max_episode_steps=70*i,
     )
     register(
         id="PandaTowerBimanualOtherSide-v"+str(i),
         entry_point="panda_gym.envs:PandaTowerBimanualEnv",
         kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'other_side'},
-        max_episode_steps=70*i,
     )
 
 register(
     id="PandaRearrange-v2",
     entry_point="panda_gym.envs:PandaRearrangeEnv",
-    max_episode_steps=70,
 )
 register(
     id="PandaRearrange-v0",
     entry_point="panda_gym.envs:PandaRearrangeEnv",
-    max_episode_steps=70,
 )
 register(
     id="PandaPickAndPlace2-v2",
     entry_point="panda_gym.envs:PandaPickAndPlace2Env",
     kwargs={'curriculum_type': 'num_obj'},
-    max_episode_steps=70,
 )
 register(
     id="PandaLiftBimanual-v0",
