@@ -63,8 +63,7 @@ for i in range(1,7):
     register(
         id="PandaTowerBimanual-v"+str(i),
         entry_point="panda_gym.envs:PandaTowerBimanualEnv",
-        kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'num_blocks'},
-        max_episode_steps=70*i, 
+        kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'num_blocks'}
     )
     register(
         id="PandaTowerBimanualGravity-v"+str(i),
