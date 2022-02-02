@@ -135,7 +135,7 @@ class ReachBimanual(Task):
             if self.absolute_pos:
                 self.sim.set_base_pose("target0", -self.goal[3:]/2 + obj_center, np.array([0.0, 0.0, 0.0, 1.0]))
                 self.sim.set_base_pose("target1", self.goal[3:]/2 + obj_center, np.array([0.0, 0.0, 0.0, 1.0]))
-                ag = np.append(object0_position, object1_position)
+                ag = np.append(object0_position, object1_position-object0_position)
             else:
                 self.sim.set_base_pose("target0", -self.goal/2 + obj_center, np.array([0.0, 0.0, 0.0, 1.0]))
                 self.sim.set_base_pose("target1", self.goal/2 + obj_center, np.array([0.0, 0.0, 0.0, 1.0]))
