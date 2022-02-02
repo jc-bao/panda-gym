@@ -5,7 +5,7 @@ import time
 import os
 from pybullet_data import getDataPath
 
-env = gym.make("PandaTowerBimanualNoGapMix-v2", render=True)
+env = gym.make("PandaPNPBimanualObjInHand-v0", render=True)
 # env = gym.make("PandaRelativePNPBimanualObjInHand-v0", render=True)
 # env = gym.make("PandaTowerBimanualSharedOpSpace-v0", render=True)
 # env = gym.make("PandaTowerBimanualMusk-v2", render=True)
@@ -16,7 +16,7 @@ obs = env.reset()
 origin_ag = obs['achieved_goal']
 done = False
 
-param = 1
+param = 0
 total_rew = 0
 env.task.obj_not_in_hand_rate=0
 for _ in range(100):
@@ -24,6 +24,8 @@ for _ in range(100):
         action = (env.action_space.sample())
         action[3]=-1
         action[7]=-1
+        # action[1]=1
+        # action[5]=1
         obs, reward, done, info = env.step(action)
         # recorder.add_keyframe()
         g = obs['desired_goal']
@@ -31,7 +33,7 @@ for _ in range(100):
         total_rew += reward
         # env.render(mode='human')
         if i == env._max_episode_steps-1:
-            param = (param + 1)
+            # param = (param + 1)
             # print(((ag[0]>0)==(g[0]>0) and (ag[0]>0)==(g[0]>0)))
             env.change(param)
             obs = env.reset()

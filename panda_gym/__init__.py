@@ -112,6 +112,12 @@ register(
     max_episode_steps=50,
 )
 register(
+    id="PandaPNPBimanualObjInHand-v0",
+    entry_point="panda_gym.envs:PandaReachBimanualEnv",
+    kwargs={'has_object': True, 'obj_not_in_hand_rate': 0, 'absolute_pos': True},
+    max_episode_steps=50,
+)
+register(
     id="PandaTowerBimanualShort-v2",
     entry_point="panda_gym.envs:PandaTowerBimanualEnv",
     kwargs={"control_type": 'ee', 'num_blocks': 2},

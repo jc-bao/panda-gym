@@ -377,6 +377,12 @@ class BimanualTaskEnv(gym.GoalEnv):
         robot1_obs = self.robot1.get_obs()  # robot state
         task_obs = self.task.get_obs()  # object position, velococity, etc...
         observation = np.concatenate([robot0_obs, robot1_obs, task_obs])
+        # if append environment info
+        try:
+            if self.task.absolute_pos:
+                np.append(observation, float(self.assemble_done))
+        except:
+            print('not append task info to obs')
         achieved_goal = self.task.get_achieved_goal()
         return {
             "observation": observation,
@@ -410,8 +416,8 @@ class BimanualTaskEnv(gym.GoalEnv):
         done = False
         try: 
             self.assemble_done = self.assemble_done or \
-                (np.linalg.norm((obs['achieved_goal'][:3]-obs['achieved_goal'][:3])\
-                    - (obs['desired_goal'][:3]-obs['desired_goal'][:3])) < 0.05)
+                (np.linalg.norm((obs['achieved_goal'][3:]-obs['achieved_goal'][:3])\
+                    - (obs['desired_goal'][3:])) < 0.05)
         except:
             self.assemble_done = False
         info = {
