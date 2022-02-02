@@ -382,7 +382,7 @@ class BimanualTaskEnv(gym.GoalEnv):
             if self.task.absolute_pos:
                 np.append(observation, float(self.assemble_done))
         except:
-            print('not append task info to obs')
+            pass
         achieved_goal = self.task.get_achieved_goal()
         return {
             "observation": observation,
