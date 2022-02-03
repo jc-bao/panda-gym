@@ -198,8 +198,10 @@ class ReachBimanual(Task):
 
     def is_success(self, achieved_goal: np.ndarray, desired_goal: np.ndarray) -> Union[np.ndarray, float]:
         if self.absolute_pos:
-            d = distance(achieved_goal[..., :3], desired_goal[..., :3])
-            return np.array(d < self.distance_threshold, dtype=np.float64)
+            return np.array(\
+                distance(achieved_goal[..., :3], desired_goal[..., :3]) < self.distance_threshold and \
+                    distance(achieved_goal[..., 3:], desired_goal[..., 3:]) < self.distance_threshold
+                    , dtype=np.float64)
         else:
             d = distance(achieved_goal, desired_goal)
             return np.array(d < self.distance_threshold, dtype=np.float64)
