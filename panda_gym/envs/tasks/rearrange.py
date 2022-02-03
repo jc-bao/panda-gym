@@ -29,7 +29,7 @@ class Rearrange(Task):
         with self.sim.no_rendering():
             self._create_scene()
             self.sim.place_visualizer(target_position=np.zeros(3), distance=0.9, yaw=45, pitch=-30)
-        self.obj_obs_size = int(len(self.get_obs())/2)
+        self.obj_obs_size = int(len(self.get_obs())/self.num_blocks)
 
     def _create_scene(self) -> None:
         self.sim.create_plane(z_offset=-0.4)
