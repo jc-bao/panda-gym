@@ -149,7 +149,6 @@ class TowerBimanual(Task):
                 self.sim._bodies_idx['object0'], -1, 
                 self.sim.physics_client.JOINT_FIXED, 
                 [0,0,1],
-                # [0,0,0], 
                 -(poses[1]-(self.goal[3:] - self.goal[:3]))/2, 
                 (poses[1]-(self.goal[3:] - self.goal[:3]))/2
                 )

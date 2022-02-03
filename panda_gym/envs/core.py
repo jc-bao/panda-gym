@@ -250,6 +250,7 @@ class RobotTaskEnv(gym.GoalEnv):
         self.action_space = self.robot.action_space
         self.compute_reward = self.task.compute_reward
         self.robot_obs_size = len(self.robot.get_obs())
+        self._max_episode_steps = self.task._max_episode_steps
 
     def _get_obs(self) -> Dict[str, np.ndarray]:
         robot_obs = self.robot.get_obs()  # robot state
@@ -274,7 +275,8 @@ class RobotTaskEnv(gym.GoalEnv):
         obs = self._get_obs()
         done = False
         info = {
-            "is_success": self.task.is_success(obs["achieved_goal"], self.task.get_goal())
+            "is_success": self.task.is_success(obs["achieved_goal"], self.task.get_goal()), 
+            "ee_pos": self.robot.get_ee_position(),
             }
         if hasattr(self.task, 'unstable_obj_idx'):
             info['unstable_obj_idx']=self.task.unstable_obj_idx
@@ -334,6 +336,7 @@ class RobotTaskEnv(gym.GoalEnv):
     def change(self,config = None):
         if config != None:
             self.task.change(config)
+            self._max_episode_steps = self.task._max_episode_steps
 
 class BimanualTaskEnv(gym.GoalEnv):
     """Bimanual task goal env, as the junction of a task and a robot.

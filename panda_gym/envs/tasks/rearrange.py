@@ -14,8 +14,11 @@ class Rearrange(Task):
         distance_threshold=0.05,
         goal_xy_range=0.3,
         obj_xy_range=0.3,
+        num_blocks = 1,
     ) -> None:
         super().__init__(sim)
+        self.num_blocks = num_blocks
+        self._max_episode_steps = 50*self.num_blocks
         self.reward_type = reward_type
         self.distance_threshold = distance_threshold
         self.object_size = 0.04
@@ -31,112 +34,101 @@ class Rearrange(Task):
     def _create_scene(self) -> None:
         self.sim.create_plane(z_offset=-0.4)
         self.sim.create_table(length=1.1, width=0.7, height=0.4, x_offset=-0.3)
-        self.sim.create_box(
-            body_name="object1",
-            half_extents=np.ones(3) * self.object_size / 2,
-            mass=2.0,
-            position=np.array([0.0, 0.0, self.object_size / 2]),
-            rgba_color=np.array([0.1, 0.1, 0.9, 1.0]),
-        )
-        self.sim.create_box(
-            body_name="target1",
-            half_extents=np.ones(3) * self.object_size / 2,
-            mass=0.0,
-            ghost=True,
-            position=np.array([0.0, 0.0, 0.05]),
-            rgba_color=np.array([0.1, 0.1, 0.9, 0.3]),
-        )
-        self.sim.create_box(
-            body_name="object2",
-            half_extents=np.ones(3) * self.object_size / 2,
-            mass=1.0,
-            position=np.array([0.5, 0.0, self.object_size / 2]),
-            rgba_color=np.array([0.1, 0.9, 0.1, 1.0]),
-        )
-        self.sim.create_box(
-            body_name="target2",
-            half_extents=np.ones(3) * self.object_size / 2,
-            mass=0.0,
-            ghost=True,
-            position=np.array([0.5, 0.0, 0.05]),
-            rgba_color=np.array([0.1, 0.9, 0.1, 0.3]),
-        )
+        for i in range(6):
+            color = np.random.rand(3)
+            self.sim.create_box(
+                body_name="object"+str(i),
+                half_extents=np.array([1,1,1]) * self.object_size / 2,
+                mass=0.3,
+                position=np.array([1, 0.1*i - 0.3, self.object_size / 2]),
+                rgba_color=np.append(color, 1),
+            )
+            self.sim.create_sphere(
+                body_name="target"+str(i),
+                radius=self.object_size / 1.9,
+                mass=0.0,
+                ghost=True,
+                position=np.array([1, 0.1*i-0.3, 0.05]),
+                rgba_color=np.append(color, 0.5),
+            )
 
     def get_obs(self) -> np.ndarray:
         # position, rotation of the object
-        object1_position = np.array(self.sim.get_base_position("object1"))
-        object1_rotation = np.array(self.sim.get_base_rotation("object1"))
-        object1_velocity = np.array(self.sim.get_base_velocity("object1"))
-        object1_angular_velocity = np.array(self.sim.get_base_angular_velocity("object1"))
-        object2_position = np.array(self.sim.get_base_position("object2"))
-        object2_rotation = np.array(self.sim.get_base_rotation("object2"))
-        object2_velocity = np.array(self.sim.get_base_velocity("object2"))
-        object2_angular_velocity = np.array(self.sim.get_base_angular_velocity("object2"))
-        if np.random.uniform() < 0.05:
-            if self.unstable_obj_idx == 1 and np.linalg.norm(object1_position-self.goal[:3])>self.distance_threshold:
-                object1_position = np.array([0.5, 0, -0.38])
-                self.sim.set_base_pose("object1", object1_position, object1_rotation)
-            elif self.unstable_obj_idx == 2 and np.linalg.norm(object2_position-self.goal[3:])>self.distance_threshold:
-                object2_position = np.array([0.5, 0, -0.38])
-                self.sim.set_base_pose("object2", object2_position, object2_rotation)
-        observation = np.concatenate(
-            [
-                object1_position,
-                object1_rotation,
-                object1_velocity,
-                object1_angular_velocity,
-                object2_position,
-                object2_rotation,
-                object2_velocity,
-                object2_angular_velocity,
-            ]
-        )
+        obs = []
+        for i in range(self.num_blocks):
+            obs.append(self.sim.get_base_position("object"+str(i)))
+            obs.append(self.sim.get_base_rotation("object"+str(i)))
+            obs.append(self.sim.get_base_velocity("object"+str(i)))
+            obs.append(self.sim.get_base_angular_velocity("object"+str(i)))
+        observation = np.array(obs).flatten()
+        # if np.random.uniform() < 0.05:
+        #     if self.unstable_obj_idx == 1 and np.linalg.norm(object1_position-self.goal[:3])>self.distance_threshold:
+        #         object1_position = np.array([0.5, 0, -0.38])
+        #         self.sim.set_base_pose("object1", object1_position, object1_rotation)
+        #     elif self.unstable_obj_idx == 2 and np.linalg.norm(object2_position-self.goal[3:])>self.distance_threshold:
+        #         object2_position = np.array([0.5, 0, -0.38])
+        #         self.sim.set_base_pose("object2", object2_position, object2_rotation)
         return observation
 
     def get_achieved_goal(self) -> np.ndarray:
-        object1_position = self.sim.get_base_position("object1")
-        object2_position = self.sim.get_base_position("object2")
-        achieved_goal = np.concatenate((object1_position, object2_position))
+        ag = []
+        for i in range(self.num_blocks):
+            ag.append(np.array(self.sim.get_base_position("object"+str(i))))
+        ag = np.array(ag)
+        achieved_goal = (ag).flatten()
         return achieved_goal
 
     def reset(self) -> None:
+        obj_pos = self._sample_objects()
         self.goal = self._sample_goal()
-        object1_position, object2_position = self._sample_objects()
-        self.sim.set_base_pose("target1", self.goal[:3], np.array([0.0, 0.0, 0.0, 1.0]))
-        self.sim.set_base_pose("target2", self.goal[3:], np.array([0.0, 0.0, 0.0, 1.0]))
-        self.sim.set_base_pose("object1", object1_position, np.array([0.0, 0.0, 0.0, 1.0]))
-        self.sim.set_base_pose("object2", object2_position, np.array([0.0, 0.0, 0.0, 1.0]))
+        for i in range(self.num_blocks):
+            self.sim.set_base_pose("target"+str(i), self.goal[i*3:(i+1)*3], np.array([0.0, 0.0, 0.0, 1.0]))
+            self.sim.set_base_pose("object"+str(i), obj_pos[i*3:(i+1)*3], np.array([0.0, 0.0, 0.0, 1.0]))
+        assert len(obj_pos)%self.num_blocks==0, 'task observation shape linear to num blocks'
         self.unstable_obj_idx = self.np_random.choice([1,2])
 
     def _sample_goal(self) -> np.ndarray:
-        goal1 = np.array([0.0, 0.0, self.object_size / 2]) + self.np_random.uniform(self.goal_range_low, self.goal_range_high)  # z offset for the cube center
-        goal2 = np.array([0.0, 0.0, self.object_size / 2]) + self.np_random.uniform(self.goal_range_low, self.goal_range_high) # z offset for the cube center
-        return np.concatenate((goal1, goal2))
+        goals = []
+        for i in range(self.num_blocks):
+            while True:
+                goal = self.np_random.uniform(self.goal_range_low, self.goal_range_high)+[0,0,self.object_size/2]
+                if len(goals) == 0:
+                    break
+                elif min(np.linalg.norm(goals - goal, axis = -1)) > self.object_size*1.5:
+                    break
+            goals.append(goal)
+        return np.array(goals).flatten()
 
     def _sample_objects(self) -> Tuple[np.ndarray, np.ndarray]:
-        # while True:  # make sure that cubes are distant enough
-        object1_position = np.array([0.0, 0.0, self.object_size / 2])
-        object2_position = np.array([0.0, 0.0, self.object_size / 2])
-        noise1 = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
-        noise2 = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
-        object1_position += noise1
-        object2_position += noise2
-        return object1_position, object2_position
+        obj_pos = []
+        for i in range(self.num_blocks):
+            # get target object side
+            while True:
+                pos = self.np_random.uniform(self.obj_range_low, self.obj_range_high) + self.object_size/2
+                if len(obj_pos) == 0:
+                    break
+                elif min(np.linalg.norm(obj_pos - pos, axis = -1)) > self.object_size*1.5:
+                    break
+            obj_pos.append(pos)
+        return np.array(obj_pos).flatten()
 
     def is_success(self, achieved_goal: np.ndarray, desired_goal: np.ndarray) -> Union[np.ndarray, float]:
-        delta = (achieved_goal - desired_goal).reshape(-1 ,3)
-        dist_block2goal = np.linalg.norm(delta, axis=-1)
-        return float(np.all(dist_block2goal < self.distance_threshold))
+        dists = [
+            np.linalg.norm(achieved_goal[..., i * 3:(i + 1) * 3] - desired_goal[..., i * 3:(i + 1) * 3], axis=-1)
+            for i in range(self.num_blocks)
+        ]
+        return float(np.all([d < self.distance_threshold for d in dists]))
+
 
     def compute_reward(self, achieved_goal, desired_goal, info: Dict[str, Any]) -> Union[np.ndarray, float]:
-        delta = (achieved_goal - desired_goal).reshape(-1, 2 ,3)
+        delta = (achieved_goal - desired_goal).reshape(-1, self.num_blocks ,3)
         dist_block2goal = np.linalg.norm(delta, axis=-1)
         rew = -np.sum(dist_block2goal>self.distance_threshold, axis=-1, dtype = float)
-        rew -= np.array(dist_block2goal[..., info['unstable_obj_idx']-1]>self.distance_threshold, dtype=float)
         if len(rew) == 1 :
             return rew[0]
         else: # to process multi dimension input
             return rew
 
     def change(self, config):
-        print('change called!')
+        self.num_blocks = int(config)
+        self._max_episode_steps = 50 * self.num_blocks

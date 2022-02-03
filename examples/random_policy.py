@@ -6,7 +6,7 @@ import os
 from pybullet_data import getDataPath
 
 # env = gym.make("PandaPNPBimanualObjInHand-v0", render=True)
-env = gym.make("PandaRearrange-v2", render=True)
+env = gym.make("PandaRearrange-v1", render=True)
 # env = gym.make("PandaRelativePNPBimanualObjInHand-v0", render=True)
 # env = gym.make("PandaTowerBimanualSharedOpSpace-v0", render=True)
 # env = gym.make("PandaTowerBimanualMusk-v2", render=True)
@@ -17,7 +17,7 @@ obs = env.reset()
 origin_ag = obs['achieved_goal']
 done = False
 
-param = 0
+param = 1
 total_rew = 0
 env.task.obj_not_in_hand_rate=0
 for _ in range(100):
@@ -35,7 +35,7 @@ for _ in range(100):
         env.render(mode='human')
         print(reward)
         if i == env._max_episode_steps-1:
-            # param = (param + 1)
+            param = (param + 1)
             # print(((ag[0]>0)==(g[0]>0) and (ag[0]>0)==(g[0]>0)))
             env.change(param)
             obs = env.reset()

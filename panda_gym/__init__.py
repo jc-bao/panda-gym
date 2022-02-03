@@ -75,12 +75,11 @@ for i in range(1,7):
         entry_point="panda_gym.envs:PandaTowerBimanualEnv",
         kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'other_side'},
     )
-
-register(
-    id="PandaRearrange-v2",
-    entry_point="panda_gym.envs:PandaRearrangeEnv",
-    max_episode_steps=100,
-)
+    register(
+        id="PandaRearrange-v"+str(i),
+        entry_point="panda_gym.envs:PandaRearrangeEnv",
+        kwargs={"num_blocks": i}
+    )
 register(
     id="PandaRearrange-v0",
     entry_point="panda_gym.envs:PandaRearrangeEnv",
