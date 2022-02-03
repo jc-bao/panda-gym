@@ -421,8 +421,7 @@ class BimanualTaskEnv(gym.GoalEnv):
         done = False
         try: 
             self.assemble_done = self.assemble_done or \
-                (np.linalg.norm((obs['achieved_goal'][3:]-obs['achieved_goal'][:3])\
-                    - (obs['desired_goal'][3:])) < 0.05)
+                (np.linalg.norm(obs['achieved_goal'][3:]-obs['desired_goal'][3:]) < 0.05)
         except:
             self.assemble_done = False
         info = {

@@ -202,7 +202,7 @@ class ReachBimanual(Task):
                 d = distance(achieved_goal[..., :3], desired_goal[..., :3])
                 rew = np.array(d < self.distance_threshold, dtype=np.float64).flatten()
             else:
-                d = distance(achieved_goal[...,3:]-achieved_goal[...,:3], desired_goal[..., 3:])
+                d = distance(achieved_goal[...,3:], desired_goal[..., 3:])
                 rew = -np.array(d > self.distance_threshold, dtype=np.float64).flatten()
         else:
             d = distance(achieved_goal, desired_goal)
