@@ -111,6 +111,10 @@ class ReachBimanual(Task):
             object0_rotation = np.array(self.sim.get_base_rotation("object0"))
             object0_velocity = np.array(self.sim.get_base_velocity("object0"))
             object0_angular_velocity = np.array(self.sim.get_base_angular_velocity("object0"))
+            self.assemble_done = self.assemble_done or \
+                (np.linalg.norm(object1_position-object0_position-self.goal[3:]) < self.distance_threshold)
+            if self.assemble_done:
+                object1_position = object0_position + self.goal[3:]
             observation = np.concatenate(
                 [
                     object0_position,
@@ -130,7 +134,10 @@ class ReachBimanual(Task):
     def get_achieved_goal(self) -> np.ndarray:
         if self.has_object:
             object0_position = self.sim.get_base_position("object0")
-            object1_position = self.sim.get_base_position("object1")
+            if self.assemble_done:
+                object1_position = object0_position + self.goal[3:]
+            else:
+                object1_position = self.sim.get_base_position("object1")
             obj_center = (object1_position + object0_position)/2
             if self.absolute_pos:
                 self.sim.set_base_pose("target0", -self.goal[3:]/2 + obj_center, np.array([0.0, 0.0, 0.0, 1.0]))
@@ -163,6 +170,7 @@ class ReachBimanual(Task):
             self.sim.set_base_pose("object1", object1_position, np.array([0.0, 0.0, 0.0, 1.0]))
         if self.absolute_pos:
             self.sim.set_base_pose("target2", self.goal[:3], np.array([0.0, 0.0, 0.0, 1.0]))
+        self.assemble_done = False
         
 
     def _sample_goal(self) -> np.ndarray:
@@ -181,7 +189,7 @@ class ReachBimanual(Task):
         # while True:  # make sure that cubes are distant enough
         if self.np_random.uniform()<self.obj_not_in_hand_rate:
             object0_position = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
-            object0_position[0] = - object0_position[0]
+            object0_position[0] =- object0_position[0]
             object1_position = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
         else:
             object0_position = np.array(self.get_ee_position0())
@@ -198,12 +206,12 @@ class ReachBimanual(Task):
 
     def compute_reward(self, achieved_goal, desired_goal, info: Dict[str, Any]) -> Union[np.ndarray, float]:
         if self.absolute_pos:
-            if info['assemble_done']:
-                d = distance(achieved_goal[..., :3], desired_goal[..., :3])
-                rew = np.array(d < self.distance_threshold, dtype=np.float64).flatten()
-            else:
-                d = distance(achieved_goal[...,3:], desired_goal[..., 3:])
-                rew = -np.array(d > self.distance_threshold, dtype=np.float64).flatten()
+            # if info['assemble_done']:
+            d = distance(achieved_goal[..., :3], desired_goal[..., :3])
+            rew = -np.array(d > self.distance_threshold, dtype=np.float64).flatten()
+            # else:
+            d = distance(achieved_goal[...,3:], desired_goal[..., 3:])
+            rew -= np.array(d > self.distance_threshold, dtype=np.float64).flatten()
         else:
             d = distance(achieved_goal, desired_goal)
             rew = -np.array(d > self.distance_threshold, dtype=np.float64).flatten()
