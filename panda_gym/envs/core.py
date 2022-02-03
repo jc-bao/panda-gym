@@ -280,6 +280,8 @@ class RobotTaskEnv(gym.GoalEnv):
             }
         if hasattr(self.task, 'unstable_obj_idx'):
             info['unstable_obj_idx']=self.task.unstable_obj_idx
+        if hasattr(self.task, 'unstable_state'):
+            info['unstable_state']=self.task.unstable_state
         reward = self.task.compute_reward(obs["achieved_goal"], self.task.get_goal(), info)
         assert isinstance(reward, float)  # needed for pytype cheking
         return obs, reward, done, info

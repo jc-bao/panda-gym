@@ -3,8 +3,6 @@ from typing import Any, Dict, Tuple, Union
 import numpy as np
 
 from panda_gym.envs.core import Task
-from panda_gym.utils import distance
-
 
 class Rearrange(Task):
     def __init__(
@@ -15,8 +13,12 @@ class Rearrange(Task):
         goal_xy_range=0.3,
         obj_xy_range=0.3,
         num_blocks = 1,
+        unstable_mode = False
     ) -> None:
         super().__init__(sim)
+        self.seed(0)
+        self.unstable_mode = unstable_mode
+        self.unstable_state = False
         self.num_blocks = num_blocks
         self._max_episode_steps = 50*self.num_blocks
         self.reward_type = reward_type
@@ -29,6 +31,7 @@ class Rearrange(Task):
         with self.sim.no_rendering():
             self._create_scene()
             self.sim.place_visualizer(target_position=np.zeros(3), distance=0.9, yaw=45, pitch=-30)
+        self.reset()
         self.obj_obs_size = int(len(self.get_obs())/self.num_blocks)
 
     def _create_scene(self) -> None:
@@ -61,13 +64,9 @@ class Rearrange(Task):
             obs.append(self.sim.get_base_velocity("object"+str(i)))
             obs.append(self.sim.get_base_angular_velocity("object"+str(i)))
         observation = np.array(obs).flatten()
-        # if np.random.uniform() < 0.05:
-        #     if self.unstable_obj_idx == 1 and np.linalg.norm(object1_position-self.goal[:3])>self.distance_threshold:
-        #         object1_position = np.array([0.5, 0, -0.38])
-        #         self.sim.set_base_pose("object1", object1_position, object1_rotation)
-        #     elif self.unstable_obj_idx == 2 and np.linalg.norm(object2_position-self.goal[3:])>self.distance_threshold:
-        #         object2_position = np.array([0.5, 0, -0.38])
-        #         self.sim.set_base_pose("object2", object2_position, object2_rotation)
+        if self.unstable_mode:
+            observation = np.append(observation, np.array([self.unstable_mode, self.unstable_obj_idx/6], dtype=float))
+            self.unstable_state = self.unstable_state or self.np_random.uniform()<0.05
         return observation
 
     def get_achieved_goal(self) -> np.ndarray:
@@ -85,7 +84,8 @@ class Rearrange(Task):
             self.sim.set_base_pose("target"+str(i), self.goal[i*3:(i+1)*3], np.array([0.0, 0.0, 0.0, 1.0]))
             self.sim.set_base_pose("object"+str(i), obj_pos[i*3:(i+1)*3], np.array([0.0, 0.0, 0.0, 1.0]))
         assert len(obj_pos)%self.num_blocks==0, 'task observation shape linear to num blocks'
-        self.unstable_obj_idx = self.np_random.choice([1,2])
+        self.unstable_obj_idx = self.np_random.randint(low = 0, high = self.num_blocks)
+        self.unstable_state = False # if block one object reward
 
     def _sample_goal(self) -> np.ndarray:
         goals = []
@@ -124,6 +124,8 @@ class Rearrange(Task):
         delta = (achieved_goal - desired_goal).reshape(-1, self.num_blocks ,3)
         dist_block2goal = np.linalg.norm(delta, axis=-1)
         rew = -np.sum(dist_block2goal>self.distance_threshold, axis=-1, dtype = float)
+        if self.unstable_mode and info['unstable_state']:
+            rew -= (dist_block2goal[..., info['unstable_obj_idx']]<self.distance_threshold)
         if len(rew) == 1 :
             return rew[0]
         else: # to process multi dimension input

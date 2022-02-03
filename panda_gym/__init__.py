@@ -78,7 +78,12 @@ for i in range(1,7):
     register(
         id="PandaRearrange-v"+str(i),
         entry_point="panda_gym.envs:PandaRearrangeEnv",
-        kwargs={"num_blocks": i}
+        kwargs={"num_blocks": i, "unstable_mode": False}
+    )
+    register(
+        id="PandaRearrangeUnstable-v"+str(i),
+        entry_point="panda_gym.envs:PandaRearrangeEnv",
+        kwargs={"num_blocks": i, "unstable_mode": True}
     )
 register(
     id="PandaRearrange-v0",

@@ -16,8 +16,8 @@ class PandaRearrangeEnv(RobotTaskEnv):
             Defaults to "ee".
     """
 
-    def __init__(self, render: bool = False, reward_type: str = "sparse", control_type: str = "ee", curriculum_type = None, num_blocks = 1) -> None:
+    def __init__(self, render: bool = False, reward_type: str = "sparse", control_type: str = "ee", curriculum_type = None, num_blocks = 1, unstable_mode = False) -> None:
         sim = PyBullet(render=render)
         robot = Panda(sim, block_gripper=False, base_position=np.array([-0.6, 0.0, 0.0]), control_type=control_type)
-        task = Rearrange(sim, reward_type=reward_type, num_blocks = num_blocks)
+        task = Rearrange(sim, reward_type=reward_type, num_blocks = num_blocks, unstable_mode=unstable_mode)
         super().__init__(robot, task)

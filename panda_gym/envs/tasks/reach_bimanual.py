@@ -214,4 +214,3 @@ class ReachBimanual(Task):
 
     def change(self, config = None):
         self.obj_not_in_hand_rate = config
-
