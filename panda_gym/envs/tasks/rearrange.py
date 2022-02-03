@@ -26,6 +26,7 @@ class Rearrange(Task):
         with self.sim.no_rendering():
             self._create_scene()
             self.sim.place_visualizer(target_position=np.zeros(3), distance=0.9, yaw=45, pitch=-30)
+        self.obj_obs_size = int(len(self.get_obs())/2)
 
     def _create_scene(self) -> None:
         self.sim.create_plane(z_offset=-0.4)
@@ -71,6 +72,13 @@ class Rearrange(Task):
         object2_rotation = np.array(self.sim.get_base_rotation("object2"))
         object2_velocity = np.array(self.sim.get_base_velocity("object2"))
         object2_angular_velocity = np.array(self.sim.get_base_angular_velocity("object2"))
+        if np.random.uniform() < 0.05:
+            if self.unstable_obj_idx == 1 and np.linalg.norm(object1_position-self.goal[:3])>self.distance_threshold:
+                object1_position = np.array([0.5, 0, -0.38])
+                self.sim.set_base_pose("object1", object1_position, object1_rotation)
+            elif self.unstable_obj_idx == 2 and np.linalg.norm(object2_position-self.goal[3:])>self.distance_threshold:
+                object2_position = np.array([0.5, 0, -0.38])
+                self.sim.set_base_pose("object2", object2_position, object2_rotation)
         observation = np.concatenate(
             [
                 object1_position,
@@ -98,6 +106,7 @@ class Rearrange(Task):
         self.sim.set_base_pose("target2", self.goal[3:], np.array([0.0, 0.0, 0.0, 1.0]))
         self.sim.set_base_pose("object1", object1_position, np.array([0.0, 0.0, 0.0, 1.0]))
         self.sim.set_base_pose("object2", object2_position, np.array([0.0, 0.0, 0.0, 1.0]))
+        self.unstable_obj_idx = self.np_random.choice([1,2])
 
     def _sample_goal(self) -> np.ndarray:
         goal1 = np.array([0.0, 0.0, self.object_size / 2]) + self.np_random.uniform(self.goal_range_low, self.goal_range_high)  # z offset for the cube center
@@ -123,6 +132,7 @@ class Rearrange(Task):
         delta = (achieved_goal - desired_goal).reshape(-1, 2 ,3)
         dist_block2goal = np.linalg.norm(delta, axis=-1)
         rew = -np.sum(dist_block2goal>self.distance_threshold, axis=-1, dtype = float)
+        rew -= np.array(dist_block2goal[..., info['unstable_obj_idx']-1]>self.distance_threshold, dtype=float)
         if len(rew) == 1 :
             return rew[0]
         else: # to process multi dimension input

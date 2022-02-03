@@ -79,6 +79,7 @@ for i in range(1,7):
 register(
     id="PandaRearrange-v2",
     entry_point="panda_gym.envs:PandaRearrangeEnv",
+    max_episode_steps=100,
 )
 register(
     id="PandaRearrange-v0",

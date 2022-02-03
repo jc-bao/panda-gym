@@ -249,6 +249,7 @@ class RobotTaskEnv(gym.GoalEnv):
         )
         self.action_space = self.robot.action_space
         self.compute_reward = self.task.compute_reward
+        self.robot_obs_size = len(self.robot.get_obs())
 
     def _get_obs(self) -> Dict[str, np.ndarray]:
         robot_obs = self.robot.get_obs()  # robot state
@@ -272,7 +273,11 @@ class RobotTaskEnv(gym.GoalEnv):
         self.sim.step()
         obs = self._get_obs()
         done = False
-        info = {"is_success": self.task.is_success(obs["achieved_goal"], self.task.get_goal())}
+        info = {
+            "is_success": self.task.is_success(obs["achieved_goal"], self.task.get_goal())
+            }
+        if hasattr(self.task, 'unstable_obj_idx'):
+            info['unstable_obj_idx']=self.task.unstable_obj_idx
         reward = self.task.compute_reward(obs["achieved_goal"], self.task.get_goal(), info)
         assert isinstance(reward, float)  # needed for pytype cheking
         return obs, reward, done, info
