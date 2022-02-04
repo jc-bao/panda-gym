@@ -194,7 +194,10 @@ class TowerBimanual(Task):
                 need_handover = need_handover or (if_same_side < 0)
                 while True:
                     # sample goal
-                    goal = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
+                    if self.reach_once:
+                        goal = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
+                    else:
+                        goal = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
                     goal[0] = goal_side*goal[0]
                     if len(goals) == 0:
                         if goal_side > 0:
