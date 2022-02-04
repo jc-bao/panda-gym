@@ -324,7 +324,10 @@ class TowerBimanual(Task):
             if self.num_blocks < 4:
                 self.num_blocks = int(config)
                 self._max_episode_steps = 60 * self.num_blocks
-            else: # expand otherside rate
-                self.other_side_rate = 0.72 # 50%need two handover
+            elif self.num_blocks == 5: # expand otherside rate
+                self.other_side_rate = 0.3 # 50%need two handover
+                self._max_episode_steps = 70 * self.num_blocks
+            elif self.num_blocks == 6: # expand otherside rate
+                self.other_side_rate = 0.5 # 50%need two handover
                 self._max_episode_steps = 80 * self.num_blocks
         
