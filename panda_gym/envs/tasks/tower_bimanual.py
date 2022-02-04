@@ -29,13 +29,13 @@ class TowerBimanual(Task):
         obj_not_in_hand_rate = 1, 
         goal_not_in_obj_rate = 1, 
         shared_op_space = False, 
-        assemble_first = False, 
         gap_distance = 0.23, 
+        reach_once = False
     ) -> None:
         super().__init__(sim)
+        self.reach_once = reach_once # if fix obj once reach
         self.load_tabel = True
         self.gap_distance = gap_distance
-        self.assemble_first = assemble_first
         self.shared_op_space = shared_op_space
         self.distance_threshold = distance_threshold
         self.get_ee_position0 = get_ee_position0
@@ -62,6 +62,8 @@ class TowerBimanual(Task):
             self.sim.place_visualizer(target_position=np.zeros(3), distance=0.9, yaw=45, pitch=-30)
         self.ignore_goal_size = 0
         self.goal_size = 3
+        self.seed(1)
+        self.reset()
 
     def _create_scene(self) -> None:
         self.sim.create_plane(z_offset=-0.4)
@@ -108,7 +110,7 @@ class TowerBimanual(Task):
         #     position=goal_range_pos_1,
         #     rgba_color=np.array([0, 1, 0, 0.05]),
         # )
-        self.use_small_obj = (self.gap_distance==0 or self.shared_op_space or self.assemble_first)
+        self.use_small_obj = (self.gap_distance==0 or self.shared_op_space)
         for i in range(self.max_num_blocks):
             color = np.random.rand(3)
             self.sim.create_box(
@@ -130,35 +132,26 @@ class TowerBimanual(Task):
     def get_obs(self) -> np.ndarray:
         # position, rotation of the object
         obs = []
-        poses = []
         for i in range(self.num_blocks):
             # [NOTE]trick: reset object orientation to aviod z rotation
             pos = self.sim.get_base_position("object"+str(i))
-            poses.append(pos)
             ori = np.array([0, self.sim.get_base_rotation("object"+str(i))[1], 0])
             self.sim.set_base_pose("object"+str(i), pos, ori)
-            obs.append(pos)
+            self.reach_state[i] = distance(pos, self.goal[3*i:3*i+3])<self.distance_threshold or self.reach_state[i] 
+            obs.append(self.goal[3*i:3*i+3] if (self.reach_state[i] and self.reach_once) else pos)
             obs.append(ori)
             obs.append(self.sim.get_base_velocity("object"+str(i)))
             obs.append(self.sim.get_base_angular_velocity("object"+str(i)))
-        if self.assemble_first and \
-            np.linalg.norm((poses[1]-poses[0]) - (self.goal[3:] - self.goal[:3])) < self.distance_threshold:
-            # self.sim.set_base_pose("object0", poses[1]-(self.goal[3:] - self.goal[:3]), [0.0, 0.0, 0.0, 1.0])
-            self.sim.physics_client.createConstraint(
-                self.sim._bodies_idx['object1'], -1,
-                self.sim._bodies_idx['object0'], -1, 
-                self.sim.physics_client.JOINT_FIXED, 
-                [0,0,1],
-                -(poses[1]-(self.goal[3:] - self.goal[:3]))/2, 
-                (poses[1]-(self.goal[3:] - self.goal[:3]))/2
-                )
         observation = np.array(obs).flatten()
         return observation
 
     def get_achieved_goal(self) -> np.ndarray:
         ag = []
         for i in range(self.num_blocks):
-            ag.append(np.array(self.sim.get_base_position("object"+str(i))))
+            pos = self.goal[3*i:3*i+3] \
+                if (self.reach_state[i] and self.reach_once) else \
+                    self.sim.get_base_position("object"+str(i)) 
+            ag.append(pos)
         ag = np.array(ag)
         if self.use_musk:
             ag[self.musk_index] = np.zeros(3)
@@ -166,6 +159,7 @@ class TowerBimanual(Task):
         return achieved_goal
 
     def reset(self) -> None:
+        self.reach_state = [False]*self.num_blocks
         obj_pos = self._sample_objects()
         self.goal = self._sample_goal(obj_pos)
         for i in range(self.num_blocks):
@@ -268,28 +262,18 @@ class TowerBimanual(Task):
             # get target object side
             while True:
                 pos = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
-                if self.assemble_first:
-                    if i==0:
-                        pos[0] = -pos[0]
-                else:
-                    pos[0] = (self.np_random.choice([-1,1])) * pos[0]
+                pos[0] = (self.np_random.choice([-1,1])) * pos[0]
                 if len(obj_pos) == 0:
                     break
                 elif min(np.linalg.norm(obj_pos - pos, axis = -1)) > self.object_size*4:
                     break
             obj_pos.append(pos)
-        if self.assemble_first:
-            if self.np_random.uniform()>self.obj_not_in_hand_rate:
-                obj_pos[0] = self.get_ee_position0()
-            if self.np_random.uniform()>self.obj_not_in_hand_rate:
-                obj_pos[1] = self.get_ee_position1()
-        else:
-            choosed_block_id = np.random.choice(np.arange(self.num_blocks))
-            if self.np_random.uniform()>self.obj_not_in_hand_rate:
-                if self.np_random.uniform()>0.5:
-                    obj_pos[choosed_block_id] = self.get_ee_position0()+np.array([self.object_size*2,0,0])*(not self.use_small_obj)
-                else:
-                    obj_pos[choosed_block_id] = self.get_ee_position1()-np.array([self.object_size*2,0,0])*(not self.use_small_obj)
+        choosed_block_id = np.random.choice(np.arange(self.num_blocks))
+        if self.np_random.uniform()>self.obj_not_in_hand_rate:
+            if self.np_random.uniform()>0.5:
+                obj_pos[choosed_block_id] = self.get_ee_position0()+np.array([self.object_size*2,0,0])*(not self.use_small_obj)
+            else:
+                obj_pos[choosed_block_id] = self.get_ee_position1()-np.array([self.object_size*2,0,0])*(not self.use_small_obj)
         return np.array(obj_pos).flatten()
 
     def is_success(self, achieved_goal: np.ndarray, desired_goal: np.ndarray) -> Union[np.ndarray, float]:
@@ -304,9 +288,6 @@ class TowerBimanual(Task):
         delta = (achieved_goal - desired_goal).reshape(-1, self.num_blocks ,3)
         dist_block2goal = np.linalg.norm(delta, axis=-1)
         rew = -np.sum(dist_block2goal>self.distance_threshold, axis=-1, dtype = float)
-        if self.assemble_first:
-            assert delta.shape[1] == 2, f'{delta}shape not match'
-            rew -= (abs(dist_block2goal[..., 0]-dist_block2goal[..., 1])>self.distance_threshold)
         if self.shared_op_space or self.gap_distance == 0:
             ee_dis = info['ee_pos'][0] - info['ee_pos'][1]
             d = np.sqrt(0.5*(np.square(ee_dis[0]/0.12) + np.square(ee_dis[1]/0.24)))

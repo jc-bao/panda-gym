@@ -9,7 +9,7 @@ from pybullet_data import getDataPath
 # env = gym.make("PandaRearrangeUnstable-v2", render=True)
 # env = gym.make("PandaRelativePNPBimanualObjInHand-v0", render=True)
 # env = gym.make("PandaTowerBimanualSharedOpSpace-v0", render=True)
-env = gym.make("PandaTowerBimanual-v5", render=True)
+env = gym.make("PandaTowerBimanualReachOnce-v2", render=True)
 # recorder = panda_gym.PyBulletRecorder()
 # recorder.register_object(0, getDataPath()+'/franka_panda/panda.urdf')
 # recorder.register_object(1, getDataPath()+'/franka_panda/panda.urdf')

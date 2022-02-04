@@ -17,7 +17,7 @@ class PandaTowerBimanualEnv(BimanualTaskEnv):
             Defaults to "ee".
     """
 
-    def __init__(self, render: bool = False, num_blocks: int = 1, control_type: str = "ee", curriculum_type = None, use_bound = False, use_musk = False, shared_op_space = False, gap_distance = 0.23, max_delay_steps = 0, assemble_first = False, target_shape = 'any') -> None:
+    def __init__(self, render: bool = False, num_blocks: int = 1, control_type: str = "ee", curriculum_type = None, use_bound = False, use_musk = False, shared_op_space = False, gap_distance = 0.23, max_delay_steps = 0, target_shape = 'any', reach_once = False) -> None:
         sim = PyBullet(render=render, timestep=1.0/240)
         if use_bound:
             robot0 = PandaBound(sim, index=0,block_gripper=False, base_position=np.array([-0.775, 0.0, 0.0]), control_type=control_type, base_orientation = [0,0,0,1])
@@ -80,13 +80,10 @@ class PandaTowerBimanualEnv(BimanualTaskEnv):
         if gap_distance == 0:
             goal_xyz_range = [0.5, 0.5, 0]
             obj_xyz_range = goal_xyz_range
-        if assemble_first:
-            goal_xyz_range = [0.5, 0.3, 0.2]
-            obj_not_in_hand_rate = 0.5
-            target_shape = 'positive_side'
         task = TowerBimanual(sim, robot0.get_ee_position, robot1.get_ee_position, num_blocks = num_blocks, \
             curriculum_type = curriculum_type, other_side_rate = other_side_rate, has_gravaty_rate = has_gravaty_rate, \
                 use_musk = use_musk, obj_not_in_hand_rate = obj_not_in_hand_rate, goal_xyz_range=goal_xyz_range, \
-                    obj_xyz_range = obj_xyz_range, goal_not_in_obj_rate = goal_not_in_obj_rate, shared_op_space = shared_op_space, \
-                        gap_distance = gap_distance, assemble_first = assemble_first, target_shape = target_shape)
+                    obj_xyz_range = obj_xyz_range, goal_not_in_obj_rate = goal_not_in_obj_rate, \
+                        shared_op_space = shared_op_space, gap_distance = gap_distance, target_shape = target_shape, \
+                            reach_once = reach_once)
         super().__init__(robot0, robot1, task, max_delay_steps = max_delay_steps)
