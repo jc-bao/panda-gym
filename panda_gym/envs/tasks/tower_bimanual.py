@@ -213,7 +213,7 @@ class TowerBimanual(Task):
                     elif (np.linalg.norm(goal - obj_pos[i*3:i*3+3])) > self.distance_threshold*1.2:
                         x_size = self.object_size*1.5 if self.use_small_obj else self.object_size*4.5
                         if  min(abs(goals - goal)[..., 0]) > x_size or \
-                            min(abs(goals - goal)[..., 1]) > self.object_size*1.5:
+                            min(abs(goals - goal)[..., 1]) > self.object_size*1.1:
                             if goal_side > 0:
                                 positive_side_goal_idx.append(i)
                             else:

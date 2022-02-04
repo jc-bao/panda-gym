@@ -6,10 +6,10 @@ import os
 from pybullet_data import getDataPath
 
 # env = gym.make("PandaPNPBimanualObjInHand-v0", render=True)
-env = gym.make("PandaRearrangeUnstable-v2", render=True)
+# env = gym.make("PandaRearrangeUnstable-v2", render=True)
 # env = gym.make("PandaRelativePNPBimanualObjInHand-v0", render=True)
 # env = gym.make("PandaTowerBimanualSharedOpSpace-v0", render=True)
-# env = gym.make("PandaTowerBimanualMusk-v2", render=True)
+env = gym.make("PandaTowerBimanual-v5", render=True)
 # recorder = panda_gym.PyBulletRecorder()
 # recorder.register_object(0, getDataPath()+'/franka_panda/panda.urdf')
 # recorder.register_object(1, getDataPath()+'/franka_panda/panda.urdf')
@@ -33,7 +33,7 @@ for _ in range(100):
         ag = obs['achieved_goal']
         total_rew += reward
         env.render(mode='human')
-        print(info['unstable_state'], reward)
+        # print(info['unstable_state'], reward)
         if i == env._max_episode_steps-1:
             param = (param + 1)
             # print(((ag[0]>0)==(g[0]>0) and (ag[0]>0)==(g[0]>0)))
