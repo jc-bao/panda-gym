@@ -7,7 +7,7 @@ import gym.utils.seeding
 import numpy as np
 
 from panda_gym.pybullet import PyBullet
-
+import panda_gym
 
 class PyBulletRobot(ABC):
     """Base class for robot env.
@@ -381,6 +381,11 @@ class BimanualTaskEnv(gym.GoalEnv):
         self.action_space = gym.spaces.Box(-1.0, 1.0, shape=(action_shape,), dtype=np.float32)
         self.compute_reward = self.task.compute_reward
         self._max_episode_steps = self.task._max_episode_steps
+        if self.sim.blender_record:
+            self.sim.recorder.register_object(0, panda_gym.assets.get_data_path()+'/franka_panda/panda.urdf')
+            self.sim.recorder.register_object(1, panda_gym.assets.get_data_path()+'/franka_panda/panda.urdf')
+            self.sim.recorder.register_object(10, panda_gym.assets.get_data_path()+'/plate.urdf')
+            self.sim.recorder.register_object(11, panda_gym.assets.get_data_path()+'/cup.urdf')
 
     def _get_obs(self) -> Dict[str, np.ndarray]:
         robot0_obs = self.robot0.get_obs()  # robot state

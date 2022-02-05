@@ -23,8 +23,11 @@ class PyBullet:
     """
 
     def __init__(
-        self, render: bool = False, n_substeps: int = 20, background_color: np.ndarray = np.array([223.0, 54.0, 45.0]), timestep = 1.0/500
+        self, render: bool = False, n_substeps: int = 20, background_color: np.ndarray = np.array([223.0, 54.0, 45.0]), timestep = 1.0/500, blender_record = False
     ) -> None:
+        self.blender_record = blender_record
+        if blender_record:
+            self.recorder = panda_gym.PyBulletRecorder()
         self.background_color = background_color.astype(np.float64) / 255
         options = "--background_color_red={} \
                     --background_color_green={} \
@@ -53,10 +56,14 @@ class PyBullet:
         """Step the simulation."""
         for _ in range(self.n_substeps):
             self.physics_client.stepSimulation()
+            if self.blender_record:
+                self.recorder.add_keyframe()
 
     def close(self) -> None:
         """Close the simulation."""
         self.physics_client.disconnect()
+        if self.blender_record:
+            self.recorder.save(panda_gym.assets.get_data_path()+'/blender.pkl')
 
     def render(
         self,

@@ -9,7 +9,7 @@ from pybullet_data import getDataPath
 # env = gym.make("PandaRearrangeUnstable-v2", render=True)
 # env = gym.make("PandaRelativePNPBimanualObjInHand-v0", render=True)
 # env = gym.make("PandaTowerBimanualSharedOpSpace-v0", render=True)
-env = gym.make("PandaTowerBimanualReachOnce-v2", render=True)
+env = gym.make("PandaPNPBimanual-v0", render=True)
 # recorder = panda_gym.PyBulletRecorder()
 # recorder.register_object(0, getDataPath()+'/franka_panda/panda.urdf')
 # recorder.register_object(1, getDataPath()+'/franka_panda/panda.urdf')
@@ -20,7 +20,7 @@ done = False
 param = 1
 total_rew = 0
 env.task.obj_not_in_hand_rate=0
-for _ in range(100):
+for _ in range(2):
     for i in range(env._max_episode_steps):
         action = (env.action_space.sample())
         # action[3]=-1
@@ -43,5 +43,3 @@ for _ in range(100):
             # print(total_rew)
             total_rew = 0
 env.close()
-
-# recorder.save('demo.pkl')

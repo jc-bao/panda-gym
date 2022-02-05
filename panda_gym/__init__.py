@@ -1,5 +1,5 @@
 import os
-# from .render import PyBulletRecorder
+from .render import PyBulletRecorder
 
 from gym.envs.registration import register
 
@@ -119,6 +119,12 @@ register(
     id="PandaRelativePNPBimanualObjInHand-v0",
     entry_point="panda_gym.envs:PandaReachBimanualEnv",
     kwargs={'has_object': True, 'obj_not_in_hand_rate': 0},
+    max_episode_steps=50,
+)
+register(
+    id="PandaPNPBimanual-v0",
+    entry_point="panda_gym.envs:PandaReachBimanualEnv",
+    kwargs={'has_object': True, 'obj_not_in_hand_rate': 1, 'absolute_pos': True, 'blender_record': True},
     max_episode_steps=50,
 )
 register(

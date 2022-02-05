@@ -72,18 +72,18 @@ class ReachBimanual(Task):
             self.sim.create_box(
                 body_name="object0",
                 half_extents=np.ones(3) * self.object_size / 2,
-                mass=2.0,
+                mass=0.5,
                 position=np.array([0.0, 0.0, self.object_size / 2]),
                 rgba_color=np.array([0.1, 0.9, 0.1, 1.0]),
             )
             self.sim.create_box(
                 body_name="object1",
                 half_extents=np.ones(3) * self.object_size / 2,
-                mass=2.0,
+                mass=0.5,
                 position=np.array([0.0, 0.0, self.object_size / 2]),
                 rgba_color=np.array([0.9, 0.1, 0.1, 1.0]),
             )
-            # LOAD SHAPE
+            # LOAD SHAPE TAMP
             # self.sim.physics_client.setAdditionalSearchPath(panda_gym.assets.get_data_path())
             # self.sim.loadURDF(
             #     body_name='object01',
@@ -147,7 +147,7 @@ class ReachBimanual(Task):
                 self.sim.set_base_pose("target0", -self.goal/2 + obj_center, np.array([0.0, 0.0, 0.0, 1.0]))
                 self.sim.set_base_pose("target1", self.goal/2 + obj_center, np.array([0.0, 0.0, 0.0, 1.0]))
                 ag = (object1_position - object0_position)
-            # CHANGE
+            # CHANGE TAMP
             # for i in range(2):
             #     pos = self.sim.get_base_position("object"+str(i))
             #     ori = np.array([0, self.sim.get_base_rotation("object"+str(i))[1], 0])
@@ -180,6 +180,8 @@ class ReachBimanual(Task):
             goal_abs[0] = -goal_abs[0]
             goal_abs[2] += self.np_random.uniform(0, 0.27)
             goal_relative = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
+            # goal_relative = [0.12, 0, 0.08] # TAMP
+            # goal_abs = [-0.4, 0.18, 0.18] # TAMP
             goal = np.append(goal_abs, goal_relative)
         else:
             goal = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
