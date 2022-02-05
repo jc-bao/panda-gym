@@ -432,7 +432,8 @@ class BimanualTaskEnv(gym.GoalEnv):
         info = {
             "is_success": self.task.is_success(obs["achieved_goal"], self.task.get_goal()), 
             "ee_pos": np.array([self.robot0.get_ee_position(), self.robot1.get_ee_position()]),
-            "assemble_done": self.assemble_done
+            "assemble_done": self.assemble_done, 
+            "obj_init_side": self.task.obj_init_side if hasattr(self.task, 'obj_init_side') else None
             }
         reward = self.task.compute_reward(obs["achieved_goal"], self.task.get_goal(), info)
         assert isinstance(reward, float)  # needed for pytype cheking

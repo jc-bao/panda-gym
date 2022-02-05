@@ -261,11 +261,13 @@ class TowerBimanual(Task):
 
     def _sample_objects(self) -> np.ndarray:
         obj_pos = []
+        self.obj_init_side = [0]*self.num_blocks
         for i in range(self.num_blocks):
             # get target object side
             while True:
                 pos = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
-                pos[0] = (self.np_random.choice([-1,1])) * pos[0]
+                self.obj_init_side[i] = (self.np_random.choice([-1,1]))
+                pos[0] = self.obj_init_side[i] * pos[0]
                 if len(obj_pos) == 0:
                     break
                 elif min(np.linalg.norm(obj_pos - pos, axis = -1)) > self.object_size*4:
