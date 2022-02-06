@@ -71,6 +71,11 @@ for i in range(1,7):
         kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'num_blocks', 'reach_once': True}
     )
     register(
+        id="PandaTowerBimanualSingleSide-v"+str(i),
+        entry_point="panda_gym.envs:PandaTowerBimanualEnv",
+        kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'num_blocks', 'single_side': True}
+    )
+    register(
         id="PandaTowerBimanualReachOnceMix-v"+str(i),
         entry_point="panda_gym.envs:PandaTowerBimanualEnv",
         kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'mix', 'reach_once': True}

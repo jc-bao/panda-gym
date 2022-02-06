@@ -5,7 +5,7 @@ import time
 import os
 from pybullet_data import getDataPath
 
-env = gym.make("PandaTowerBimanualNoGapMix-v1", render=True)
+env = gym.make("PandaTowerBimanualSingleSide-v1", render=True)
 # env = gym.make("PandaRearrangeUnstable-v2", render=True)
 # env = gym.make("PandaRelativePNPBimanualObjInHand-v0", render=True)
 # env = gym.make("PandaTowerBimanualSharedOpSpace-v0", render=True)

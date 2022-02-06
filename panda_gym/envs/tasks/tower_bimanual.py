@@ -30,10 +30,12 @@ class TowerBimanual(Task):
         goal_not_in_obj_rate = 1, 
         shared_op_space = False, 
         gap_distance = 0.23, 
-        reach_once = False
+        reach_once = False, 
+        single_side = False
     ) -> None:
         super().__init__(sim)
         self.reach_once = reach_once # if fix obj once reach
+        self.single_side = single_side # only generate obj/goal on the single side
         self.load_tabel = True
         self.gap_distance = gap_distance
         self.shared_op_space = shared_op_space
@@ -189,7 +191,7 @@ class TowerBimanual(Task):
             negative_side_goal_idx = []
             for i in range(self.num_blocks):
                 obj_side = (float(obj_pos[i*3]>0)*2-1)
-                if_same_side = (float(self.np_random.uniform()>self.other_side_rate)*2-1)
+                if_same_side = 1 if self.single_side else (float(self.np_random.uniform()>self.other_side_rate)*2-1)
                 goal_side = obj_side * if_same_side
                 need_handover = need_handover or (if_same_side < 0)
                 while True:
@@ -266,7 +268,7 @@ class TowerBimanual(Task):
             # get target object side
             while True:
                 pos = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
-                self.obj_init_side[i] = (self.np_random.choice([-1,1]))
+                self.obj_init_side[i] = -1 if self.single_side else (self.np_random.choice([-1,1]))
                 pos[0] = self.obj_init_side[i] * pos[0]
                 if len(obj_pos) == 0:
                     break
@@ -275,7 +277,7 @@ class TowerBimanual(Task):
             obj_pos.append(pos)
         choosed_block_id = np.random.choice(np.arange(self.num_blocks))
         if self.np_random.uniform()>self.obj_not_in_hand_rate:
-            if self.np_random.uniform()>0.5:
+            if self.np_random.uniform()>0.5 or self.single_side:
                 obj_pos[choosed_block_id] = self.get_ee_position0()+np.array([self.object_size*2,0,0])*(not self.use_small_obj)
             else:
                 obj_pos[choosed_block_id] = self.get_ee_position1()-np.array([self.object_size*2,0,0])*(not self.use_small_obj)
