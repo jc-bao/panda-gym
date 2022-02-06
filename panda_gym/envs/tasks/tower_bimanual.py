@@ -51,7 +51,7 @@ class TowerBimanual(Task):
         self.goal_not_in_obj_rate = goal_not_in_obj_rate
         self.max_num_blocks = 6
         self.num_blocks = num_blocks
-        self._max_episode_steps = 70*self.num_blocks
+        self._max_episode_steps = 50*self.num_blocks
         self.target_shape = target_shape
         self.goal_xyz_range = goal_xyz_range
         self.num_not_musk = 1
@@ -319,7 +319,7 @@ class TowerBimanual(Task):
             self.goal_range_high = np.array(self.goal_xyz_range) + self.goal_range_low
         elif self.curriculum_type == 'num_blocks':
             self.num_blocks = int(config)
-            self._max_episode_steps = 70 * self.num_blocks
+            self._max_episode_steps = 50 * self.num_blocks
         elif self.curriculum_type == 'musk':
             if self.num_not_musk < self.num_blocks:
                 self.num_not_musk = int(config*self.num_blocks)+1
