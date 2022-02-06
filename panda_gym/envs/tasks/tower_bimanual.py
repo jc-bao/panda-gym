@@ -324,13 +324,13 @@ class TowerBimanual(Task):
         elif self.curriculum_type == 'mix': # learn rearrange first -> multi
             max_num = 2
             # expand number of block first
-            if self.num_blocks < max_num:
+            if config <= max_num:
                 self.num_blocks = int(config)
                 self._max_episode_steps = 60 * self.num_blocks
-            elif self.num_blocks == max_num+1: # expand otherside rate
+            elif config <= max_num+1: # expand otherside rate
                 self.other_side_rate = 0.3 # 50%need two handover
                 self._max_episode_steps = 70 * self.num_blocks
-            elif self.num_blocks == max_num+2: # expand otherside rate
-                self.other_side_rate = 0.5 # 50%need two handover
+            elif config <= max_num+2: # expand otherside rate
+                self.other_side_rate = 0.6 # 50%need two handover
+                print(self.other_side_rate)
                 self._max_episode_steps = 80 * self.num_blocks
-        

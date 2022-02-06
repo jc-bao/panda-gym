@@ -149,7 +149,7 @@ class ReachBimanual(Task):
                 ag = (object1_position - object0_position)
             # CHANGE TAMP
             # for i in range(2):
-            #     pos = self.sim.get_base_position("object"+str(i))
+            #     pos = self.sim.get_base_positigiton("object"+str(i))
             #     ori = np.array([0, self.sim.get_base_rotation("object"+str(i))[1], 0])
             #     self.sim.set_base_pose("object"+str(i), pos, ori)
             #     self.sim.set_base_pose("object"+str(i)+"1",pos,np.array([0.0, 0.0, 0.0, 1.0]))
