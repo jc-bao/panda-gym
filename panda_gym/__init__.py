@@ -58,7 +58,7 @@ for i in range(1,7):
         id="PandaTower-v"+str(i),
         entry_point="panda_gym.envs:PandaTowerEnv",
         kwargs={"reward_type": 'sparse', "control_type": 'ee', 'num_blocks': i},
-        max_episode_steps=70*i,
+        max_episode_steps=50*i,
     )
     register(
         id="PandaTowerBimanual-v"+str(i),
