@@ -210,3 +210,8 @@ register(
     entry_point="panda_gym.envs:PandaAssembleBimanualEnv",
     kwargs={'obj_not_in_hand_rate': 0.5, 'obj_not_in_plate_rate':0.5}
 )
+register(
+    id="PandaTowerBimanualOsNumMix-v1",
+    entry_point="panda_gym.envs:PandaTowerBimanualEnv",
+    kwargs={"control_type": 'ee', 'num_blocks': 1, 'curriculum_type': 'os_num_mix'}
+)
