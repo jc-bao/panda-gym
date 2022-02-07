@@ -163,7 +163,7 @@ class TowerBimanual(Task):
     def reset(self, goal = None) -> None:
         self.reach_state = [False]*self.num_blocks
         obj_pos = self._sample_objects()
-        self.goal = self._sample_goal(obj_pos) if not goal==None else goal
+        self.goal = self._sample_goal(obj_pos) if goal==None else goal
         # obj_pos = np.asarray([-0.2, 0, self.object_size/2])
         # self.goal = np.asarray([0.12, 0, self.object_size*3])
         for i in range(self.num_blocks):
