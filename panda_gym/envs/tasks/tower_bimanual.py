@@ -351,3 +351,17 @@ class TowerBimanual(Task):
                 self.other_side_rate = 0.6 # 50%need two handover
                 self.num_blocks = int(config)
                 self._max_episode_steps = 60 * self.num_blocks
+        elif self.curriculum_type == 'hand_num_mix':
+            # 1- hand=0.4 num=1; 1.5- hand=0.8 num=1; 2- hand=0.8 num=2 ...
+            # expand number of block first
+            if config < 1.5:
+                self.obj_not_in_hand_rate = 0.4
+                self.num_blocks = int(config)
+                self._max_episode_steps = 60 * self.num_blocks
+            elif config < 2: # expand otherside rate
+                self.obj_not_in_hand_rate = 0.8
+                self._max_episode_steps = 60 * self.num_blocks
+            else: # expand number
+                self.other_side_rate = 0.8
+                self.num_blocks = int(config)
+                self._max_episode_steps = 60 * self.num_blocks

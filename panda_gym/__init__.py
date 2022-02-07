@@ -215,3 +215,8 @@ register(
     entry_point="panda_gym.envs:PandaTowerBimanualEnv",
     kwargs={"control_type": 'ee', 'num_blocks': 1, 'curriculum_type': 'os_num_mix'}
 )
+register(
+    id="PandaTowerBimanualHandNumMix-v1",
+    entry_point="panda_gym.envs:PandaTowerBimanualEnv",
+    kwargs={"control_type": 'ee', 'num_blocks': 1, 'curriculum_type': 'os_num_mix'}
+)
