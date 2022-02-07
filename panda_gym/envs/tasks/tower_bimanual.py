@@ -164,6 +164,8 @@ class TowerBimanual(Task):
         self.reach_state = [False]*self.num_blocks
         obj_pos = self._sample_objects()
         self.goal = self._sample_goal(obj_pos)
+        # obj_pos = np.asarray([-0.2, 0, self.object_size/2])
+        # self.goal = np.asarray([0.12, 0, self.object_size*3])
         for i in range(self.num_blocks):
             self.sim.set_base_pose("target"+str(i), self.goal[i*3:(i+1)*3], np.array([0.0, 0.0, 0.0, 1.0]))
             self.sim.set_base_pose("object"+str(i), obj_pos[i*3:(i+1)*3], np.array([0.0, 0.0, 0.0, 1.0]))

@@ -5,6 +5,8 @@ import gym
 import gym.spaces
 import gym.utils.seeding
 import numpy as np
+import torch
+from sqlalchemy import case
 
 from panda_gym.pybullet import PyBullet
 import panda_gym
@@ -374,7 +376,11 @@ class BimanualTaskEnv(gym.GoalEnv):
                 achieved_goal=gym.spaces.Box(-10.0, 10.0, shape=desired_goal_shape, dtype=np.float32),
             )
         )
-        self.robot_obs_size = len(self.robot0.get_obs()) + len(self.robot1.get_obs())
+        self.robot_obs_size_0 = len(self.robot0.get_obs())
+        self.robot_obs_size_1 = len(self.robot1.get_obs())
+        self.robot_obs_size = self.robot_obs_size_0 + self.robot_obs_size_1
+        self.task_obs_size = len(self.task.get_obs())
+        self.goal_size = len(self.task.goal)
         self.robot0_action_shape = self.robot0.action_space.shape[0]
         self.robot1_action_shape = self.robot1.action_space.shape[0]
         action_shape = self.robot0_action_shape + self.robot1_action_shape
@@ -498,3 +504,35 @@ class BimanualTaskEnv(gym.GoalEnv):
         if config != None:
             self.task.change(config)
             self._max_episode_steps = self.task._max_episode_steps
+
+    def obs_parser(self, x, contain_goal = True, mode = 'mirror'):
+        # robot0
+        robot0_obs = x[..., :self.robot_obs_size_0]
+        # robot0_pos = robot0_obs[..., :3]
+        # robot0_vel = robot0_obs[..., 3:6]
+        # robot0_finger = robot0_obs[..., 6]
+        # robot1
+        robot1_obs = x[..., self.robot_obs_size_0:self.robot_obs_size]
+        # robot1_pos = robot1_obs[..., :3]
+        # robot1_vel = robot1_obs[..., 3:6]
+        # robot1_finger = robot1_obs[..., 6]
+        # task
+        task_obs = x[..., self.robot_obs_size:self.robot_obs_size+self.task_obs_size]
+        # obj_pos, obj_ori, obj_vel, obj_angvel = [], [], [], []
+        # for i in range(self.task.num_blocks):
+        #     obj_pos.append(task_obs[..., 12*i:12*i+3])
+        #     obj_ori.append(task_obs[..., 12*i+3:12*i+6])
+        #     obj_vel.append(task_obs[..., 12*i+6:12*i+9])
+        #     obj_angvel.append(task_obs[..., 12*i+9:12*i+12])
+        if contain_goal:
+            goal = x[..., self.robot_obs_size+self.task_obs_size:self.robot_obs_size+self.task_obs_size+self.goal_size]
+        return {
+            'mirror': np.concatenate(
+                (
+                    robot1_obs*([-1,-1,1]*2+[1]),
+                    robot0_obs*([-1,-1,1]*2+[1]),
+                    task_obs*([-1,-1,1,1,-1,1]*2*self.task.num_blocks),
+                    goal*([-1,-1,1]*self.task.num_blocks),
+                ),
+                axis=-1),
+        }[mode]
