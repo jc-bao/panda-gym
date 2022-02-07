@@ -55,7 +55,7 @@ class PandaTowerBimanualEnv(BimanualTaskEnv):
             obj_not_in_hand_rate = 0.4
             goal_xyz_range=[0.4, 0.3, 0.2]
             obj_xyz_range=[0.3, 0.3, 0]
-            goal_not_in_obj_rate = 1
+            goal_not_in_obj_rate = 0.85
         elif curriculum_type == 'goal_z':
             has_gravaty_rate = 1
             other_side_rate = 0.5
