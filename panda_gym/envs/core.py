@@ -411,11 +411,11 @@ class BimanualTaskEnv(gym.GoalEnv):
             "desired_goal": self.task.get_goal(),
         }
 
-    def reset(self) -> Dict[str, np.ndarray]:
+    def reset(self, goal = None) -> Dict[str, np.ndarray]:
         with self.sim.no_rendering():
             self.robot0.reset()
             self.robot1.reset()
-            self.task.reset()
+            self.task.reset(goal = None)
         self.num_steps = 0
         self.delay_steps = np.random.randint(self.max_delay_steps + 1)
         self.delay_arm0 = np.random.uniform(0, 1)<0.5

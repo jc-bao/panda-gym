@@ -160,10 +160,10 @@ class TowerBimanual(Task):
         achieved_goal = (ag).flatten()
         return achieved_goal
 
-    def reset(self) -> None:
+    def reset(self, goal = None) -> None:
         self.reach_state = [False]*self.num_blocks
         obj_pos = self._sample_objects()
-        self.goal = self._sample_goal(obj_pos)
+        self.goal = self._sample_goal(obj_pos) if not goal==None else goal
         # obj_pos = np.asarray([-0.2, 0, self.object_size/2])
         # self.goal = np.asarray([0.12, 0, self.object_size*3])
         for i in range(self.num_blocks):
@@ -296,7 +296,7 @@ class TowerBimanual(Task):
     def compute_reward(self, achieved_goal, desired_goal, info: Dict[str, Any]) -> Union[np.ndarray, float]:
         delta = (achieved_goal - desired_goal).reshape(-1, self.num_blocks ,3)
         dist_block2goal = np.linalg.norm(delta, axis=-1)
-        rew = np.sum(dist_block2goal<self.distance_threshold, axis=-1, dtype = float)-1
+        rew = -np.sum(dist_block2goal>self.distance_threshold, axis=-1, dtype = float)
         if self.shared_op_space or self.gap_distance == 0:
             ee_dis = info['ee_pos'][0] - info['ee_pos'][1]
             d = np.sqrt(0.5*(np.square(ee_dis[0]/0.12) + np.square(ee_dis[1]/0.24)))
