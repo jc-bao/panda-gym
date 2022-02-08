@@ -31,9 +31,11 @@ class TowerBimanual(Task):
         shared_op_space = False, 
         gap_distance = 0.23, 
         reach_once = False, 
-        single_side = False
+        single_side = False, 
+        block_length = 3, 
     ) -> None:
         super().__init__(sim)
+        self.block_length = block_length
         self.reach_once = reach_once # if fix obj once reach
         self.single_side = single_side # only generate obj/goal on the single side
         self.load_tabel = True
@@ -57,7 +59,7 @@ class TowerBimanual(Task):
         self.num_not_musk = 1
         self.goal_range_low = np.array([0, -goal_xyz_range[1]/2, self.object_size/2])
         self.goal_range_high = np.array(goal_xyz_range) + self.goal_range_low
-        self.obj_range_low = np.array([self.gap_distance/1.2*(not self.shared_op_space), -obj_xyz_range[1] / 2, self.object_size/2])
+        self.obj_range_low = np.array([self.gap_distance/1.7*(not self.shared_op_space), -obj_xyz_range[1] / 2, self.object_size/2])
         self.obj_range_high = np.array(obj_xyz_range) + self.obj_range_low
         with self.sim.no_rendering():
             self._create_scene()
@@ -69,7 +71,7 @@ class TowerBimanual(Task):
 
     def _create_scene(self) -> None:
         self.sim.create_plane(z_offset=-0.4)
-        table_x = 0.3 if self.shared_op_space else 0.5 + self.gap_distance/2
+        table_x = 0.3 if self.shared_op_space else 0.46 + self.gap_distance/2
         self.sim.create_table(length=1., width=0.7, height=0.4, x_offset=(-table_x), index=0)
         self.sim.create_table(length=1., width=0.7, height=0.4, x_offset=(table_x), index=1)
         # obj_range_size_half = (self.obj_range_high - self.obj_range_low)/ 2
@@ -117,7 +119,7 @@ class TowerBimanual(Task):
             color = np.random.rand(3)
             self.sim.create_box(
                 body_name="object"+str(i),
-                half_extents=np.array([1 if self.use_small_obj else 5,1,1]) * self.object_size / 2,
+                half_extents=np.array([1 if self.use_small_obj else self.block_length,1,1]) * self.object_size / 2,
                 mass=0.3,
                 position=np.array([1, 0.1*i - 0.3, self.object_size / 2]),
                 rgba_color=np.append(color, 1),
@@ -280,9 +282,9 @@ class TowerBimanual(Task):
         choosed_block_id = np.random.choice(np.arange(self.num_blocks))
         if self.np_random.uniform()>self.obj_not_in_hand_rate:
             if self.np_random.uniform()>0.5 or self.single_side:
-                obj_pos[choosed_block_id] = self.get_ee_position0()+np.array([self.object_size*2,0,0])*(not self.use_small_obj)
+                obj_pos[choosed_block_id] = self.get_ee_position0()+np.array([self.object_size*self.block_length/2.5,0,0])*(not self.use_small_obj)
             else:
-                obj_pos[choosed_block_id] = self.get_ee_position1()-np.array([self.object_size*2,0,0])*(not self.use_small_obj)
+                obj_pos[choosed_block_id] = self.get_ee_position1()-np.array([self.object_size*self.block_length/2.5,0,0])*(not self.use_small_obj)
         return np.array(obj_pos).flatten()
 
     def is_success(self, achieved_goal: np.ndarray, desired_goal: np.ndarray) -> Union[np.ndarray, float]:

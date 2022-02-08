@@ -5,7 +5,8 @@ import time
 import os
 from pybullet_data import getDataPath
 
-env = gym.make("PandaTowerBimanualOsNumMix-v1", render=True)
+env = gym.make("PandaTowerBimanual-v1", render=True)
+# env = gym.make("PandaTowerBimanualOsNumMix-v1", render=True)
 # env = gym.make("PandaRearrangeUnstable-v2", render=True)
 # env = gym.make("PandaRelativePNPBimanualObjInHand-v0", render=True)
 # env = gym.make("PandaTowerBimanualSharedOpSpace-v0", render=True)
@@ -19,12 +20,12 @@ done = False
 
 param = 1
 total_rew = 0
-env.task.obj_not_in_hand_rate=0
+# env.task.obj_not_in_hand_rate=0
 for _ in range(10):
     for i in range(env._max_episode_steps):
         action = (env.action_space.sample())
-        # action[3]=-1
-        # action[7]=-1
+        action[3]=-1
+        action[7]=-1
         # action[1]=1
         # action[5]=1
         obs, reward, done, info = env.step(action)
