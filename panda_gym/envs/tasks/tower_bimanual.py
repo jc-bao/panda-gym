@@ -71,7 +71,7 @@ class TowerBimanual(Task):
 
     def _create_scene(self) -> None:
         self.sim.create_plane(z_offset=-0.4)
-        table_x = 0.3 if self.shared_op_space else 0.46 + self.gap_distance/2
+        table_x = 0.3 if self.shared_op_space else 0.5 + self.gap_distance/2
         self.sim.create_table(length=1., width=0.7, height=0.4, x_offset=(-table_x), index=0)
         self.sim.create_table(length=1., width=0.7, height=0.4, x_offset=(table_x), index=1)
         # obj_range_size_half = (self.obj_range_high - self.obj_range_low)/ 2
@@ -120,7 +120,7 @@ class TowerBimanual(Task):
             self.sim.create_box(
                 body_name="object"+str(i),
                 half_extents=np.array([1 if self.use_small_obj else self.block_length,1,1]) * self.object_size / 2,
-                mass=0.3,
+                mass=0.2,
                 position=np.array([1, 0.1*i - 0.3, self.object_size / 2]),
                 rgba_color=np.append(color, 1),
             )
