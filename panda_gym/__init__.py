@@ -198,7 +198,7 @@ for i in range(7):
     register(
         id="PandaTowerBimanualNoGapMix-v"+str(i),
         entry_point="panda_gym.envs:PandaTowerBimanualEnv",
-        kwargs={"control_type": 'ee', 'num_blocks':1 if i==0 else i, 'shared_op_space': True, 'curriculum_type': 'mix', 'gap_distance': 0},
+        kwargs={"control_type": 'ee', 'num_blocks':1 if i==0 else i, 'shared_op_space': True, 'curriculum_type': 'os_num_mix', 'gap_distance': 0},
     )
     register(
         id="PandaTowerBimanualDelay-v"+str(i),

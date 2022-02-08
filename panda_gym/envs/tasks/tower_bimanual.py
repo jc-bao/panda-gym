@@ -338,7 +338,6 @@ class TowerBimanual(Task):
                 self._max_episode_steps = 70 * self.num_blocks
             elif config <= max_num+2: # expand otherside rate
                 self.other_side_rate = 0.6 # 50%need two handover
-                print(self.other_side_rate)
                 self._max_episode_steps = 80 * self.num_blocks
         elif self.curriculum_type == 'os_num_mix':
             # 1- os=0 num=1; 1.5- os=0.6 num=1; 2- os=0.6 num=2 ...
@@ -347,10 +346,9 @@ class TowerBimanual(Task):
                 self.num_blocks = int(config)
                 self._max_episode_steps = 60 * self.num_blocks
             elif config < 2: # expand otherside rate
-                self.other_side_rate = 0.6 # 50%need two handover
+                self.other_side_rate = 0.8 if self.gap_distance==0 else 0.6 # 50%need two handover
                 self._max_episode_steps = 60 * self.num_blocks
             else: # expand number
-                self.other_side_rate = 0.6 # 50%need two handover
                 self.num_blocks = int(config)
                 self._max_episode_steps = 60 * self.num_blocks
         elif self.curriculum_type == 'hand_num_mix':
