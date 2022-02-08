@@ -80,7 +80,7 @@ class PandaTowerBimanualEnv(BimanualTaskEnv):
             obj_xyz_range= [0.3, 0.4, 0] if shared_op_space else [0.3, 0.3, 0]
             goal_not_in_obj_rate = 1
         if gap_distance == 0:
-            goal_xyz_range = [0.5, 0.5, 0]
+            goal_xyz_range = [0.4, 0.3, 0]
             obj_xyz_range = goal_xyz_range
         task = TowerBimanual(sim, robot0.get_ee_position, robot1.get_ee_position, num_blocks = num_blocks, \
             curriculum_type = curriculum_type, other_side_rate = other_side_rate, has_gravaty_rate = has_gravaty_rate, \

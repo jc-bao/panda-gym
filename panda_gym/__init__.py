@@ -88,7 +88,7 @@ for i in range(1,7):
     register(
         id="PandaTowerBimanualOtherSide-v"+str(i),
         entry_point="panda_gym.envs:PandaTowerBimanualEnv",
-        kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'other_side'},
+        kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'other_side'}
     )
     register(
         id="PandaRearrange-v"+str(i),
