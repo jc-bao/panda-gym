@@ -38,7 +38,7 @@ for _ in range(10):
         if i == env._max_episode_steps-1:
             param = (param + 0.2)
             # print(((ag[0]>0)==(g[0]>0) and (ag[0]>0)==(g[0]>0)))
-            env.change(param)
+            # env.change(param)
             obs = env.reset()
             origin_ag = obs['achieved_goal']
             # print(total_rew)
