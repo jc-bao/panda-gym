@@ -33,8 +33,10 @@ class TowerBimanual(Task):
         reach_once = False, 
         single_side = False, 
         block_length = 3, 
+        max_num_need_handover = 10
     ) -> None:
         super().__init__(sim)
+        self.max_num_need_handover = max_num_need_handover
         self.block_length = block_length
         self.reach_once = reach_once # if fix obj once reach
         self.single_side = single_side # only generate obj/goal on the single side
@@ -190,14 +192,14 @@ class TowerBimanual(Task):
             goals = np.array(goals).flatten()
             # goals = np.append(goals, [0]*6) # Note: this one is used to calculate the gripper distance
         elif self.target_shape == 'any':
-            need_handover = False
+            num_need_handover = 0
             positive_side_goal_idx = []
             negative_side_goal_idx = []
             for i in range(self.num_blocks):
                 obj_side = (float(obj_pos[i*3]>0)*2-1)
-                if_same_side = 1 if self.single_side else (float(self.np_random.uniform()>self.other_side_rate)*2-1)
+                if_same_side = 1 if self.single_side or (num_need_handover>=self.max_num_need_handover) else (float(self.np_random.uniform()>self.other_side_rate)*2-1)
                 goal_side = obj_side * if_same_side
-                need_handover = need_handover or (if_same_side < 0)
+                num_need_handover += int(if_same_side < 0)
                 while True:
                     # sample goal
                     if self.reach_once:
@@ -223,7 +225,7 @@ class TowerBimanual(Task):
                                 negative_side_goal_idx.append(i)
                             goals.append(goal)
                             break
-            if not need_handover: # make object in the air to learn pnp
+            if num_need_handover == 0: # make object in the air to learn pnp
                 if len(positive_side_goal_idx) > 0:
                     idx = np.random.choice(positive_side_goal_idx)
                     goals[idx] = np.random.uniform(self.goal_range_low, self.goal_range_high)
