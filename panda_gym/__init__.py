@@ -65,6 +65,12 @@ for i in range(1,7):
         entry_point="panda_gym.envs:PandaTowerBimanualEnv",
         kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'num_blocks'}
     )
+    for j in range(1, 7):
+        register(
+            id=f"PandaTowerBimanualMaxHandover{j}-v{i}",
+            entry_point="panda_gym.envs:PandaTowerBimanualEnv",
+            kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'num_blocks', 'max_num_need_handover':j}
+        )
     register(
         id="PandaTowerBimanualReachOnce-v"+str(i),
         entry_point="panda_gym.envs:PandaTowerBimanualEnv",
