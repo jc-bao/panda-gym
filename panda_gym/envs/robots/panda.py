@@ -24,7 +24,11 @@ class Panda(PyBulletRobot):
         base_orientation: np.ndarray=np.array([0,0,0,1]),
         control_type: str = "ee",
         index: int = 0,
+        max_move_per_step = 0.05, 
+        noise_obs = False
     ) -> None:
+        self.noise_obs = noise_obs
+        self.max_move_per_step = max_move_per_step
         self.block_gripper = block_gripper
         self.control_type = control_type
         n_action = 3 if self.control_type == "ee" else 7  # control (x, y z) if "ee", else, control the 7 joints
@@ -78,7 +82,7 @@ class Panda(PyBulletRobot):
         Returns:
             np.ndarray: Target arm angles, as the angles of the 7 arm joints.
         """
-        ee_displacement = ee_displacement[:3] * 0.05  # limit maximum change in position
+        ee_displacement = ee_displacement[:3] * self.max_move_per_step  # limit maximum change in position
         # get the current position and the target position
         ee_position = self.get_ee_position()
         target_ee_position = ee_position + ee_displacement
@@ -121,6 +125,10 @@ class Panda(PyBulletRobot):
             obs = np.concatenate((ee_position, ee_velocity, [fingers_width]))
         else:
             obs = np.concatenate((ee_position, ee_velocity))
+        if self.noise_obs:
+            obs[:3] += np.random.randn(3)*0.002 # 2mm
+            obs[3:6] += np.random.randn(3)*0.0002 # max 0.06
+            obs[6] += np.random.randn(1)*0.0008 # max 0.08
         return obs
 
     def reset(self) -> None:

@@ -33,9 +33,13 @@ class TowerBimanual(Task):
         reach_once = False, 
         single_side = False, 
         block_length = 3, 
-        max_num_need_handover = 10
+        max_num_need_handover = 10, 
+        max_move_per_step = 0.05, 
+        noise_obs = False
     ) -> None:
+        self.noise_obs = noise_obs
         super().__init__(sim)
+        self.max_move_per_step = max_move_per_step
         self.max_num_need_handover = max_num_need_handover
         self.block_length = block_length
         self.reach_once = reach_once # if fix obj once reach
@@ -55,7 +59,7 @@ class TowerBimanual(Task):
         self.goal_not_in_obj_rate = goal_not_in_obj_rate
         self.max_num_blocks = 6
         self.num_blocks = num_blocks
-        self._max_episode_steps = 50*self.num_blocks
+        self._max_episode_steps = 50*self.num_blocks * int(0.05/self.max_move_per_step)
         self.target_shape = target_shape
         self.goal_xyz_range = goal_xyz_range
         self.num_not_musk = 1
@@ -140,6 +144,8 @@ class TowerBimanual(Task):
         obs = []
         for i in range(self.num_blocks):
             # [NOTE]trick: reset object orientation to aviod z rotation
+            # pos = self.sim.get_base_position("object"+str(i)) + np.random.rand(3)*0.002 * self.noise_obs
+            # ori = np.array([0, self.sim.get_base_rotation("object"+str(i))[1], 0])  + np.random.rand(3)*0.002 * self.noise_obs
             pos = self.sim.get_base_position("object"+str(i))
             ori = np.array([0, self.sim.get_base_rotation("object"+str(i))[1], 0])
             self.sim.set_base_pose("object"+str(i), pos, ori)
