@@ -206,14 +206,14 @@ class TowerBimanual(Task):
                 if_same_side = 1 if self.single_side or (num_need_handover>=self.max_num_need_handover) else (float(self.np_random.uniform()>self.other_side_rate)*2-1)
                 goal_side = obj_side * if_same_side
                 num_need_handover += int(if_same_side < 0)
-                for i in range(10):
+                for _ in range(10):
                     # sample goal
                     if self.reach_once:
                         goal = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
                     else:
                         goal = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
                     goal[0] = goal_side*goal[0]
-                    if len(goals) == 0 or i == 9:
+                    if len(goals) == 0:
                         break
                     # if goal is satisfied, append
                     # elif (np.linalg.norm(goal - obj_pos[i*3:i*3+3])) > self.distance_threshold*1.2:
