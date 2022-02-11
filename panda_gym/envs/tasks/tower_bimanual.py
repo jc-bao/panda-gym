@@ -65,7 +65,7 @@ class TowerBimanual(Task):
         self.num_not_musk = 1
         self.goal_range_low = np.array([0, -goal_xyz_range[1]/2, self.object_size/2])
         self.goal_range_high = np.array(goal_xyz_range) + self.goal_range_low
-        self.obj_range_low = np.array([self.gap_distance/1.7*(not self.shared_op_space), -obj_xyz_range[1] / 2, self.object_size/2])
+        self.obj_range_low = np.array([self.gap_distance/1.2*(not self.shared_op_space), -obj_xyz_range[1] / 2, self.object_size/2])
         self.obj_range_high = np.array(obj_xyz_range) + self.obj_range_low
         with self.sim.no_rendering():
             self._create_scene()
@@ -80,46 +80,46 @@ class TowerBimanual(Task):
         table_x = 0.3 if self.shared_op_space else 0.5 + self.gap_distance/2
         self.sim.create_table(length=1., width=0.7, height=0.4, x_offset=(-table_x), index=0)
         self.sim.create_table(length=1., width=0.7, height=0.4, x_offset=(table_x), index=1)
-        # obj_range_size_half = (self.obj_range_high - self.obj_range_low)/ 2
-        # obj_range_pos_0 = (self.obj_range_high + self.obj_range_low)/ 2
-        # obj_range_pos_1 = (self.obj_range_high + self.obj_range_low)/ 2
-        # obj_range_pos_1[0] = -obj_range_pos_1[0]
-        # self.sim.create_box(
-        #     body_name="debug_obj_0",
-        #     half_extents=obj_range_size_half,
-        #     mass=0.0,
-        #     ghost=True,
-        #     position=obj_range_pos_0,
-        #     rgba_color=np.array([0, 0, 1, 0.1]),
-        # )
-        # self.sim.create_box(
-        #     body_name="debug_obj_1",
-        #     half_extents=obj_range_size_half,
-        #     mass=0.0,
-        #     ghost=True,
-        #     position=obj_range_pos_1,
-        #     rgba_color=np.array([0, 0, 1, 0.1]),
-        # )
-        # goal_range_size_half = (self.goal_range_high - self.goal_range_low)/ 2
-        # goal_range_pos_0 = (self.goal_range_high + self.goal_range_low)/ 2
-        # goal_range_pos_1 = (self.goal_range_high + self.goal_range_low)/ 2
-        # goal_range_pos_1[0] = -goal_range_pos_1[0]
-        # self.sim.create_box(
-        #     body_name="debug_goal_0",
-        #     half_extents=goal_range_size_half,
-        #     mass=0.0,
-        #     ghost=True,
-        #     position=goal_range_pos_0,
-        #     rgba_color=np.array([0, 1, 0, 0.05]),
-        # )
-        # self.sim.create_box(
-        #     body_name="debug_goal_1",
-        #     half_extents=goal_range_size_half,
-        #     mass=0.0,
-        #     ghost=True,
-        #     position=goal_range_pos_1,
-        #     rgba_color=np.array([0, 1, 0, 0.05]),
-        # )
+        obj_range_size_half = (self.obj_range_high - self.obj_range_low)/ 2
+        obj_range_pos_0 = (self.obj_range_high + self.obj_range_low)/ 2
+        obj_range_pos_1 = (self.obj_range_high + self.obj_range_low)/ 2
+        obj_range_pos_1[0] = -obj_range_pos_1[0]
+        self.sim.create_box(
+            body_name="debug_obj_0",
+            half_extents=obj_range_size_half,
+            mass=0.0,
+            ghost=True,
+            position=obj_range_pos_0,
+            rgba_color=np.array([0, 0, 1, 0.1]),
+        )
+        self.sim.create_box(
+            body_name="debug_obj_1",
+            half_extents=obj_range_size_half,
+            mass=0.0,
+            ghost=True,
+            position=obj_range_pos_1,
+            rgba_color=np.array([0, 0, 1, 0.1]),
+        )
+        goal_range_size_half = (self.goal_range_high - self.goal_range_low)/ 2
+        goal_range_pos_0 = (self.goal_range_high + self.goal_range_low)/ 2
+        goal_range_pos_1 = (self.goal_range_high + self.goal_range_low)/ 2
+        goal_range_pos_1[0] = -goal_range_pos_1[0]
+        self.sim.create_box(
+            body_name="debug_goal_0",
+            half_extents=goal_range_size_half,
+            mass=0.0,
+            ghost=True,
+            position=goal_range_pos_0,
+            rgba_color=np.array([0, 1, 0, 0.05]),
+        )
+        self.sim.create_box(
+            body_name="debug_goal_1",
+            half_extents=goal_range_size_half,
+            mass=0.0,
+            ghost=True,
+            position=goal_range_pos_1,
+            rgba_color=np.array([0, 1, 0, 0.05]),
+        )
         self.use_small_obj = (self.gap_distance==0 or self.shared_op_space)
         for i in range(self.max_num_blocks):
             color = np.random.rand(3)
@@ -206,7 +206,7 @@ class TowerBimanual(Task):
                 if_same_side = 1 if self.single_side or (num_need_handover>=self.max_num_need_handover) else (float(self.np_random.uniform()>self.other_side_rate)*2-1)
                 goal_side = obj_side * if_same_side
                 num_need_handover += int(if_same_side < 0)
-                while True:
+                for _ in range(10):
                     # sample goal
                     if self.reach_once:
                         goal = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
@@ -222,9 +222,9 @@ class TowerBimanual(Task):
                         break
                     # if goal is satisfied, append
                     elif (np.linalg.norm(goal - obj_pos[i*3:i*3+3])) > self.distance_threshold*1.2:
-                        x_size = self.object_size*1.5 if self.use_small_obj else self.object_size*4.5
+                        x_size = self.object_size*1.5 if self.use_small_obj else self.object_size*3.5
                         if  min(abs(goals - goal)[..., 0]) > x_size or \
-                            min(abs(goals - goal)[..., 1]) > self.object_size*1.1:
+                            min(abs(goals - goal)[..., 1]) > self.object_size*1.3:
                             if goal_side > 0:
                                 positive_side_goal_idx.append(i)
                             else:
