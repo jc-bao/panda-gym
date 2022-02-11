@@ -379,8 +379,8 @@ class BimanualTaskEnv(gym.GoalEnv):
         self.robot_obs_size_0 = len(self.robot0.get_obs())
         self.robot_obs_size_1 = len(self.robot1.get_obs())
         self.robot_obs_size = self.robot_obs_size_0 + self.robot_obs_size_1
-        self.task_obs_size = len(self.task.get_obs())
-        self.goal_size = len(self.task.goal)
+        self.single_task_obs_size = int(len(self.task.get_obs())/self.task.num_blocks)
+        self.single_goal_size = int(len(self.task.goal)/self.task.num_blocks)
         self.robot0_action_shape = self.robot0.action_space.shape[0]
         self.robot1_action_shape = self.robot1.action_space.shape[0]
         action_shape = self.robot0_action_shape + self.robot1_action_shape
@@ -506,6 +506,8 @@ class BimanualTaskEnv(gym.GoalEnv):
             self._max_episode_steps = self.task._max_episode_steps
 
     def obs_parser(self, x, contain_goal = True, mode = 'mirror'):
+        task_obs_size = self.single_task_obs_size * self.task.num_blocks
+        goal_size = self.single_goal_size * self.task.num_blocks
         # robot0
         robot0_obs = x[..., :self.robot_obs_size_0]
         # robot0_pos = robot0_obs[..., :3]
@@ -517,7 +519,7 @@ class BimanualTaskEnv(gym.GoalEnv):
         # robot1_vel = robot1_obs[..., 3:6]
         # robot1_finger = robot1_obs[..., 6]
         # task
-        task_obs = x[..., self.robot_obs_size:self.robot_obs_size+self.task_obs_size]
+        task_obs = x[..., self.robot_obs_size:self.robot_obs_size+task_obs_size]
         # obj_pos, obj_ori, obj_vel, obj_angvel = [], [], [], []
         # for i in range(self.task.num_blocks):
         #     obj_pos.append(task_obs[..., 12*i:12*i+3])
@@ -525,7 +527,7 @@ class BimanualTaskEnv(gym.GoalEnv):
         #     obj_vel.append(task_obs[..., 12*i+6:12*i+9])
         #     obj_angvel.append(task_obs[..., 12*i+9:12*i+12])
         if contain_goal:
-            goal = x[..., self.robot_obs_size+self.task_obs_size:self.robot_obs_size+self.task_obs_size+self.goal_size]
+            goal = x[..., self.robot_obs_size+task_obs_size:self.robot_obs_size+task_obs_size+goal_size]
         return {
             'mirror': np.concatenate(
                 (

@@ -206,31 +206,26 @@ class TowerBimanual(Task):
                 if_same_side = 1 if self.single_side or (num_need_handover>=self.max_num_need_handover) else (float(self.np_random.uniform()>self.other_side_rate)*2-1)
                 goal_side = obj_side * if_same_side
                 num_need_handover += int(if_same_side < 0)
-                for _ in range(10):
+                for i in range(10):
                     # sample goal
                     if self.reach_once:
                         goal = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
                     else:
                         goal = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
                     goal[0] = goal_side*goal[0]
-                    if len(goals) == 0:
-                        if goal_side > 0:
-                            positive_side_goal_idx.append(i)
-                        else:
-                            negative_side_goal_idx.append(i)
-                        goals.append(goal)
+                    if len(goals) == 0 or i == 9:
                         break
                     # if goal is satisfied, append
-                    elif (np.linalg.norm(goal - obj_pos[i*3:i*3+3])) > self.distance_threshold*1.2:
-                        x_size = self.object_size*1.5 if self.use_small_obj else self.object_size*3.5
-                        if  min(abs(goals - goal)[..., 0]) > x_size or \
-                            min(abs(goals - goal)[..., 1]) > self.object_size*1.3:
-                            if goal_side > 0:
-                                positive_side_goal_idx.append(i)
-                            else:
-                                negative_side_goal_idx.append(i)
-                            goals.append(goal)
-                            break
+                    # elif (np.linalg.norm(goal - obj_pos[i*3:i*3+3])) > self.distance_threshold*1.2:
+                    x_size = self.object_size*1.5 if self.use_small_obj else self.object_size*3.5
+                    if  min(abs(goals - goal)[..., 0]) > x_size or \
+                        min(abs(goals - goal)[..., 1]) > self.object_size*1.3:
+                        break
+                if goal_side > 0:
+                    positive_side_goal_idx.append(i)
+                else:
+                    negative_side_goal_idx.append(i)
+                goals.append(goal)
             if num_need_handover == 0: # make object in the air to learn pnp
                 if len(positive_side_goal_idx) > 0:
                     idx = np.random.choice(positive_side_goal_idx)

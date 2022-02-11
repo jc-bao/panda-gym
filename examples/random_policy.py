@@ -24,8 +24,8 @@ total_rew = 0
 for _ in range(10):
     for i in range(env._max_episode_steps):
         action = (env.action_space.sample())
-        action[3]=-1
-        action[7]=-1
+        # action[3]=-1
+        # action[7]=-1
         # action[1]=1
         # action[5]=1
         obs, reward, done, info = env.step(action)
