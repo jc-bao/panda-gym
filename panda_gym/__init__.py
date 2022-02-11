@@ -79,7 +79,7 @@ for i in range(1,7):
         register(
             id=f"PandaTowerBimanualMaxHandover{j}-v{i}",
             entry_point="panda_gym.envs:PandaTowerBimanualEnv",
-            kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'num_blocks', 'max_num_need_handover':j}
+            kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'hand_num_mix', 'max_num_need_handover':j}
         )
         register(
             id=f"PandaTowerBimanualMaxHandover{j}Slow-v{i}",
