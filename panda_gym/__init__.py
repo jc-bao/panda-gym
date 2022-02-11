@@ -81,6 +81,16 @@ for i in range(1,7):
             entry_point="panda_gym.envs:PandaTowerBimanualEnv",
             kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'num_blocks', 'max_num_need_handover':j}
         )
+        register(
+            id=f"PandaTowerBimanualMaxHandover{j}Slow-v{i}",
+            entry_point="panda_gym.envs:PandaTowerBimanualEnv",
+            kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'num_blocks', 'max_num_need_handover':j, 'max_move_per_step': 0.02}
+        )
+        register(
+            id=f"PandaTowerBimanualMaxHandover{j}SlowNoise-v{i}",
+            entry_point="panda_gym.envs:PandaTowerBimanualEnv",
+            kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'num_blocks', 'max_num_need_handover':j, 'max_move_per_step': 0.02, 'noise_obs': True}
+        )
     register(
         id="PandaTowerBimanualReachOnce-v"+str(i),
         entry_point="panda_gym.envs:PandaTowerBimanualEnv",
