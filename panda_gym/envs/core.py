@@ -436,11 +436,11 @@ class BimanualTaskEnv(gym.GoalEnv):
             self.trajectory = {
                 'obj_init_pos': self.task.get_achieved_goal(),
                 'goal': self.task.get_goal(),
-                'time': [0], 
+                'time': [0],
                 'panda0_ee': [self.robot0.get_ee_position()], 
                 'panda1_ee': [self.robot1.get_ee_position()], 
-                'panda0_finger': [self.robot0.get_finger_width()], 
-                'panda1_finger': [self.robot1.get_finger_width()], 
+                'panda0_finger': [self.robot0.get_fingers_width()], 
+                'panda1_finger': [self.robot1.get_fingers_width()], 
             }
             self.num_trajectory += 1
         return self._get_obs()
@@ -479,6 +479,7 @@ class BimanualTaskEnv(gym.GoalEnv):
             self.trajectory['panda1_ee'].append(self.robot1.get_ee_position())
             self.trajectory['panda0_finger'].append(self.robot0.get_fingers_width())
             self.trajectory['panda1_finger'].append(self.robot1.get_fingers_width())
+        done = self.num_steps >= self._max_episode_steps
         return obs, reward, done, info
 
     def seed(self, seed: Optional[int] = None) -> int:

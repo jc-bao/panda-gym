@@ -78,48 +78,48 @@ class TowerBimanual(Task):
     def _create_scene(self) -> None:
         self.sim.create_plane(z_offset=-0.4)
         table_x = 0.3 if self.shared_op_space else 0.5 + self.gap_distance/2
-        self.sim.create_table(length=1., width=0.7, height=0.4, x_offset=(-table_x), index=0)
-        self.sim.create_table(length=1., width=0.7, height=0.4, x_offset=(table_x), index=1)
-        # obj_range_size_half = (self.obj_range_high - self.obj_range_low)/ 2
-        # obj_range_pos_0 = (self.obj_range_high + self.obj_range_low)/ 2
-        # obj_range_pos_1 = (self.obj_range_high + self.obj_range_low)/ 2
-        # obj_range_pos_1[0] = -obj_range_pos_1[0]
-        # self.sim.create_box(
-        #     body_name="debug_obj_0",
-        #     half_extents=obj_range_size_half,
-        #     mass=0.0,
-        #     ghost=True,
-        #     position=obj_range_pos_0,
-        #     rgba_color=np.array([0, 0, 1, 0.1]),
-        # )
-        # self.sim.create_box(
-        #     body_name="debug_obj_1",
-        #     half_extents=obj_range_size_half,
-        #     mass=0.0,
-        #     ghost=True,
-        #     position=obj_range_pos_1,
-        #     rgba_color=np.array([0, 0, 1, 0.1]),
-        # )
-        # goal_range_size_half = (self.goal_range_high - self.goal_range_low)/ 2
-        # goal_range_pos_0 = (self.goal_range_high + self.goal_range_low)/ 2
-        # goal_range_pos_1 = (self.goal_range_high + self.goal_range_low)/ 2
-        # goal_range_pos_1[0] = -goal_range_pos_1[0]
-        # self.sim.create_box(
-        #     body_name="debug_goal_0",
-        #     half_extents=goal_range_size_half,
-        #     mass=0.0,
-        #     ghost=True,
-        #     position=goal_range_pos_0,
-        #     rgba_color=np.array([0, 1, 0, 0.05]),
-        # )
-        # self.sim.create_box(
-        #     body_name="debug_goal_1",
-        #     half_extents=goal_range_size_half,
-        #     mass=0.0,
-        #     ghost=True,
-        #     position=goal_range_pos_1,
-        #     rgba_color=np.array([0, 1, 0, 0.05]),
-        # )
+        self.sim.create_table(length=1., width=1, height=0.4, x_offset=(-table_x), index=0)
+        self.sim.create_table(length=1., width=1, height=0.4, x_offset=(table_x), index=1)
+        obj_range_size_half = (self.obj_range_high - self.obj_range_low)/ 2
+        obj_range_pos_0 = (self.obj_range_high + self.obj_range_low)/ 2
+        obj_range_pos_1 = (self.obj_range_high + self.obj_range_low)/ 2
+        obj_range_pos_1[0] = -obj_range_pos_1[0]
+        self.sim.create_box(
+            body_name="debug_obj_0",
+            half_extents=obj_range_size_half,
+            mass=0.0,
+            ghost=True,
+            position=obj_range_pos_0,
+            rgba_color=np.array([0, 0, 1, 0.1]),
+        )
+        self.sim.create_box(
+            body_name="debug_obj_1",
+            half_extents=obj_range_size_half,
+            mass=0.0,
+            ghost=True,
+            position=obj_range_pos_1,
+            rgba_color=np.array([0, 0, 1, 0.1]),
+        )
+        goal_range_size_half = (self.goal_range_high - self.goal_range_low)/ 2
+        goal_range_pos_0 = (self.goal_range_high + self.goal_range_low)/ 2
+        goal_range_pos_1 = (self.goal_range_high + self.goal_range_low)/ 2
+        goal_range_pos_1[0] = -goal_range_pos_1[0]
+        self.sim.create_box(
+            body_name="debug_goal_0",
+            half_extents=goal_range_size_half,
+            mass=0.0,
+            ghost=True,
+            position=goal_range_pos_0,
+            rgba_color=np.array([0, 1, 0, 0.05]),
+        )
+        self.sim.create_box(
+            body_name="debug_goal_1",
+            half_extents=goal_range_size_half,
+            mass=0.0,
+            ghost=True,
+            position=goal_range_pos_1,
+            rgba_color=np.array([0, 1, 0, 0.05]),
+        )
         self.use_small_obj = (self.gap_distance==0 or self.shared_op_space)
         for i in range(self.max_num_blocks):
             color = np.random.rand(3)
@@ -127,7 +127,7 @@ class TowerBimanual(Task):
                 body_name="object"+str(i),
                 half_extents=np.array([1 if self.use_small_obj else self.block_length,1,1]) * self.object_size / 2,
                 mass=0.2,
-                position=np.array([1, 0.1*i - 0.3, self.object_size / 2]),
+                position=np.array([2, 0.1*i - 0.3, self.object_size / 2]),
                 rgba_color=np.append(color, 1),
             )
             self.sim.create_sphere(
@@ -135,7 +135,7 @@ class TowerBimanual(Task):
                 radius=self.object_size / 1.9,
                 mass=0.0,
                 ghost=True,
-                position=np.array([1, 0.1*i-0.3, 0.05]),
+                position=np.array([2, 0.1*i-0.3, 0.05]),
                 rgba_color=np.append(color, 0.5),
             )
 
@@ -235,19 +235,19 @@ class TowerBimanual(Task):
                     new_goal = np.random.uniform(self.goal_range_low, self.goal_range_high)
                     new_goal[0] = -new_goal[0]
                     goals[idx] = new_goal
-            if self.curriculum_type == 'goal_in_obj':
-                # goal in object rate, curriculum trick
-                new_idx = np.arange(self.num_blocks)
-                np.random.shuffle(new_idx)
-                relabel_num = 0
-                for j in new_idx[1:]:
-                    if self.np_random.uniform() > self.goal_not_in_obj_rate: # get goal to obj
-                        goals[j] = obj_pos[j*3:j*3+3]
-                        relabel_num += 1
-                if relabel_num == (self.num_blocks - 1):
-                    new_goal = np.random.uniform(self.goal_range_low, self.goal_range_high)
-                    new_goal[0] = np.random.choice([-1,1])*new_goal[0]
-                    goals[new_idx[0]] = new_goal
+            # if self.curriculum_type == 'goal_in_obj':
+            # goal in object rate, curriculum trick
+            new_idx = np.arange(self.num_blocks)
+            np.random.shuffle(new_idx)
+            relabel_num = 0
+            for j in new_idx[1:]:
+                if self.np_random.uniform() > self.goal_not_in_obj_rate: # get goal to obj
+                    goals[j] = obj_pos[j*3:j*3+3]
+                    relabel_num += 1
+            if relabel_num == (self.num_blocks - 1):
+                new_goal = np.random.uniform(self.goal_range_low, self.goal_range_high)
+                new_goal[0] = np.random.choice([-1,1])*new_goal[0]
+                goals[new_idx[0]] = new_goal
         elif self.target_shape == 'positive_side':
             goals = []
             goal0 = self.np_random.uniform(self.goal_range_low, self.goal_range_high)

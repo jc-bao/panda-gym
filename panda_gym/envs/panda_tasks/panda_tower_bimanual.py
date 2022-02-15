@@ -17,14 +17,14 @@ class PandaTowerBimanualEnv(BimanualTaskEnv):
             Defaults to "ee".
     """
 
-    def __init__(self, render: bool = False, num_blocks: int = 1, control_type: str = "ee", curriculum_type = None, use_bound = False, use_musk = False, shared_op_space = False, gap_distance = 0.23, max_delay_steps = 0, target_shape = 'any', reach_once = False, single_side = False, block_length = 5, os_rate = None, max_num_need_handover = 10, max_move_per_step = 0.05, noise_obs = False, store_trajectory = False) -> None:
+    def __init__(self, render: bool = False, num_blocks: int = 1, control_type: str = "ee", curriculum_type = None, use_bound = False, use_musk = False, shared_op_space = False, gap_distance = 0.23, max_delay_steps = 0, target_shape = 'any', reach_once = False, single_side = False, block_length = 5, os_rate = None, max_num_need_handover = 10, max_move_per_step = 0.05, noise_obs = False, store_trajectory = False, parallel_robot = False) -> None:
         if gap_distance == None:
             gap_distance = block_length*0.04+0.03
         sim = PyBullet(render=render, timestep=1.0/240, n_substeps=20)
         if use_bound:
             robot0 = PandaBound(sim, index=0,block_gripper=False, base_position=np.array([-0.775, 0.0, 0.0]), control_type=control_type, base_orientation = [0,0,0,1])
-            robot1 = PandaBound(sim, index=1, block_gripper=False, base_position=np.array([0.775, 0.0, 0.0]),control_type=control_type, base_orientation = [0,0,1,0])
-        if shared_op_space:
+            robot1 = PandaBound(sim, index=1, block_gripper=False, base_position=np.array([0.775, 0.0, 0.0]),control_type=control_type, base_orientation = [0,0,1,0]) 
+        elif shared_op_space:
             base_x = 0.72 if gap_distance==0 else 0.5
             robot0 = Panda(sim, index=0,block_gripper=False, base_position=np.array([-base_x, 0.0, 0.0]), control_type=control_type, base_orientation = [0,0,0,1])
             robot1 = Panda(sim, index=1, block_gripper=False, base_position=np.array([base_x, 0.0, 0.0]),control_type=control_type, base_orientation = [0,0,1,0])
@@ -32,6 +32,11 @@ class PandaTowerBimanualEnv(BimanualTaskEnv):
                 -1.67254799e-04, 2.77888080e+00, 7.85577202e-01, 0, 0])
             robot1.neutral_joint_values = np.array([-8.62979537e-04, 6.67109107e-02, 8.93407819e-04, -2.71219648e+00, \
                 -1.67254799e-04, 2.77888080e+00, 7.85577202e-01, 0, 0])
+        elif parallel_robot:
+            robot0 = Panda(sim, index=0,block_gripper=False, base_position=np.array([-0.7, -0.4, 0.0]), control_type=control_type, base_orientation = [0,0,np.sqrt(2)/2,np.sqrt(2)/2], max_move_per_step=max_move_per_step, noise_obs = noise_obs)
+            robot1 = Panda(sim, index=1, block_gripper=False, base_position=np.array([0.7, 0.4, 0.0]),control_type=control_type, base_orientation = [0,0,-np.sqrt(2)/2,np.sqrt(2)/2], max_move_per_step=max_move_per_step, noise_obs = noise_obs)
+            robot0.neutral_joint_values = np.array([-0.12593504068329087, 0.2317273297268855, -0.39855150509205445, -2.4891976287831454, 0.2079942120401763, 2.694932460185828, 1.6530547720778208])
+            robot1.neutral_joint_values = np.array([-0.12593504068329087, 0.2317273297268855, -0.39855150509205445, -2.4891976287831454, 0.2079942120401763, 2.694932460185828, 1.6530547720778208])
         else:
             robot0 = Panda(sim, index=0,block_gripper=False, base_position=np.array([-0.775, 0.0, 0.0]), control_type=control_type, base_orientation = [0,0,0,1], max_move_per_step=max_move_per_step, noise_obs = noise_obs)
             robot1 = Panda(sim, index=1, block_gripper=False, base_position=np.array([0.775, 0.0, 0.0]),control_type=control_type, base_orientation = [0,0,1,0], max_move_per_step=max_move_per_step, noise_obs = noise_obs)
@@ -44,6 +49,13 @@ class PandaTowerBimanualEnv(BimanualTaskEnv):
             goal_xyz_range=[0.4, 0.3, 0.2]
             obj_xyz_range=[0.3, 0.3, 0]
             goal_not_in_obj_rate = 1
+        if curriculum_type == 'swarm':
+            has_gravaty_rate = 1
+            other_side_rate = 0.8
+            obj_not_in_hand_rate = 0.5
+            goal_xyz_range=[0.9, 0.3, 0.2]
+            obj_xyz_range=[0.7, 0.3, 0]
+            goal_not_in_obj_rate = 0.7
         elif curriculum_type == 'other_side' or curriculum_type == 'mix' or curriculum_type == 'os_num_mix':
             has_gravaty_rate = 1
             other_side_rate = 0
