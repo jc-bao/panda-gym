@@ -35,9 +35,11 @@ class TowerBimanual(Task):
         block_length = 3, 
         max_num_need_handover = 10, 
         max_move_per_step = 0.05, 
-        noise_obs = False
+        noise_obs = False, 
+        exchange_only = False
     ) -> None:
         self.noise_obs = noise_obs
+        self.exchange_only = exchange_only
         super().__init__(sim)
         self.max_move_per_step = max_move_per_step
         self.max_num_need_handover = max_num_need_handover
@@ -176,8 +178,12 @@ class TowerBimanual(Task):
         self.goal = self._sample_goal(obj_pos) if goal==None else goal
         # obj_pos = np.append(self.get_ee_position0()+np.array([self.object_size*self.block_length/2.5,0,0]), \
         #     self.get_ee_position1()-np.array([self.object_size*self.block_length/2.5,0,0]))
-        obj_pos = np.asarray([-0.4, -0.1, self.object_size/2, 0.2, 0.1, self.object_size/2])
-        self.goal = np.asarray([0.4, -0.1, self.object_size/2, -0.4, 0.1, self.object_size/2])
+        # obj_pos_0 = np.asarray([-0.4, -0.1, self.object_size/2])
+        # obj_pos_0 = self.get_ee_position0()+np.array([self.object_size*self.block_length/2.5,0,0])
+        # obj_pos_1 = np.asarray([0.2, 0.1, self.object_size/2])
+        # obj_pos_1 = self.get_ee_position1()-np.array([self.object_size*self.block_length/2.5,0,0])
+        # obj_pos = np.append(obj_pos_0, obj_pos_1)
+        # self.goal = np.asarray([0.52, -0.06, self.object_size/2, -0.52, 0.06, self.object_size/2])
         for i in range(self.num_blocks):
             self.sim.set_base_pose("target"+str(i), self.goal[i*3:(i+1)*3], np.array([0.0, 0.0, 0.0, 1.0]))
             self.sim.set_base_pose("object"+str(i), obj_pos[i*3:(i+1)*3], np.array([0.0, 0.0, 0.0, 1.0]))
@@ -273,17 +279,31 @@ class TowerBimanual(Task):
     def _sample_objects(self) -> np.ndarray:
         obj_pos = []
         self.obj_init_side = [0]*self.num_blocks
+        num_positive = 0
+        num_negative = 0
         for i in range(self.num_blocks):
             # get target object side
             while True:
                 pos = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
-                self.obj_init_side[i] = -1 if self.single_side else (self.np_random.choice([-1,1]))
+                if self.single_side:
+                    self.obj_init_side[i] = -1 
+                else:
+                    self.obj_init_side[i] = self.np_random.choice([-1,1])
+                if self.exchange_only:
+                    if num_negative > 0 and num_positive == 0:
+                        self.obj_init_side[i] = 1
+                    elif num_positive > 0 and num_negative == 0:
+                        self.obj_init_side[i] = -1
                 pos[0] = self.obj_init_side[i] * pos[0]
                 if len(obj_pos) == 0:
                     break
                 elif min(np.linalg.norm(obj_pos - pos, axis = -1)) > self.object_size*4:
                     break
             obj_pos.append(pos)
+            if pos[0] < 0:
+                num_negative += 1
+            else:
+                num_positive += 1
         choosed_block_id = np.random.choice(np.arange(self.num_blocks))
         if self.np_random.uniform()>self.obj_not_in_hand_rate:
             if self.np_random.uniform()>0.5 or self.single_side:
