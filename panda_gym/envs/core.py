@@ -432,12 +432,15 @@ class BimanualTaskEnv(gym.GoalEnv):
         self.assemble_done = False
         if self.store_trajectory:
             np.save(f"/Users/reedpan/Downloads/trajectory/{self.num_trajectory}.npy", self.trajectory)
+            print(f"trajectory{self.num_trajectory} saved!")
             self.trajectory = {
-                'time': [], 
-                'panda0_ee': [], 
-                'panda1_ee': [], 
-                'panda0_finger': [], 
-                'panda1_finger': [], 
+                'obj_init_pos': self.task.get_achieved_goal(),
+                'goal': self.task.get_goal(),
+                'time': [0], 
+                'panda0_ee': [self.robot0.get_ee_position()], 
+                'panda1_ee': [self.robot1.get_ee_position()], 
+                'panda0_finger': [self.robot0.get_finger_width()], 
+                'panda1_finger': [self.robot1.get_finger_width()], 
             }
             self.num_trajectory += 1
         return self._get_obs()
@@ -469,13 +472,13 @@ class BimanualTaskEnv(gym.GoalEnv):
             }
         reward = self.task.compute_reward(obs["achieved_goal"], self.task.get_goal(), info)
         assert isinstance(reward, float)  # needed for pytype cheking
+        self.num_steps += 1
         if self.store_trajectory:
             self.trajectory['time'].append(self.num_steps/12)
             self.trajectory['panda0_ee'].append(self.robot0.get_ee_position())
             self.trajectory['panda1_ee'].append(self.robot1.get_ee_position())
             self.trajectory['panda0_finger'].append(self.robot0.get_fingers_width())
-            self.trajectory['panda1_finger'].append(self.robot1.get_ee_position())
-        self.num_steps += 1
+            self.trajectory['panda1_finger'].append(self.robot1.get_fingers_width())
         return obs, reward, done, info
 
     def seed(self, seed: Optional[int] = None) -> int:
