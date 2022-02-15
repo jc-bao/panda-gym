@@ -352,7 +352,7 @@ class BimanualTaskEnv(gym.GoalEnv):
 
     metadata = {"render.modes": ["human", "rgb_array"]}
 
-    def __init__(self, robot0: PyBulletRobot, robot1: PyBulletRobot, task: Task, max_delay_steps=0) -> None:
+    def __init__(self, robot0: PyBulletRobot, robot1: PyBulletRobot, task: Task, max_delay_steps=0, store_trajectory = False) -> None:
         assert robot0.sim == task.sim, "The robot and the task must belong to the same simulation."
         assert robot0.sim == robot1.sim, "The robot must belong to the same simulation."
         self.sim = robot0.sim
@@ -364,6 +364,16 @@ class BimanualTaskEnv(gym.GoalEnv):
             self.num_blocks = task.num_blocks
         except:
             print('num_blocks dose not exist')
+        self.store_trajectory = store_trajectory
+        if store_trajectory:
+            self.num_trajectory = 0
+            self.trajectory = {
+                'time': [], 
+                'panda0_ee': [], 
+                'panda1_ee': [], 
+                'panda0_finger': [], 
+                'panda1_finger': [], 
+            }
         self.seed()  # required for init; can be changed later
         obs = self.reset()
         observation_shape = obs["observation"].shape
@@ -420,6 +430,16 @@ class BimanualTaskEnv(gym.GoalEnv):
         self.delay_steps = np.random.randint(self.max_delay_steps + 1)
         self.delay_arm0 = np.random.uniform(0, 1)<0.5
         self.assemble_done = False
+        if self.store_trajectory:
+            np.save(f"/Users/reedpan/Downloads/trajectory/{self.num_trajectory}.npy", self.trajectory)
+            self.trajectory = {
+                'time': [], 
+                'panda0_ee': [], 
+                'panda1_ee': [], 
+                'panda0_finger': [], 
+                'panda1_finger': [], 
+            }
+            self.num_trajectory += 1
         return self._get_obs()
 
     def step(self, action: np.ndarray) -> Tuple[Dict[str, np.ndarray], float, bool, Dict[str, Any]]:
@@ -443,11 +463,18 @@ class BimanualTaskEnv(gym.GoalEnv):
         info = {
             "is_success": self.task.is_success(obs["achieved_goal"], self.task.get_goal()), 
             "ee_pos": np.array([self.robot0.get_ee_position(), self.robot1.get_ee_position()]),
+            "gripper_pos": np.array([self.robot0.get_fingers_width(), self.robot0.get_fingers_width()]),
             "assemble_done": self.assemble_done, 
             "obj_init_side": self.task.obj_init_side if hasattr(self.task, 'obj_init_side') else None
             }
         reward = self.task.compute_reward(obs["achieved_goal"], self.task.get_goal(), info)
         assert isinstance(reward, float)  # needed for pytype cheking
+        if self.store_trajectory:
+            self.trajectory['time'].append(self.num_steps/12)
+            self.trajectory['panda0_ee'].append(self.robot0.get_ee_position())
+            self.trajectory['panda1_ee'].append(self.robot1.get_ee_position())
+            self.trajectory['panda0_finger'].append(self.robot0.get_fingers_width())
+            self.trajectory['panda1_finger'].append(self.robot1.get_ee_position())
         self.num_steps += 1
         return obs, reward, done, info
 

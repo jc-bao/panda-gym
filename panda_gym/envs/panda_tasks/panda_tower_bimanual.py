@@ -17,7 +17,7 @@ class PandaTowerBimanualEnv(BimanualTaskEnv):
             Defaults to "ee".
     """
 
-    def __init__(self, render: bool = False, num_blocks: int = 1, control_type: str = "ee", curriculum_type = None, use_bound = False, use_musk = False, shared_op_space = False, gap_distance = 0.23, max_delay_steps = 0, target_shape = 'any', reach_once = False, single_side = False, block_length = 5, os_rate = None, max_num_need_handover = 10, max_move_per_step = 0.05, noise_obs = False) -> None:
+    def __init__(self, render: bool = False, num_blocks: int = 1, control_type: str = "ee", curriculum_type = None, use_bound = False, use_musk = False, shared_op_space = False, gap_distance = 0.23, max_delay_steps = 0, target_shape = 'any', reach_once = False, single_side = False, block_length = 5, os_rate = None, max_num_need_handover = 10, max_move_per_step = 0.05, noise_obs = False, store_trajectory = False) -> None:
         if gap_distance == None:
             gap_distance = block_length*0.04+0.03
         sim = PyBullet(render=render, timestep=1.0/240, n_substeps=20)
@@ -90,4 +90,4 @@ class PandaTowerBimanualEnv(BimanualTaskEnv):
                             reach_once = reach_once, single_side = single_side, block_length=block_length, \
                                 max_num_need_handover=max_num_need_handover, max_move_per_step = max_move_per_step, \
                                     noise_obs=noise_obs)
-        super().__init__(robot0, robot1, task, max_delay_steps = max_delay_steps)
+        super().__init__(robot0, robot1, task, max_delay_steps = max_delay_steps, store_trajectory = store_trajectory)

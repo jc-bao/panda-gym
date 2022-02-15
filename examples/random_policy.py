@@ -5,7 +5,7 @@ import time
 import os
 from pybullet_data import getDataPath
 
-env = gym.make("PandaTowerBimanualMaxHandover3-v3", render=True)
+env = gym.make("PandaTowerBimanual-v1", render=True)
 # env = gym.make("PandaTowerBimanualOsNumMix-v1", render=True)
 # env = gym.make("PandaRearrangeUnstable-v2", render=True)
 # env = gym.make("PandaRelativePNPBimanualObjInHand-v0", render=True)
@@ -23,7 +23,8 @@ total_rew = 0
 # env.task.obj_not_in_hand_rate=0
 for _ in range(10):
     for i in range(env._max_episode_steps):
-        action = (env.action_space.sample())
+        action = np.zeros_like(env.action_space.sample())
+        print(env.robot0.get_ee_position(), env.robot1.get_ee_position())
         # action[3]=-1
         # action[7]=-1
         # action[1]=1
