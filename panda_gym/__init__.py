@@ -68,7 +68,8 @@ for i in range(1,7):
     register(
         id="PandaTowerBimanualParallel-v"+str(i),
         entry_point="panda_gym.envs:PandaTowerBimanualEnv",
-        kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'swarm', "parallel_robot": True}
+        kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'swarm', "parallel_robot": True}, 
+        max_episode_steps = 70*i
     )
     register(
         id="PandaTowerBimanualParallelExchange-v"+str(i),
