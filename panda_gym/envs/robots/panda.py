@@ -131,8 +131,21 @@ class Panda(PyBulletRobot):
             obs[6] += np.random.randn(1)*0.0008 # max 0.08
         return obs
 
-    def reset(self) -> None:
+    def reset(self, init_pos = None) -> None:
         self.set_joint_neutral()
+        # set initial position
+        if not init_pos==None:
+            for _ in range(10):
+                if self.index == 0:
+                    target_arm_angles = self.inverse_kinematics(
+                        link=self.ee_link, position=init_pos, orientation=np.array([1.0, 0.0, 0.0, 0.0])
+                    )
+                else: 
+                    target_arm_angles = self.inverse_kinematics(
+                        link=self.ee_link, position=init_pos, orientation=np.array([0.0, -1.0, 0.0, 0.0])
+                    )
+                self.control_joints(target_angles = target_arm_angles)
+                self.sim.step()
 
     def set_joint_neutral(self) -> None:
         """Set the robot to its neutral pose."""

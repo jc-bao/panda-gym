@@ -176,14 +176,16 @@ class TowerBimanual(Task):
         self.reach_state = [False]*self.num_blocks
         obj_pos = self._sample_objects()
         self.goal = self._sample_goal(obj_pos) if goal==None else goal
-        # obj_pos = np.append(self.get_ee_position0()+np.array([self.object_size*self.block_length/2.5,0,0]), \
-        #     self.get_ee_position1()-np.array([self.object_size*self.block_length/2.5,0,0]))
-        # obj_pos_0 = np.asarray([-0.4, -0.1, self.object_size/2])
+        obj_pos = np.append(self.get_ee_position0()+np.array([self.object_size*self.block_length/2.5,0,0]), \
+            self.get_ee_position1()-np.array([self.object_size*self.block_length/2.5,0,0]))
+        ''' For debug
+        obj_pos_0 = np.asarray([-0.2, -0.1, self.object_size/2])
         # obj_pos_0 = self.get_ee_position0()+np.array([self.object_size*self.block_length/2.5,0,0])
-        # obj_pos_1 = np.asarray([0.2, 0.1, self.object_size/2])
+        obj_pos_1 = np.asarray([0.2, 0.1, self.object_size/2])
         # obj_pos_1 = self.get_ee_position1()-np.array([self.object_size*self.block_length/2.5,0,0])
-        # obj_pos = np.append(obj_pos_0, obj_pos_1)
-        # self.goal = np.asarray([0.52, -0.06, self.object_size/2, -0.52, 0.06, self.object_size/2])
+        obj_pos = np.append(obj_pos_0, obj_pos_1)
+        self.goal = np.asarray([0.6, -0.06, self.object_size/2, -0.6, 0.06, self.object_size/2])
+        '''
         for i in range(self.num_blocks):
             self.sim.set_base_pose("target"+str(i), self.goal[i*3:(i+1)*3], np.array([0.0, 0.0, 0.0, 1.0]))
             self.sim.set_base_pose("object"+str(i), obj_pos[i*3:(i+1)*3], np.array([0.0, 0.0, 0.0, 1.0]))

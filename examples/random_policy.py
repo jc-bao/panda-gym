@@ -5,7 +5,7 @@ import time
 import os
 from pybullet_data import getDataPath
 
-env = gym.make("PandaTowerBimanualParallelExchange-v2", render=True)
+env = gym.make("PandaTowerBimanualParallel-v2", render=True)
 # env = gym.make("PandaTowerBimanualOsNumMix-v1", render=True)
 # env = gym.make("PandaRearrangeUnstable-v2", render=True)
 # env = gym.make("PandaRelativePNPBimanualObjInHand-v0", render=True)
@@ -30,10 +30,11 @@ for _ in range(100):
         # action[0]=1
         # action[5]=1
         obs, reward, done, info = env.step(action)
+        # env.reset(panda1_init = [0.2,0.1,0.1])
         # recorder.add_keyframe()
         g = obs['desired_goal']
         ag = obs['achieved_goal']
-        total_rew += reward
+        # total_rew += reward
         # env.render(mode='human')
         # print(info['unstable_state'], reward)
         if i == env._max_episode_steps-1:
