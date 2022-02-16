@@ -51,8 +51,8 @@ class PandaTowerBimanualEnv(BimanualTaskEnv):
             goal_not_in_obj_rate = 1
         if curriculum_type == 'swarm':
             has_gravaty_rate = 1
-            other_side_rate = 0.6
-            obj_not_in_hand_rate = 1
+            other_side_rate = 0.8
+            obj_not_in_hand_rate = 0.6
             goal_xyz_range=[0.9, 0.3, 0.2]
             obj_xyz_range=[0.7, 0.3, 0]
             goal_not_in_obj_rate = 1
