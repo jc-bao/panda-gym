@@ -5,7 +5,7 @@ import time
 import os
 from pybullet_data import getDataPath
 
-env = gym.make("PandaTowerBimanualParallelFinalRewSubgoal-v1", render=True)
+env = gym.make("PandaTowerBimanualParallel-v1", render=True)
 # env = gym.make("PandaTowerBimanualOsNumMix-v1", render=True)
 # env = gym.make("PandaRearrangeUnstable-v2", render=True)
 # env = gym.make("PandaRelativePNPBimanualObjInHand-v0", render=True)
@@ -18,6 +18,16 @@ done = False
 param = 1
 total_rew = 0
 # env.task.obj_not_in_hand_rate=0
+count = 0
+for i in range(100):
+    obs = env.reset()
+    ag = obs['achieved_goal']
+    g = obs['desired_goal']
+    if (ag[0]>0) != (g[0]>0):
+        count+=1
+print(count/100)
+exit()
+
 for _ in range(100):
     for i in range(env._max_episode_steps):
         action = (env.action_space.sample())

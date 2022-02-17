@@ -289,6 +289,7 @@ class TowerBimanual(Task):
                         if self.num_blocks == 1:
                             # one block case, generate subgoal in gap
                             self.subgoals[idx][0] = 0 
+                            self.subgoals[idx][2] = 0.1 
                         else:
                             if goals[idx][0] > 0.35: # if goal is far
                                 self.subgoals[idx][0] = 0.22
