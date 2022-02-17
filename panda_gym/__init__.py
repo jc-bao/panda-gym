@@ -78,7 +78,7 @@ for i in range(1,7):
     register(
         id="PandaTowerBimanualParallel-v"+str(i),
         entry_point="panda_gym.envs:PandaTowerBimanualEnv",
-        kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'hand_range_num_mix', "parallel_robot": True}
+        kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'num_blocks', "parallel_robot": True}
     )
     register(
         id="PandaTowerBimanualParallelExchange-v"+str(i),
