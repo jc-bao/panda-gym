@@ -36,10 +36,12 @@ class TowerBimanual(Task):
         max_num_need_handover = 10, 
         max_move_per_step = 0.05, 
         noise_obs = False, 
-        exchange_only = False
+        exchange_only = False, 
+        parallel_robot = False
     ) -> None:
         self.noise_obs = noise_obs
         self.exchange_only = exchange_only
+        self.parallel_robot = parallel_robot # to use longer 
         super().__init__(sim)
         self.max_move_per_step = max_move_per_step
         self.max_num_need_handover = max_num_need_handover
@@ -61,7 +63,7 @@ class TowerBimanual(Task):
         self.goal_not_in_obj_rate = goal_not_in_obj_rate
         self.max_num_blocks = 6
         self.num_blocks = num_blocks
-        base_time_step = 70 if curriculum_type=='swarm' else 50
+        base_time_step = 70 if self.parallel_robot else 50
         self._max_episode_steps = base_time_step * self.num_blocks * int(0.05/self.max_move_per_step)
         self.target_shape = target_shape
         self.goal_xyz_range = goal_xyz_range
@@ -177,9 +179,9 @@ class TowerBimanual(Task):
         self.reach_state = [False]*self.num_blocks
         obj_pos = self._sample_objects()
         self.goal = self._sample_goal(obj_pos) if goal==None else goal
+        ''' For debug
         obj_pos = np.append(self.get_ee_position0()+np.array([self.object_size*self.block_length/2.5,0,0]), \
             self.get_ee_position1()-np.array([self.object_size*self.block_length/2.5,0,0]))
-        ''' For debug
         obj_pos_0 = np.asarray([-0.2, -0.1, self.object_size/2])
         # obj_pos_0 = self.get_ee_position0()+np.array([self.object_size*self.block_length/2.5,0,0])
         obj_pos_1 = np.asarray([0.2, 0.1, self.object_size/2])
@@ -352,7 +354,48 @@ class TowerBimanual(Task):
         elif self.curriculum_type == 'num_blocks':
             self.num_blocks = int(config)
             self._max_episode_steps = 50 * self.num_blocks
-        elif self.curriculum_type == 'swarm':
+        elif self.curriculum_type == 'hand_range_num_mix':
+            # 1-hand05 1.5-hand0 1.6-goal05obj04 1.7-goal07obj06 1.8-goal09obj08 2-2obj goal0.4-0.9 obj0.3-0.8
+            if config < 1.5:
+                self.obj_not_in_hand_rate = 0.5
+                self.goal_xyz_range = [0.3, 0.3, 0.2]
+                self.goal_range_low = np.array([0, -self.goal_xyz_range[1]/2, self.object_size/2])
+                self.goal_range_high = np.array(self.goal_xyz_range) + self.goal_range_low
+                self.obj_xyz_range = [0.2, 0.3, 0]
+                self.obj_range_low = np.array([self.gap_distance/1.2*(not self.shared_op_space), -self.obj_xyz_range[1] / 2, self.object_size/2])
+                self.obj_range_high = np.array(self.obj_xyz_range) + self.obj_range_low
+            elif config < 1.6:
+                self.obj_not_in_hand_rate = 0
+                self.goal_xyz_range = [0.4, 0.3, 0.2]
+                self.goal_range_low = np.array([0, -self.goal_xyz_range[1]/2, self.object_size/2])
+                self.goal_range_high = np.array(self.goal_xyz_range) + self.goal_range_low
+                self.obj_xyz_range = [0.3, 0.3, 0]
+                self.obj_range_low = np.array([self.gap_distance/1.2*(not self.shared_op_space), -self.obj_xyz_range[1] / 2, self.object_size/2])
+                self.obj_range_high = np.array(self.obj_xyz_range) + self.obj_range_low
+            elif config < 1.7:
+                self.obj_not_in_hand_rate = 0
+                self.goal_xyz_range = [0.6, 0.3, 0.2]
+                self.goal_range_low = np.array([0, -self.goal_xyz_range[1]/2, self.object_size/2])
+                self.goal_range_high = np.array(self.goal_xyz_range) + self.goal_range_low
+                self.obj_xyz_range = [0.5, 0.3, 0]
+                self.obj_range_low = np.array([self.gap_distance/1.2*(not self.shared_op_space), -self.obj_xyz_range[1] / 2, self.object_size/2])
+                self.obj_range_high = np.array(self.obj_xyz_range) + self.obj_range_low
+            elif config < 1.8:
+                self.obj_not_in_hand_rate = 0
+                self.goal_xyz_range = [0.8, 0.3, 0.2]
+                self.goal_range_low = np.array([0, -self.goal_xyz_range[1]/2, self.object_size/2])
+                self.goal_range_high = np.array(self.goal_xyz_range) + self.goal_range_low
+                self.obj_xyz_range = [0.7, 0.3, 0]
+                self.obj_range_low = np.array([self.gap_distance/1.2*(not self.shared_op_space), -self.obj_xyz_range[1] / 2, self.object_size/2])
+                self.obj_range_high = np.array(self.obj_xyz_range) + self.obj_range_low
+            elif config < 1.9:
+                self.obj_not_in_hand_rate = 0
+                self.goal_xyz_range = [0.9, 0.3, 0.2]
+                self.goal_range_low = np.array([0, -self.goal_xyz_range[1]/2, self.object_size/2])
+                self.goal_range_high = np.array(self.goal_xyz_range) + self.goal_range_low
+                self.obj_xyz_range = [0.8, 0.3, 0]
+                self.obj_range_low = np.array([self.gap_distance/1.2*(not self.shared_op_space), -self.obj_xyz_range[1] / 2, self.object_size/2])
+                self.obj_range_high = np.array(self.obj_xyz_range) + self.obj_range_low
             self.num_blocks = int(config)
             self._max_episode_steps = 70 * self.num_blocks
         elif self.curriculum_type == 'musk':

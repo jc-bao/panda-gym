@@ -49,12 +49,14 @@ class PandaTowerBimanualEnv(BimanualTaskEnv):
             goal_xyz_range=[0.4, 0.3, 0.2]
             obj_xyz_range=[0.3, 0.3, 0]
             goal_not_in_obj_rate = 1
-        if curriculum_type == 'swarm':
+        elif curriculum_type == 'hand_range_num_mix':
             has_gravaty_rate = 1
-            other_side_rate = 0.8
-            obj_not_in_hand_rate = 0.6
-            goal_xyz_range=[0.9, 0.3, 0.2]
-            obj_xyz_range=[0.7, 0.3, 0]
+            other_side_rate = 0.7
+            obj_not_in_hand_rate = 0.5
+            goal_xyz_range=[0.3, 0.3, 0.2]
+            obj_xyz_range=[0.2, 0.3, 0]
+            # goal_xyz_range=[0.9, 0.3, 0.2]
+            # obj_xyz_range=[0.7, 0.3, 0]
             goal_not_in_obj_rate = 1
         elif curriculum_type == 'other_side' or curriculum_type == 'mix' or curriculum_type == 'os_num_mix':
             has_gravaty_rate = 1
@@ -103,5 +105,5 @@ class PandaTowerBimanualEnv(BimanualTaskEnv):
                         shared_op_space = shared_op_space, gap_distance = gap_distance, target_shape = target_shape, \
                             reach_once = reach_once, single_side = single_side, block_length=block_length, \
                                 max_num_need_handover=max_num_need_handover, max_move_per_step = max_move_per_step, \
-                                    noise_obs=noise_obs, exchange_only = exchange_only)
+                                    noise_obs=noise_obs, exchange_only = exchange_only, parallel_robot = parallel_robot)
         super().__init__(robot0, robot1, task, max_delay_steps = max_delay_steps, store_trajectory = store_trajectory)
