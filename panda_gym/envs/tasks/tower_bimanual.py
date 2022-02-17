@@ -37,8 +37,12 @@ class TowerBimanual(Task):
         max_move_per_step = 0.05, 
         noise_obs = False, 
         exchange_only = False, 
-        parallel_robot = False
+        parallel_robot = False, 
+        reward_type = 'normal', 
+        subgoal_generation = False
     ) -> None:
+        self.subgoal_generation = subgoal_generation
+        self.reward_type = reward_type
         self.noise_obs = noise_obs
         self.exchange_only = exchange_only
         self.parallel_robot = parallel_robot # to use longer 
@@ -147,11 +151,13 @@ class TowerBimanual(Task):
     def get_obs(self) -> np.ndarray:
         # position, rotation of the object
         obs = []
+        poses = []
         for i in range(self.num_blocks):
             # [NOTE]trick: reset object orientation to aviod z rotation
             # pos = self.sim.get_base_position("object"+str(i)) + np.random.rand(3)*0.002 * self.noise_obs
             # ori = np.array([0, self.sim.get_base_rotation("object"+str(i))[1], 0])  + np.random.rand(3)*0.002 * self.noise_obs
             pos = self.sim.get_base_position("object"+str(i))
+            poses.append(pos)
             ori = np.array([0, self.sim.get_base_rotation("object"+str(i))[1], 0])
             self.sim.set_base_pose("object"+str(i), pos, ori)
             self.reach_state[i] = distance(pos, self.goal[3*i:3*i+3])<self.distance_threshold or self.reach_state[i] 
@@ -160,6 +166,13 @@ class TowerBimanual(Task):
             obs.append(self.sim.get_base_velocity("object"+str(i)))
             obs.append(self.sim.get_base_angular_velocity("object"+str(i)))
         observation = np.array(obs).flatten()
+        # update subgoal
+        # if subgoal reached
+        if self.subgoal_generation:
+            for i in range(self.num_blocks):
+                if np.linalg.norm(poses[i]-self.subgoals[i])<self.distance_threshold:
+                    self.goal[i*3:i*3+3] = self.final_goal[i*3:i*3+3]
+                    self.sim.set_base_pose('target'+str(i), self.goal[i*3:i*3+3], [0]*3)
         return observation
 
     def get_achieved_goal(self) -> np.ndarray:
@@ -179,6 +192,9 @@ class TowerBimanual(Task):
         self.reach_state = [False]*self.num_blocks
         obj_pos = self._sample_objects()
         self.goal = self._sample_goal(obj_pos) if goal==None else goal
+        if self.subgoal_generation:
+            self.final_goal = self.goal
+            self.goal = self.subgoals.flatten()
         ''' For debug
         obj_pos = np.append(self.get_ee_position0()+np.array([self.object_size*self.block_length/2.5,0,0]), \
             self.get_ee_position1()-np.array([self.object_size*self.block_length/2.5,0,0]))
@@ -212,6 +228,7 @@ class TowerBimanual(Task):
             # goals = np.append(goals, [0]*6) # Note: this one is used to calculate the gripper distance
         elif self.target_shape == 'any':
             num_need_handover = 0
+            need_handover_goal_idx = []
             positive_side_goal_idx = []
             negative_side_goal_idx = []
             for i in range(self.num_blocks):
@@ -238,6 +255,8 @@ class TowerBimanual(Task):
                     positive_side_goal_idx.append(i)
                 else:
                     negative_side_goal_idx.append(i)
+                if if_same_side < 0:
+                    need_handover_goal_idx.append(i)
                 goals.append(goal)
             if num_need_handover == 0: # make object in the air to learn pnp
                 if len(positive_side_goal_idx) > 0:
@@ -250,17 +269,31 @@ class TowerBimanual(Task):
                     goals[idx] = new_goal
             # if self.curriculum_type == 'goal_in_obj':
             # goal in object rate, curriculum trick
-            new_idx = np.arange(self.num_blocks)
-            np.random.shuffle(new_idx)
-            relabel_num = 0
-            for j in new_idx[1:]:
-                if self.np_random.uniform() > self.goal_not_in_obj_rate: # get goal to obj
-                    goals[j] = obj_pos[j*3:j*3+3]
-                    relabel_num += 1
-            if relabel_num == (self.num_blocks - 1):
-                new_goal = np.random.uniform(self.goal_range_low, self.goal_range_high)
-                new_goal[0] = np.random.choice([-1,1])*new_goal[0]
-                goals[new_idx[0]] = new_goal
+            # new_idx = np.arange(self.num_blocks)
+            # np.random.shuffle(new_idx)
+            # relabel_num = 0
+            # for j in new_idx[1:]:
+            #     if self.np_random.uniform() > self.goal_not_in_obj_rate: # get goal to obj
+            #         goals[j] = obj_pos[j*3:j*3+3]
+            #         relabel_num += 1
+            # if relabel_num == (self.num_blocks - 1):
+            #     new_goal = np.random.uniform(self.goal_range_low, self.goal_range_high)
+            #     new_goal[0] = np.random.choice([-1,1])*new_goal[0]
+            #     goals[new_idx[0]] = new_goal
+            if self.subgoal_generation:
+                self.subgoals = np.array(goals)
+                for idx in need_handover_goal_idx:
+                    # generate goal rate: 0.5
+                    if self.np_random.uniform() > 0.5:
+                        # if goal is far, then generate subgoal
+                        if self.num_blocks == 1:
+                            # one block case, generate subgoal in gap
+                            self.subgoals[idx][0] = 0 
+                        else:
+                            if goals[idx][0] > 0.35: # if goal is far
+                                self.subgoals[idx][0] = 0.22
+                            elif goals[idx][0] < -0.35:
+                                self.subgoals[idx][0] = -0.22
         elif self.target_shape == 'positive_side':
             goals = []
             goal0 = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
@@ -323,7 +356,8 @@ class TowerBimanual(Task):
             np.linalg.norm(achieved_goal[..., i * 3:(i + 1) * 3] - desired_goal[..., i * 3:(i + 1) * 3], axis=-1)
             for i in range(self.num_blocks)
         ]
-        return float(np.all([d < self.distance_threshold for d in dists]))
+        success = [d < self.distance_threshold for d in dists]
+        return float(np.all(success))
 
     def compute_reward(self, achieved_goal, desired_goal, info: Dict[str, Any]) -> Union[np.ndarray, float]:
         delta = (achieved_goal - desired_goal).reshape(-1, self.num_blocks ,3)
@@ -334,6 +368,11 @@ class TowerBimanual(Task):
             d = np.sqrt(0.5*(np.square(ee_dis[0]/0.12) + np.square(ee_dis[1]/0.24)))
             dis_rew = max(1.5-d, 0)
             rew -= dis_rew
+        if self.reward_type == 'final':
+            # e.g. 3obj: 0-0.5-1-1.5-3
+            num_goal_reached = rew+self.num_blocks
+            if not num_goal_reached == self.num_blocks:
+                rew = -self.num_blocks+num_goal_reached/2
         if len(rew) == 1 :
             return rew[0]
         else: # to process multi dimension input

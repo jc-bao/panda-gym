@@ -17,7 +17,11 @@ class PandaTowerBimanualEnv(BimanualTaskEnv):
             Defaults to "ee".
     """
 
-    def __init__(self, render: bool = False, num_blocks: int = 1, control_type: str = "ee", curriculum_type = None, use_bound = False, use_musk = False, shared_op_space = False, gap_distance = 0.23, max_delay_steps = 0, target_shape = 'any', reach_once = False, single_side = False, block_length = 5, os_rate = None, max_num_need_handover = 10, max_move_per_step = 0.05, noise_obs = False, store_trajectory = False, parallel_robot = False, exchange_only = False) -> None:
+    def __init__(self, render: bool = False, num_blocks: int = 1, control_type: str = "ee", curriculum_type = None, \
+        use_bound = False, use_musk = False, shared_op_space = False, gap_distance = 0.23, max_delay_steps = 0, \
+            target_shape = 'any', reach_once = False, single_side = False, block_length = 5, os_rate = None, \
+                max_num_need_handover = 10, max_move_per_step = 0.05, noise_obs = False, store_trajectory = False, \
+                    parallel_robot = False, exchange_only = False, reward_type = 'normal', subgoal_generation = False) -> None:
         if gap_distance == None:
             gap_distance = block_length*0.04+0.03
         sim = PyBullet(render=render, timestep=1.0/240, n_substeps=20)
@@ -51,7 +55,7 @@ class PandaTowerBimanualEnv(BimanualTaskEnv):
             goal_not_in_obj_rate = 1
         elif curriculum_type == 'hand_range_num_mix':
             has_gravaty_rate = 1
-            other_side_rate = 0.7
+            other_side_rate = 0.65
             obj_not_in_hand_rate = 0.5
             goal_xyz_range=[0.3, 0.3, 0.2]
             obj_xyz_range=[0.2, 0.3, 0]
@@ -105,5 +109,6 @@ class PandaTowerBimanualEnv(BimanualTaskEnv):
                         shared_op_space = shared_op_space, gap_distance = gap_distance, target_shape = target_shape, \
                             reach_once = reach_once, single_side = single_side, block_length=block_length, \
                                 max_num_need_handover=max_num_need_handover, max_move_per_step = max_move_per_step, \
-                                    noise_obs=noise_obs, exchange_only = exchange_only, parallel_robot = parallel_robot)
+                                    noise_obs=noise_obs, exchange_only = exchange_only, parallel_robot = parallel_robot, \
+                                        reward_type=reward_type, subgoal_generation=subgoal_generation)
         super().__init__(robot0, robot1, task, max_delay_steps = max_delay_steps, store_trajectory = store_trajectory)
