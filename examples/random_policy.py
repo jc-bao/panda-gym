@@ -5,7 +5,7 @@ import time
 import os
 from pybullet_data import getDataPath
 
-env = gym.make("PandaTowerBimanualFinalRewSubgoal-v1", render=True)
+env = gym.make("PandaTowerBimanualParallelFinalRewSubgoal-v1", render=True)
 # env = gym.make("PandaTowerBimanualOsNumMix-v1", render=True)
 # env = gym.make("PandaRearrangeUnstable-v2", render=True)
 # env = gym.make("PandaRelativePNPBimanualObjInHand-v0", render=True)
@@ -31,9 +31,9 @@ total_rew = 0
 for _ in range(100):
     for i in range(env._max_episode_steps):
         action = (env.action_space.sample())
-        # disp0 = [-0.45,0,0.1]-env.robot0.get_ee_position()
+        # disp0 = [0.1,0,0.1]-env.robot0.get_ee_position()
         # disp1 = [0.45,0,0.1]-env.robot1.get_ee_position()
-        # action[:3] = disp0/np.linalg.norm(disp0)*0.1
+        # action[:3] = disp0/np.linalg.norm(disp0)
         # action[4:7] = disp1/np.linalg.norm(disp1)*0.1
         # action[3]=-1
         # action[7]=-1
