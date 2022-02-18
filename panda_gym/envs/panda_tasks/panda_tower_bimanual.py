@@ -21,7 +21,8 @@ class PandaTowerBimanualEnv(BimanualTaskEnv):
         use_bound = False, use_musk = False, shared_op_space = False, gap_distance = 0.23, max_delay_steps = 0, \
             target_shape = 'any', reach_once = False, single_side = False, block_length = 5, os_rate = None, \
                 max_num_need_handover = 10, max_move_per_step = 0.05, noise_obs = False, store_trajectory = False, \
-                    parallel_robot = False, exchange_only = False, reward_type = 'normal', subgoal_generation = False) -> None:
+                    parallel_robot = False, exchange_only = False, reward_type = 'normal', subgoal_generation = False, 
+                    store_video = False) -> None:
         if gap_distance == None:
             gap_distance = block_length*0.04+0.03
         sim = PyBullet(render=render, timestep=1.0/240, n_substeps=20)
@@ -37,8 +38,8 @@ class PandaTowerBimanualEnv(BimanualTaskEnv):
             robot1.neutral_joint_values = np.array([-8.62979537e-04, 6.67109107e-02, 8.93407819e-04, -2.71219648e+00, \
                 -1.67254799e-04, 2.77888080e+00, 7.85577202e-01, 0, 0])
         elif parallel_robot:
-            robot0 = Panda(sim, index=0,block_gripper=False, base_position=np.array([-0.75, -0.4, 0.0]), control_type=control_type, base_orientation = [0,0,np.sqrt(2)/2,np.sqrt(2)/2], max_move_per_step=max_move_per_step, noise_obs = noise_obs)
-            robot1 = Panda(sim, index=1, block_gripper=False, base_position=np.array([0.75, 0.4, 0.0]),control_type=control_type, base_orientation = [0,0,-np.sqrt(2)/2,np.sqrt(2)/2], max_move_per_step=max_move_per_step, noise_obs = noise_obs)
+            robot0 = Panda(sim, index=0,block_gripper=False, base_position=np.array([-0.73, -0.4, 0.0]), control_type=control_type, base_orientation = [0,0,np.sqrt(2)/2,np.sqrt(2)/2], max_move_per_step=max_move_per_step, noise_obs = noise_obs)
+            robot1 = Panda(sim, index=1, block_gripper=False, base_position=np.array([0.73, 0.4, 0.0]),control_type=control_type, base_orientation = [0,0,-np.sqrt(2)/2,np.sqrt(2)/2], max_move_per_step=max_move_per_step, noise_obs = noise_obs)
             robot0.neutral_joint_values = np.array([-0.12593504068329087, 0.2317273297268855, -0.39855150509205445, -2.4891976287831454, 0.2079942120401763, 2.694932460185828, 1.6530547720778208])
             robot1.neutral_joint_values = np.array([-0.12593504068329087, 0.2317273297268855, -0.39855150509205445, -2.4891976287831454, 0.2079942120401763, 2.694932460185828, 1.6530547720778208])
         else:
@@ -111,4 +112,4 @@ class PandaTowerBimanualEnv(BimanualTaskEnv):
                                 max_num_need_handover=max_num_need_handover, max_move_per_step = max_move_per_step, \
                                     noise_obs=noise_obs, exchange_only = exchange_only, parallel_robot = parallel_robot, \
                                         reward_type=reward_type, subgoal_generation=subgoal_generation)
-        super().__init__(robot0, robot1, task, max_delay_steps = max_delay_steps, store_trajectory = store_trajectory)
+        super().__init__(robot0, robot1, task, max_delay_steps = max_delay_steps, store_trajectory = store_trajectory, store_video = store_video)

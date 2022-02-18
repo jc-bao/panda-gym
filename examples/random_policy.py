@@ -31,14 +31,16 @@ total_rew = 0
 for _ in range(100):
     for i in range(env._max_episode_steps):
         action = (env.action_space.sample())
-        # disp0 = [0.1,0,0.1]-env.robot0.get_ee_position()
-        # disp1 = [0.45,0,0.1]-env.robot1.get_ee_position()
-        # action[:3] = disp0/np.linalg.norm(disp0)
-        # action[4:7] = disp1/np.linalg.norm(disp1)*0.1
+        disp0 = [0.2,0,0.1]-env.robot0.get_ee_position()
+        disp1 = [0.45,0,0.1]-env.robot1.get_ee_position()
+        action[:3] = disp0/np.linalg.norm(disp0)
+        action[4:7] = disp1/np.linalg.norm(disp1)*0.1
         # action[3]=-1
         # action[7]=-1
         # action[0]=1
-        # action[5]=1
+        # action[1]=-0.2
+        # action[4]=-1
+        # action[5]=0.2
         obs, reward, done, info = env.step(action)
         # env.reset(panda1_init = [0.2,0.1,0.1])
         # recorder.add_keyframe()

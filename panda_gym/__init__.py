@@ -81,6 +81,11 @@ for i in range(1,7):
         kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'num_blocks', "parallel_robot": True}
     )
     register(
+        id="PandaTowerBimanualParallelSlow-v"+str(i),
+        entry_point="panda_gym.envs:PandaTowerBimanualEnv",
+        kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'num_blocks', "parallel_robot": True, "max_move_per_step": 0.02, 'os_rate': 1}
+    )
+    register(
         id="PandaTowerBimanualParallelExchange-v"+str(i),
         entry_point="panda_gym.envs:PandaTowerBimanualEnv",
         kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'hand_range_num_mix', "parallel_robot": True, 'os_rate': 1, 'exchange_only': True}

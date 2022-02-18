@@ -10,6 +10,7 @@ from sqlalchemy import case
 
 from panda_gym.pybullet import PyBullet
 import panda_gym
+import imageio
 
 class PyBulletRobot(ABC):
     """Base class for robot env.
@@ -352,7 +353,7 @@ class BimanualTaskEnv(gym.GoalEnv):
 
     metadata = {"render.modes": ["human", "rgb_array"]}
 
-    def __init__(self, robot0: PyBulletRobot, robot1: PyBulletRobot, task: Task, max_delay_steps=0, store_trajectory = False) -> None:
+    def __init__(self, robot0: PyBulletRobot, robot1: PyBulletRobot, task: Task, max_delay_steps=0, store_trajectory = False, store_video = False) -> None:
         assert robot0.sim == task.sim, "The robot and the task must belong to the same simulation."
         assert robot0.sim == robot1.sim, "The robot must belong to the same simulation."
         self.sim = robot0.sim
@@ -373,7 +374,12 @@ class BimanualTaskEnv(gym.GoalEnv):
                 'panda1_ee': [], 
                 'panda0_finger': [], 
                 'panda1_finger': [], 
+                'panda0_joints': [],
+                'panda1_joints': []
             }
+        self.store_video = store_video
+        if store_video:
+            self.video = []
         self.seed()  # required for init; can be changed later
         obs = self.reset()
         observation_shape = obs["observation"].shape
@@ -441,8 +447,14 @@ class BimanualTaskEnv(gym.GoalEnv):
                 'panda1_ee': [self.robot1.get_ee_position()], 
                 'panda0_finger': [self.robot0.get_fingers_width()], 
                 'panda1_finger': [self.robot1.get_fingers_width()], 
+                'panda0_joints': [np.array([self.robot0.get_joint_angle(joint=i) for i in range(7)])], 
+                'panda1_joints': [np.array([self.robot1.get_joint_angle(joint=i) for i in range(7)])], 
             }
             self.num_trajectory += 1
+        if self.store_video:
+            if len(self.video)>0:
+                imageio.mimwrite(f'/Users/reedpan/Downloads/trajectory/{self.num_trajectory}.mp4', self.video , fps = 24)
+            self.video = []
         return self._get_obs()
 
     def step(self, action: np.ndarray) -> Tuple[Dict[str, np.ndarray], float, bool, Dict[str, Any]]:
@@ -479,6 +491,10 @@ class BimanualTaskEnv(gym.GoalEnv):
             self.trajectory['panda1_ee'].append(self.robot1.get_ee_position())
             self.trajectory['panda0_finger'].append(self.robot0.get_fingers_width())
             self.trajectory['panda1_finger'].append(self.robot1.get_fingers_width())
+            self.trajectory['panda0_joints'].append(np.array([self.robot0.get_joint_angle(joint=i) for i in range(7)]))
+            self.trajectory['panda1_joints'].append(np.array([self.robot1.get_joint_angle(joint=i) for i in range(7)]))
+        if self.store_video:
+            self.video.append(self.render(mode='rgb_array'))
         done = self.num_steps >= self._max_episode_steps
         return obs, reward, done, info
 
