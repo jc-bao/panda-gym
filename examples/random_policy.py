@@ -5,7 +5,7 @@ import time
 import os
 from pybullet_data import getDataPath
 
-env = gym.make("PandaTowerBimanualParallel-v1", render=True)
+env = gym.make("PandaTowerBimanualParallelFinalRew-v1", render=True)
 # env = gym.make("PandaTowerBimanualOsNumMix-v1", render=True)
 # env = gym.make("PandaRearrangeUnstable-v2", render=True)
 # env = gym.make("PandaRelativePNPBimanualObjInHand-v0", render=True)
@@ -51,7 +51,7 @@ for _ in range(100):
         # print(info['unstable_state'], reward)
         # print(reward)
         if i == env._max_episode_steps-1:
-            # param = (param + 1)
+            param = (param + 0.1)
             env.change(param)
             obs = env.reset()
             origin_ag = obs['achieved_goal']

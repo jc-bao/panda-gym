@@ -137,11 +137,6 @@ for i in range(1,7):
         kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'num_blocks', 'single_side': True}
     )
     register(
-        id="PandaTowerBimanualReachOnceMix-v"+str(i),
-        entry_point="panda_gym.envs:PandaTowerBimanualEnv",
-        kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'mix', 'reach_once': True}
-    )
-    register(
         id="PandaTowerBimanualGravity-v"+str(i),
         entry_point="panda_gym.envs:PandaTowerBimanualEnv",
         kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'gravity'},
@@ -149,7 +144,7 @@ for i in range(1,7):
     register(
         id="PandaTowerBimanualOtherSide-v"+str(i),
         entry_point="panda_gym.envs:PandaTowerBimanualEnv",
-        kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'other_side'}
+        kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'os'}
     )
     register(
         id="PandaRearrange-v"+str(i),
@@ -225,13 +220,13 @@ register(
 register(
     id="PandaTowerBimanualInHand-v2",
     entry_point="panda_gym.envs:PandaTowerBimanualEnv",
-    kwargs={"control_type": 'ee', 'num_blocks': 2, 'curriculum_type': 'in_hand'},
+    kwargs={"control_type": 'ee', 'num_blocks': 2, 'curriculum_type': 'hand'},
     max_episode_steps=100,
 )
 register(
     id="PandaTowerBimanualInHand-v1",
     entry_point="panda_gym.envs:PandaTowerBimanualEnv",
-    kwargs={"control_type": 'ee', 'num_blocks': 1, 'curriculum_type': 'in_hand'},
+    kwargs={"control_type": 'ee', 'num_blocks': 1, 'curriculum_type': 'hand'},
     max_episode_steps=50,
 )
 register(
@@ -264,7 +259,7 @@ for i in range(7):
     register(
         id="PandaTowerBimanualDelay-v"+str(i),
         entry_point="panda_gym.envs:PandaTowerBimanualEnv",
-        kwargs={"control_type": 'ee', 'num_blocks':1 if i==0 else i, 'curriculum_type': 'other_side', 'max_delay_steps': 30}
+        kwargs={"control_type": 'ee', 'num_blocks':1 if i==0 else i, 'curriculum_type': 'os', 'max_delay_steps': 30}
     )
 register(
     id="PandaAssembleBimanual-v2",

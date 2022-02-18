@@ -71,11 +71,9 @@ class TowerBimanual(Task):
         self._max_episode_steps = self.base_ep_len * self.num_blocks * int(0.05/self.max_move_per_step)
         self.target_shape = target_shape
         self.goal_xyz_range = goal_xyz_range
+        self.obj_xyz_range = obj_xyz_range
+        self._update_obj_goal_range()
         self.num_not_musk = 1
-        self.goal_range_low = np.array([0, -goal_xyz_range[1]/2, self.object_size/2])
-        self.goal_range_high = np.array(goal_xyz_range) + self.goal_range_low
-        self.obj_range_low = np.array([self.gap_distance/1.2*(not self.shared_op_space), -obj_xyz_range[1] / 2, self.object_size/2])
-        self.obj_range_high = np.array(obj_xyz_range) + self.obj_range_low
         with self.sim.no_rendering():
             self._create_scene()
             self.sim.place_visualizer(target_position=np.zeros(3), distance=0.9, yaw=45, pitch=-30)
@@ -400,12 +398,18 @@ class TowerBimanual(Task):
         else: # to process multi dimension input
             return rew
 
+    def _update_obj_goal_range(self):
+        self.goal_range_low = np.array([0, -self.goal_xyz_range[1]/2, self.object_size/2])
+        self.goal_range_high = np.array(self.goal_xyz_range) + self.goal_range_low
+        self.obj_range_low = np.array([self.gap_distance/1.2*(not self.shared_op_space), -self.obj_xyz_range[1] / 2, self.object_size/2])
+        self.obj_range_high = np.array(self.obj_xyz_range) + self.obj_range_low
+
     def change(self, config = None):
         if self.curriculum_type == 'gravity':
             self.has_gravaty_rate = config
-        elif self.curriculum_type == 'other_side':
+        elif self.curriculum_type == 'os':
             self.other_side_rate = config
-        elif self.curriculum_type == 'in_hand':
+        elif self.curriculum_type == 'hand':
             self.obj_not_in_hand_rate = config
         elif self.curriculum_type == 'goal_in_obj':
             self.goal_not_in_obj_rate = config
@@ -416,87 +420,42 @@ class TowerBimanual(Task):
             self.num_blocks = int(config)
             self._max_episode_steps = self.base_ep_len * self.num_blocks
         elif self.curriculum_type == 'hand_range_num_mix':
+            # goal space: config 1->1.5  goal 0.4 -> 0.9
+            # inhand rate: config 1.5->2 inhand 0.5->1
             # 1-hand05 1.5-hand0 1.6-goal05obj04 1.7-goal07obj06 1.8-goal09obj08 2-2obj goal0.4-0.9 obj0.3-0.8
-            if config < 1.5:
-                self.obj_not_in_hand_rate = 0.5
-                self.goal_xyz_range = [0.3, 0.3, 0.2]
-                self.goal_range_low = np.array([0, -self.goal_xyz_range[1]/2, self.object_size/2])
-                self.goal_range_high = np.array(self.goal_xyz_range) + self.goal_range_low
-                self.obj_xyz_range = [0.2, 0.3, 0]
-                self.obj_range_low = np.array([self.gap_distance/1.2*(not self.shared_op_space), -self.obj_xyz_range[1] / 2, self.object_size/2])
-                self.obj_range_high = np.array(self.obj_xyz_range) + self.obj_range_low
-            elif config < 1.6:
-                self.obj_not_in_hand_rate = 0
-                self.goal_xyz_range = [0.4, 0.3, 0.2]
-                self.goal_range_low = np.array([0, -self.goal_xyz_range[1]/2, self.object_size/2])
-                self.goal_range_high = np.array(self.goal_xyz_range) + self.goal_range_low
-                self.obj_xyz_range = [0.3, 0.3, 0]
-                self.obj_range_low = np.array([self.gap_distance/1.2*(not self.shared_op_space), -self.obj_xyz_range[1] / 2, self.object_size/2])
-                self.obj_range_high = np.array(self.obj_xyz_range) + self.obj_range_low
-            elif config < 1.7:
-                self.obj_not_in_hand_rate = 0
-                self.goal_xyz_range = [0.6, 0.3, 0.2]
-                self.goal_range_low = np.array([0, -self.goal_xyz_range[1]/2, self.object_size/2])
-                self.goal_range_high = np.array(self.goal_xyz_range) + self.goal_range_low
-                self.obj_xyz_range = [0.5, 0.3, 0]
-                self.obj_range_low = np.array([self.gap_distance/1.2*(not self.shared_op_space), -self.obj_xyz_range[1] / 2, self.object_size/2])
-                self.obj_range_high = np.array(self.obj_xyz_range) + self.obj_range_low
-            elif config < 1.8:
-                self.obj_not_in_hand_rate = 0
-                self.goal_xyz_range = [0.8, 0.3, 0.2]
-                self.goal_range_low = np.array([0, -self.goal_xyz_range[1]/2, self.object_size/2])
-                self.goal_range_high = np.array(self.goal_xyz_range) + self.goal_range_low
-                self.obj_xyz_range = [0.7, 0.3, 0]
-                self.obj_range_low = np.array([self.gap_distance/1.2*(not self.shared_op_space), -self.obj_xyz_range[1] / 2, self.object_size/2])
-                self.obj_range_high = np.array(self.obj_xyz_range) + self.obj_range_low
-            elif config < 1.9:
-                self.obj_not_in_hand_rate = 0
-                self.goal_xyz_range = [0.9, 0.3, 0.2]
-                self.goal_range_low = np.array([0, -self.goal_xyz_range[1]/2, self.object_size/2])
-                self.goal_range_high = np.array(self.goal_xyz_range) + self.goal_range_low
-                self.obj_xyz_range = [0.8, 0.3, 0]
-                self.obj_range_low = np.array([self.gap_distance/1.2*(not self.shared_op_space), -self.obj_xyz_range[1] / 2, self.object_size/2])
-                self.obj_range_high = np.array(self.obj_xyz_range) + self.obj_range_low
+            self.goal_xyz_range = [np.clip(config-0.6,0.4,0.9), 0.3, 0.2]
+            self.obj_xyz_range = self.goal_xyz_range.copy()
+            self.obj_xyz_range[0] = self.goal_xyz_range[0]-0.1
+            self._update_obj_goal_range()
+            self.obj_not_in_hand_rate = np.clip(config-1, 0.5, 1)
             self.num_blocks = int(config)
-            self._max_episode_steps = 70 * self.num_blocks
+            self._max_episode_steps = self.base_ep_len * self.num_blocks
         elif self.curriculum_type == 'musk':
             if self.num_not_musk < self.num_blocks:
                 self.num_not_musk = int(config*self.num_blocks)+1
-        elif self.curriculum_type == 'mix': # learn rearrange first -> multi
-            max_num = 2
-            # expand number of block first
-            if config <= max_num:
-                self.num_blocks = int(config)
-                self._max_episode_steps = 60 * self.num_blocks
-            elif config <= max_num+1: # expand otherside rate
-                self.other_side_rate = 0.3 # 50%need two handover
-                self._max_episode_steps = 70 * self.num_blocks
-            elif config <= max_num+2: # expand otherside rate
-                self.other_side_rate = 0.6 # 50%need two handover
-                self._max_episode_steps = 80 * self.num_blocks
         elif self.curriculum_type == 'os_num_mix':
             # 1- os=0 num=1; 1.5- os=0.6 num=1; 2- os=0.6 num=2 ...
             # expand number of block first
             if config < 1.5:
                 self.num_blocks = int(config)
-                self._max_episode_steps = 60 * self.num_blocks
+                self._max_episode_steps = self.base_ep_len * self.num_blocks
             elif config < 2: # expand otherside rate
                 self.other_side_rate = 0.8 if self.gap_distance==0 else 0.6 # 50%need two handover
-                self._max_episode_steps = 60 * self.num_blocks
+                self._max_episode_steps = self.base_ep_len * self.num_blocks
             else: # expand number
                 self.num_blocks = int(config)
-                self._max_episode_steps = 60 * self.num_blocks
+                self._max_episode_steps = self.base_ep_len * self.num_blocks
         elif self.curriculum_type == 'hand_num_mix':
             # 1- hand=0.4 num=1; 1.5- hand=0.8 num=1; 2- hand=0.8 num=2 ...
             # expand number of block first
             if config < 1.5:
                 self.obj_not_in_hand_rate = 0.4
                 self.num_blocks = int(config)
-                self._max_episode_steps = 60 * self.num_blocks
+                self._max_episode_steps = self.base_ep_len * self.num_blocks
             elif config < 2: # expand otherside rate
                 self.obj_not_in_hand_rate = 0.8
-                self._max_episode_steps = 60 * self.num_blocks
+                self._max_episode_steps = self.base_ep_len * self.num_blocks
             else: # expand number
                 self.other_side_rate = 0.8
                 self.num_blocks = int(config)
-                self._max_episode_steps = 60 * self.num_blocks
+                self._max_episode_steps = self.base_ep_len * self.num_blocks
