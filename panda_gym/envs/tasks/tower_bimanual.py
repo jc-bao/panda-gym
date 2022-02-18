@@ -305,16 +305,17 @@ class TowerBimanual(Task):
                 for idx in need_handover_goal_idx:
                     # generate goal rate: 0.5
                     if self.np_random.uniform() > 0.5:
+                        '''this trick to relabel is useless to learn handover'''
                         # if goal is far, then generate subgoal
-                        if self.num_blocks == 1:
-                            # one block case, generate subgoal in gap
-                            self.subgoals[idx][0] = 0 
-                            self.subgoals[idx][2] = 0.1 
-                        else:
-                            if goals[idx][0] > 0.4: # if goal is far
-                                self.subgoals[idx][0] = 0.2
-                            elif goals[idx][0] < -0.4:
-                                self.subgoals[idx][0] = -0.2
+                        # if self.num_blocks == 1:
+                        #     # one block case, generate subgoal in gap
+                        #     self.subgoals[idx][0] = 0 
+                        #     self.subgoals[idx][2] = 0.1 
+                        # else:
+                        if goals[idx][0] > 0.4: # if goal is far
+                            self.subgoals[idx][0] = 0.2
+                        elif goals[idx][0] < -0.4:
+                            self.subgoals[idx][0] = -0.2
         elif self.target_shape == 'positive_side':
             goals = []
             goal0 = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
