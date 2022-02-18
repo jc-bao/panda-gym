@@ -311,10 +311,10 @@ class TowerBimanual(Task):
                             self.subgoals[idx][0] = 0 
                             self.subgoals[idx][2] = 0.1 
                         else:
-                            if goals[idx][0] > 0.3: # if goal is far
-                                self.subgoals[idx][0] = 0.18
-                            elif goals[idx][0] < -0.3:
-                                self.subgoals[idx][0] = -0.18
+                            if goals[idx][0] > 0.4: # if goal is far
+                                self.subgoals[idx][0] = 0.2
+                            elif goals[idx][0] < -0.4:
+                                self.subgoals[idx][0] = -0.2
         elif self.target_shape == 'positive_side':
             goals = []
             goal0 = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
