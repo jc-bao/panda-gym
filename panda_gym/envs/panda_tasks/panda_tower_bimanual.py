@@ -22,7 +22,7 @@ class PandaTowerBimanualEnv(BimanualTaskEnv):
             target_shape = 'any', reach_once = False, single_side = False, block_length = 5, os_rate = None, \
                 max_num_need_handover = 10, max_move_per_step = 0.05, noise_obs = False, store_trajectory = False, \
                     parallel_robot = False, exchange_only = False, reward_type = 'normal', subgoal_generation = False, \
-                        store_video = False) -> None:
+                        store_video = False, goal_range = None) -> None:
         if gap_distance == None:
             gap_distance = block_length*0.04+0.03
         sim = PyBullet(render=render, timestep=1.0/240, n_substeps=20)
@@ -65,7 +65,12 @@ class PandaTowerBimanualEnv(BimanualTaskEnv):
         # robot1.neutral_joint_values = np.array([0.01, 0.54, 0.003, -2.12, -0.003, 2.67, 0.80, 0.00, 0.00])
         has_gravaty_rate = 1
         '''goal sample range'''
-        if shared_op_space or gap_distance==0:
+        if goal_range != None:
+            goal_xyz_range = goal_range
+            obj_xyz_range = goal_range.copy()
+            obj_xyz_range[-1] = 0
+            obj_xyz_range[0] -= (gap_distance/2+block_length*0.02)
+        elif shared_op_space or gap_distance==0:
             goal_xyz_range=[0.3, 0.4, 0]  
             obj_xyz_range =[0.3, 0.4, 0]
         elif parallel_robot and not('range' in curriculum_type):

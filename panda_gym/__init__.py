@@ -66,6 +66,12 @@ for i in range(1,7):
         kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'hand_num_mix'}
     )
     register(
+        id="PandaTowerBimanualLargeSpaceFinalRewSubgoal-v"+str(i),
+        entry_point="panda_gym.envs:PandaTowerBimanualEnv",
+        kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'hand_num_mix', \
+            'goal_range': [1, 0.6, 0.2], 'reward_type': 'final', 'subgoal_generation': True}
+    )
+    register(
         id="PandaTowerBimanualFinalRew-v"+str(i),
         entry_point="panda_gym.envs:PandaTowerBimanualEnv",
         kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'hand_num_mix', 'reward_type': 'final'}

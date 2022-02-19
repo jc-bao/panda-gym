@@ -7,11 +7,12 @@ import gym.utils.seeding
 import numpy as np
 import torch
 from sqlalchemy import case
+import pickle
 
 from panda_gym.pybullet import PyBullet
 import panda_gym
 import imageio
-
+from pathlib import Path
 class PyBulletRobot(ABC):
     """Base class for robot env.
 
@@ -437,7 +438,9 @@ class BimanualTaskEnv(gym.GoalEnv):
         self.delay_arm0 = np.random.uniform(0, 1)<0.5
         self.assemble_done = False
         if self.store_trajectory:
-            np.save(f"/Users/reedpan/Downloads/trajectory/{self.num_trajectory}.npy", self.trajectory)
+            self.num_trajectory += 1
+            with open(f"/Users/reedpan/Downloads/tmp/{self.num_trajectory}.pkl", 'wb') as f:
+                pickle.dump(self.trajectory, f, protocol=2)
             print(f"trajectory{self.num_trajectory} saved!")
             self.trajectory = {
                 'obj_init_pos': self.task.get_achieved_goal(),
@@ -450,10 +453,13 @@ class BimanualTaskEnv(gym.GoalEnv):
                 'panda0_joints': [np.array([self.robot0.get_joint_angle(joint=i) for i in range(7)])], 
                 'panda1_joints': [np.array([self.robot1.get_joint_angle(joint=i) for i in range(7)])], 
             }
-            self.num_trajectory += 1
         if self.store_video:
             if len(self.video)>0:
-                imageio.mimwrite(f'/Users/reedpan/Downloads/trajectory/{self.num_trajectory}.mp4', self.video , fps = 24)
+                path = f'/Users/reedpan/Downloads/tmp/pic{self.num_trajectory}'
+                Path(path).mkdir(parents=True, exist_ok=True)
+                imageio.mimwrite(f'{path}/video.mp4', self.video , fps = 30)
+                for j, image in enumerate(self.video):
+                    imageio.imwrite(f'{path}/{self.num_trajectory}_{j}.png', image)
             self.video = []
         return self._get_obs()
 
