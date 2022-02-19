@@ -39,8 +39,10 @@ class TowerBimanual(Task):
         exchange_only = False, 
         parallel_robot = False, 
         reward_type = 'normal', 
-        subgoal_generation = False
+        subgoal_generation = False,
+        debug_mode = False
     ) -> None:
+        self.debug_mode = debug_mode
         self.subgoal_generation = subgoal_generation
         self.reward_type = reward_type
         self.noise_obs = noise_obs
@@ -104,47 +106,47 @@ class TowerBimanual(Task):
                 position=np.array([0.8, 0.4, -0.2]),
                 rgba_color=np.array([1, 1, 1, 1]),
             )
-
-        obj_range_size_half = (self.obj_range_high - self.obj_range_low)/ 2
-        obj_range_pos_0 = (self.obj_range_high + self.obj_range_low)/ 2
-        obj_range_pos_1 = (self.obj_range_high + self.obj_range_low)/ 2
-        obj_range_pos_1[0] = -obj_range_pos_1[0]
-        self.sim.create_box(
-            body_name="debug_obj_0",
-            half_extents=obj_range_size_half,
-            mass=0.0,
-            ghost=True,
-            position=obj_range_pos_0,
-            rgba_color=np.array([0, 0, 1, 0.1]),
-        )
-        self.sim.create_box(
-            body_name="debug_obj_1",
-            half_extents=obj_range_size_half,
-            mass=0.0,
-            ghost=True,
-            position=obj_range_pos_1,
-            rgba_color=np.array([0, 0, 1, 0.1]),
-        )
-        goal_range_size_half = (self.goal_range_high - self.goal_range_low)/ 2
-        goal_range_pos_0 = (self.goal_range_high + self.goal_range_low)/ 2
-        goal_range_pos_1 = (self.goal_range_high + self.goal_range_low)/ 2
-        goal_range_pos_1[0] = -goal_range_pos_1[0]
-        self.sim.create_box(
-            body_name="debug_goal_0",
-            half_extents=goal_range_size_half,
-            mass=0.0,
-            ghost=True,
-            position=goal_range_pos_0,
-            rgba_color=np.array([0, 1, 0, 0.05]),
-        )
-        self.sim.create_box(
-            body_name="debug_goal_1",
-            half_extents=goal_range_size_half,
-            mass=0.0,
-            ghost=True,
-            position=goal_range_pos_1,
-            rgba_color=np.array([0, 1, 0, 0.05]),
-        )
+        if self.debug_mode:
+            obj_range_size_half = (self.obj_range_high - self.obj_range_low)/ 2
+            obj_range_pos_0 = (self.obj_range_high + self.obj_range_low)/ 2
+            obj_range_pos_1 = (self.obj_range_high + self.obj_range_low)/ 2
+            obj_range_pos_1[0] = -obj_range_pos_1[0]
+            self.sim.create_box(
+                body_name="debug_obj_0",
+                half_extents=obj_range_size_half,
+                mass=0.0,
+                ghost=True,
+                position=obj_range_pos_0,
+                rgba_color=np.array([0, 0, 1, 0.1]),
+            )
+            self.sim.create_box(
+                body_name="debug_obj_1",
+                half_extents=obj_range_size_half,
+                mass=0.0,
+                ghost=True,
+                position=obj_range_pos_1,
+                rgba_color=np.array([0, 0, 1, 0.1]),
+            )
+            goal_range_size_half = (self.goal_range_high - self.goal_range_low)/ 2
+            goal_range_pos_0 = (self.goal_range_high + self.goal_range_low)/ 2
+            goal_range_pos_1 = (self.goal_range_high + self.goal_range_low)/ 2
+            goal_range_pos_1[0] = -goal_range_pos_1[0]
+            self.sim.create_box(
+                body_name="debug_goal_0",
+                half_extents=goal_range_size_half,
+                mass=0.0,
+                ghost=True,
+                position=goal_range_pos_0,
+                rgba_color=np.array([0, 1, 0, 0.05]),
+            )
+            self.sim.create_box(
+                body_name="debug_goal_1",
+                half_extents=goal_range_size_half,
+                mass=0.0,
+                ghost=True,
+                position=goal_range_pos_1,
+                rgba_color=np.array([0, 1, 0, 0.05]),
+            )
         self.use_small_obj = (self.gap_distance==0 or self.shared_op_space)
         for i in range(self.max_num_blocks):
             color = np.random.rand(3)
