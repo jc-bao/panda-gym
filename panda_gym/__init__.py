@@ -75,7 +75,7 @@ for i in range(1,7):
         id="PandaTowerBimanualMidSpaceFinalRewSubgoal-v"+str(i),
         entry_point="panda_gym.envs:PandaTowerBimanualEnv",
         kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'hand_num_mix', \
-            'goal_range': [0.6, 0.6, 0.2], 'reward_type': 'final', 'subgoal_generation': True}
+            'goal_range': [0.6, 0.8, 0.2], 'reward_type': 'final', 'subgoal_generation': True}
     )
     register(
         id="PandaTowerBimanualFinalRew-v"+str(i),
