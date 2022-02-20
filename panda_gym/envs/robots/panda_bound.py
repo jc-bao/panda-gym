@@ -1,3 +1,4 @@
+from matplotlib.pyplot import bone
 import numpy as np
 from gym import spaces
 
@@ -24,7 +25,14 @@ class PandaBound(PyBulletRobot):
         base_orientation: np.ndarray=np.array([0,0,0,1]),
         control_type: str = "ee",
         index: int = 0,
+        bound_low = np.array([-0.05, -0.35, 0]),
+        bound_high = np.array([0.95, 0.35, 0.3])
     ) -> None:
+        self.bound_low = bound_low.copy()
+        self.bound_high = bound_high.copy()
+        if index == 0:
+            self.bound_low[0] = -bound_high[0]
+            self.bound_high[0] = -bound_low[0]
         self.block_gripper = block_gripper
         self.control_type = control_type
         n_action = 3 if self.control_type == "ee" else 7  # control (x, y z) if "ee", else, control the 7 joints
@@ -85,7 +93,7 @@ class PandaBound(PyBulletRobot):
         target_ee_position = ee_position + ee_displacement
         # Clip the height target. For some reason, it has a great impact on learning
         # target_ee_position[2] = np.max((0, target_ee_position[2])) CHANGE: bound the higher, not move too far
-        target_ee_position = np.clip(target_ee_position, [-100, -100, 0], [100, 100, 0.27])
+        target_ee_position = np.clip(target_ee_position, self.bound_low, self.bound_high)
         # compute the new joint angles
         if self.index == 0:
             target_arm_angles = self.inverse_kinematics(
@@ -125,8 +133,20 @@ class PandaBound(PyBulletRobot):
             obs = np.concatenate((ee_position, ee_velocity))
         return obs
 
-    def reset(self) -> None:
+    def reset(self, init_pos = None) -> None:
         self.set_joint_neutral()
+        if not init_pos==None:
+            for _ in range(10):
+                if self.index == 0:
+                    target_arm_angles = self.inverse_kinematics(
+                        link=self.ee_link, position=init_pos, orientation=np.array([1.0, 0.0, 0.0, 0.0])
+                    )
+                else: 
+                    target_arm_angles = self.inverse_kinematics(
+                        link=self.ee_link, position=init_pos, orientation=np.array([0.0, -1.0, 0.0, 0.0])
+                    )
+                self.control_joints(target_angles = target_arm_angles)
+                self.sim.step()
 
     def set_joint_neutral(self) -> None:
         """Set the robot to its neutral pose."""

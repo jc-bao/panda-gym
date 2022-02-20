@@ -42,12 +42,10 @@ class PandaTowerBimanualEnv(BimanualTaskEnv):
             robot1.neutral_joint_values = np.array([-8.62979537e-04, 6.67109107e-02, 8.93407819e-04, -2.71219648e+00, \
                 -1.67254799e-04, 2.77888080e+00, 7.85577202e-01, 0, 0])
         elif parallel_robot:
-            robot0 = Panda(sim, index=0,block_gripper=False, base_position=np.array([-0.73, -0.4, 0.0]), \
-                control_type=control_type, base_orientation = [0,0,np.sqrt(2)/2,np.sqrt(2)/2], \
-                    max_move_per_step=max_move_per_step, noise_obs = noise_obs)
-            robot1 = Panda(sim, index=1, block_gripper=False, base_position=np.array([0.73, 0.4, 0.0]), \
-                control_type=control_type, base_orientation = [0,0,-np.sqrt(2)/2, \
-                    np.sqrt(2)/2], max_move_per_step=max_move_per_step, noise_obs = noise_obs)
+            robot0 = PandaBound(sim, index=0,block_gripper=False, base_position=np.array([-0.6, -0.4, 0.0]), \
+                control_type=control_type, base_orientation = [0,0,np.sqrt(2)/2,np.sqrt(2)/2])
+            robot1 = PandaBound(sim, index=1, block_gripper=False, base_position=np.array([0.6, 0.4, 0.0]), \
+                control_type=control_type, base_orientation = [0,0,-np.sqrt(2)/2, np.sqrt(2)/2])
             robot0.neutral_joint_values = np.array([-0.12593504068329087, 0.2317273297268855, \
                 -0.39855150509205445, -2.4891976287831454, 0.2079942120401763, 2.694932460185828, \
                     1.6530547720778208])
