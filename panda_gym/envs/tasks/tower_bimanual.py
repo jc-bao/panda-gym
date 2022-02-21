@@ -377,11 +377,15 @@ class TowerBimanual(Task):
                 if abs(pos[0]) > 0.6:
                     pos[1] += 0.25 if pos[1]>0 else (-0.25)
         choosed_block_id = np.random.choice(np.arange(self.num_blocks))
-        if self.np_random.uniform()>self.obj_not_in_hand_rate:
+        if self.np_random.uniform()>self.obj_not_in_hand_rate*0:
             if self.np_random.uniform()>0.5 or self.single_side:
-                obj_pos[choosed_block_id] = self.get_ee_position0()+np.array([self.object_size*self.block_length/2.5,0,0])*(not self.use_small_obj)
+                obj_pos[choosed_block_id] = self.get_ee_position0()+\
+                    np.array([self.np_random.uniform(self.object_size*self.block_length/2.5),0,0])*\
+                        (not self.use_small_obj)
             else:
-                obj_pos[choosed_block_id] = self.get_ee_position1()-np.array([self.object_size*self.block_length/2.5,0,0])*(not self.use_small_obj)
+                obj_pos[choosed_block_id] = self.get_ee_position1()-\
+                    np.array([self.np_random.uniform(self.object_size*self.block_length/2.5),0,0])*\
+                        (not self.use_small_obj)
         return np.array(obj_pos).flatten()
 
     def is_success(self, achieved_goal: np.ndarray, desired_goal: np.ndarray) -> Union[np.ndarray, float]:

@@ -34,7 +34,7 @@ for _ in range(100):
         # disp0 = [0.1, 0, 0.2]-env.robot0.get_ee_position()
         # disp1 = [0.45,0,0.1]-env.robot1.get_ee_position()
         # action[:3] = disp0/np.linalg.norm(disp0)
-        action[0]=-1
+        # action[0]=-1
         # action[4]=-1
         # action[4:7] = disp1/np.linalg.norm(disp1)*0.1
         # action[3]=-1
