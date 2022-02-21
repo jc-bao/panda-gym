@@ -453,8 +453,9 @@ class TowerBimanual(Task):
     def change(self, config = None):
         if config is None:
             return
-        elif isinstance(config, (list, np.ndarray)) and self.use_task_distribution:
-            self.task_distribution = config
+        if isinstance(config, (list, np.ndarray)):
+            if self.use_task_distribution:
+                self.task_distribution = config
             return
         else:
             if self.curriculum_type == 'gravity':
