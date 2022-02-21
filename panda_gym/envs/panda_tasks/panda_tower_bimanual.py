@@ -22,7 +22,7 @@ class PandaTowerBimanualEnv(BimanualTaskEnv):
             target_shape = 'any', reach_once = False, single_side = False, block_length = 5, os_rate = None, \
                 max_num_need_handover = 10, max_move_per_step = 0.05, noise_obs = False, store_trajectory = False, \
                     parallel_robot = False, exchange_only = False, reward_type = 'normal', subgoal_generation = False, \
-                        store_video = False, goal_range = None, debug_mode = False) -> None:
+                        store_video = False, goal_range = None, debug_mode = False, obj_in_hand_rate = None) -> None:
         if gap_distance == None:
             gap_distance = block_length*0.04+0.03
         sim = PyBullet(render=render, timestep=1.0/240, n_substeps=20)
@@ -85,7 +85,9 @@ class PandaTowerBimanualEnv(BimanualTaskEnv):
         else:
             other_side_rate = 0.6
         '''object not initial in hand rate'''
-        if 'hand' in curriculum_type:
+        if obj_in_hand_rate != None:
+            obj_not_in_hand_rate = 1 - obj_in_hand_rate
+        elif 'hand' in curriculum_type:
             obj_not_in_hand_rate = 0.5
         else:
             obj_not_in_hand_rate = 0.9
