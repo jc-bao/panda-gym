@@ -1,3 +1,4 @@
+import enum
 from typing import Any, Dict, Tuple, Union
 
 import numpy as np
@@ -40,7 +41,7 @@ class TowerBimanual(Task):
         parallel_robot = False, 
         reward_type = 'normal', 
         subgoal_generation = False,
-        debug_mode = False
+        debug_mode = False,
     ) -> None:
         self.debug_mode = debug_mode
         self.subgoal_generation = subgoal_generation
@@ -206,9 +207,12 @@ class TowerBimanual(Task):
         achieved_goal = (ag).flatten()
         return achieved_goal
 
-    def reset(self, goal = None) -> None:
+    def reset(self, goal = None, obj_pos_dict = None) -> None:
         self.reach_state = [False]*self.num_blocks
         obj_pos = self._sample_objects()
+        if obj_pos_dict != None:
+            for k,v in obj_pos_dict.items():
+                obj_pos[k*3:k*3+3]= v
         self.goal = self._sample_goal(obj_pos) if goal==None else goal
         if self.subgoal_generation:
             self.final_goal = self.goal
@@ -354,7 +358,7 @@ class TowerBimanual(Task):
             while True:
                 pos = self.np_random.uniform(self.obj_range_low, self.obj_range_high)
                 if self.single_side:
-                    self.obj_init_side[i] = -1 
+                    self.obj_init_side[i] = -1
                 else:
                     self.obj_init_side[i] = self.np_random.choice([-1,1])
                 if self.exchange_only:

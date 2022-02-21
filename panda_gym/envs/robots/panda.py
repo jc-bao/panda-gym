@@ -134,7 +134,7 @@ class Panda(PyBulletRobot):
     def reset(self, init_pos = None) -> None:
         self.set_joint_neutral()
         # set initial position
-        if not init_pos==None:
+        if isinstance(init_pos, (np.ndarray, np.generic)):
             for _ in range(10):
                 if self.index == 0:
                     target_arm_angles = self.inverse_kinematics(

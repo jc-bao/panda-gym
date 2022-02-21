@@ -5,7 +5,7 @@ import time
 import os
 from pybullet_data import getDataPath
 
-env = gym.make("PandaTowerBimanualParallel-v1", render=True, debug_mode = True)
+env = gym.make("PandaTowerBimanual-v1", render=True, debug_mode = True, good_init_pos_rate=0.5)
 # env = gym.make("PandaTowerBimanualOsNumMix-v1", render=True)
 # env = gym.make("PandaRearrangeUnstable-v2", render=True)
 # env = gym.make("PandaRelativePNPBimanualObjInHand-v0", render=True)
@@ -37,8 +37,8 @@ for _ in range(100):
         # action[0]=-1
         # action[4]=-1
         # action[4:7] = disp1/np.linalg.norm(disp1)*0.1
-        # action[3]=-1
-        # action[7]=-1
+        action[3]=-1
+        action[7]=-1
         # action[0]=1
         # action[1]=-0.2
         # action[4]=-1

@@ -22,10 +22,12 @@ class PandaTowerBimanualEnv(BimanualTaskEnv):
             target_shape = 'any', reach_once = False, single_side = False, block_length = 5, os_rate = None, \
                 max_num_need_handover = 10, max_move_per_step = 0.05, noise_obs = False, store_trajectory = False, \
                     parallel_robot = False, exchange_only = False, reward_type = 'normal', subgoal_generation = False, \
-                        store_video = False, goal_range = None, debug_mode = False, obj_in_hand_rate = None) -> None:
+                        store_video = False, goal_range = None, debug_mode = False, obj_in_hand_rate = None, \
+                            good_init_pos_rate = 0) -> None:
         if gap_distance == None:
             gap_distance = block_length*0.04+0.03
         sim = PyBullet(render=render, timestep=1.0/240, n_substeps=20)
+        ''' choose robot type '''
         if use_bound:
             robot0 = PandaBound(sim, index=0,block_gripper=False, base_position=np.array([-0.775, 0.0, 0.0]), \
                 control_type=control_type, base_orientation = [0,0,0,1])
@@ -104,5 +106,7 @@ class PandaTowerBimanualEnv(BimanualTaskEnv):
                             reach_once = reach_once, single_side = single_side, block_length=block_length, \
                                 max_num_need_handover=max_num_need_handover, max_move_per_step = max_move_per_step, \
                                     noise_obs=noise_obs, exchange_only = exchange_only, parallel_robot = parallel_robot, \
-                                        reward_type=reward_type, subgoal_generation=subgoal_generation, debug_mode=debug_mode)
-        super().__init__(robot0, robot1, task, max_delay_steps = max_delay_steps, store_trajectory = store_trajectory, store_video = store_video)
+                                        reward_type=reward_type, subgoal_generation=subgoal_generation, \
+                                            debug_mode=debug_mode)
+        super().__init__(robot0, robot1, task, max_delay_steps = max_delay_steps, store_trajectory = store_trajectory, \
+            store_video = store_video, good_init_pos_rate = good_init_pos_rate)

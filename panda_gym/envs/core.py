@@ -354,9 +354,11 @@ class BimanualTaskEnv(gym.GoalEnv):
 
     metadata = {"render.modes": ["human", "rgb_array"]}
 
-    def __init__(self, robot0: PyBulletRobot, robot1: PyBulletRobot, task: Task, max_delay_steps=0, store_trajectory = False, store_video = False) -> None:
+    def __init__(self, robot0: PyBulletRobot, robot1: PyBulletRobot, task: Task, max_delay_steps=0, \
+        store_trajectory = False, store_video = False, good_init_pos_rate = 0) -> None:
         assert robot0.sim == task.sim, "The robot and the task must belong to the same simulation."
         assert robot0.sim == robot1.sim, "The robot must belong to the same simulation."
+        self.good_init_pos_rate = good_init_pos_rate
         self.sim = robot0.sim
         self.robot0 = robot0
         self.robot1 = robot1
@@ -428,11 +430,27 @@ class BimanualTaskEnv(gym.GoalEnv):
             "desired_goal": self.task.get_goal(),
         }
 
-    def reset(self, goal = None, panda0_init = None, panda1_init = None) -> Dict[str, np.ndarray]:
+    def reset(self, goal = None, obj_pos_dict = {}, panda0_init = None, panda1_init = None) -> Dict[str, np.ndarray]:
         with self.sim.no_rendering():
+            good_start_pos = np.random.uniform() < self.good_init_pos_rate
+            if good_start_pos:
+                if np.random.uniform() > 0.5:
+                    panda0_init = np.random.uniform([-0.2, 0.2, 0.05], [0.0, -0.2, 0.2])
+                    if np.random.uniform() < self.good_init_pos_rate:
+                        panda1_init = panda0_init + np.array([0.16, 0, 0])
+                else:
+                    panda1_init = np.random.uniform([0.0, 0.2, 0.05], [0.2, -0.2, 0.2])
+                    if np.random.uniform() < self.good_init_pos_rate:
+                        panda0_init = panda1_init - np.array([0.16, 0, 0])
             self.robot0.reset(init_pos = panda0_init)
             self.robot1.reset(init_pos = panda1_init)
-            self.task.reset(goal = None)
+            if good_start_pos:
+                block_id = np.random.choice(np.arange(self.num_blocks))
+                if np.random.uniform() > 0.5:
+                    obj_pos_dict={block_id: self.robot0.get_ee_position()+np.array([0.08,0,0])}
+                else:
+                    obj_pos_dict={block_id: self.robot1.get_ee_position()-np.array([0.08,0,0])}
+            self.task.reset(goal = goal, obj_pos_dict = obj_pos_dict)
         self.num_steps = 0
         self.delay_steps = np.random.randint(self.max_delay_steps + 1)
         self.delay_arm0 = np.random.uniform(0, 1)<0.5
