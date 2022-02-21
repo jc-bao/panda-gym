@@ -43,6 +43,7 @@ class TowerBimanual(Task):
         subgoal_generation = False,
         debug_mode = False,
     ) -> None:
+        self.task_distribution = np.ones(num_blocks+1)/(num_blocks+1) 
         self.debug_mode = debug_mode
         self.subgoal_generation = subgoal_generation
         self.reward_type = reward_type
@@ -210,7 +211,7 @@ class TowerBimanual(Task):
     def reset(self, goal = None, obj_pos_dict = None, num_need_handover = None) -> None:
         self.reach_state = [False]*self.num_blocks
         obj_pos = self._sample_objects()
-        if obj_pos_dict != None:
+        if obj_pos_dict != None: # over write by external command.
             for k,v in obj_pos_dict.items():
                 obj_pos[k*3:k*3+3]= v
         self.goal = self._sample_goal(obj_pos = obj_pos, num_need_handover = num_need_handover) if goal==None else goal
@@ -263,6 +264,11 @@ class TowerBimanual(Task):
                 if_other_side_list[handover_idx] = 1
             elif self.single_side:
                 if_other_side_list = np.zeros(self.num_blocks)
+            elif 'TaskDistribution' in self.curriculum_type:
+                if_other_side_list = np.zeros(self.num_blocks)
+                num_need_handover = np.random.choice(np.arange(self.num_blocks+1), 1, p=self.task_distribution)[0]
+                handover_idx = np.random.choice(np.arange(self.num_blocks), size=num_need_handover, replace=False)
+                if_other_side_list[handover_idx] = 1
             else:
                for _ in range(20):
                     if_other_side_list = (self.np_random.uniform(size=self.num_blocks)<self.other_side_rate)
@@ -497,3 +503,5 @@ class TowerBimanual(Task):
                 self.other_side_rate = 0.8
                 self.num_blocks = int(config)
                 self._max_episode_steps = self.base_ep_len * self.num_blocks
+        elif 'TaskDistribution' in self.curriculum_type:
+            self.task_distribution = config
