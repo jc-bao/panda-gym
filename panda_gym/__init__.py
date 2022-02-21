@@ -68,7 +68,8 @@ for i in range(1,7):
     register(
         id="PandaTowerBimanualPPO-v"+str(i),
         entry_point="panda_gym.envs:PandaTowerBimanualEnv",
-        kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'num_blocks', 'obj_in_hand_rate': 0.5, 'good_init_pos_rate': 0.5}
+        kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'num_blocks', \
+            'obj_in_hand_rate': 0.5, 'good_init_pos_rate': 0.5}
     )
     register(
         id="PandaTowerBimanualLargeSpaceFinalRewSubgoal-v"+str(i),

@@ -207,13 +207,13 @@ class TowerBimanual(Task):
         achieved_goal = (ag).flatten()
         return achieved_goal
 
-    def reset(self, goal = None, obj_pos_dict = None) -> None:
+    def reset(self, goal = None, obj_pos_dict = None, num_need_handover = None) -> None:
         self.reach_state = [False]*self.num_blocks
         obj_pos = self._sample_objects()
         if obj_pos_dict != None:
             for k,v in obj_pos_dict.items():
                 obj_pos[k*3:k*3+3]= v
-        self.goal = self._sample_goal(obj_pos) if goal==None else goal
+        self.goal = self._sample_goal(obj_pos = obj_pos, num_need_handover = num_need_handover) if goal==None else goal
         if self.subgoal_generation:
             self.final_goal = self.goal
             self.goal = self.subgoals.flatten()
@@ -242,7 +242,7 @@ class TowerBimanual(Task):
         obs = self.get_obs()
         self.obj_obs_size = int(len(obs)/self.num_blocks)
 
-    def _sample_goal(self, obj_pos) -> np.ndarray:
+    def _sample_goal(self, obj_pos, num_need_handover = None) -> np.ndarray:
         goals = []
         if self.target_shape == 'tower':
             base_pos = self.np_random.uniform(self.goal_range_low, self.goal_range_high)
@@ -252,15 +252,27 @@ class TowerBimanual(Task):
             goals = np.array(goals).flatten()
             # goals = np.append(goals, [0]*6) # Note: this one is used to calculate the gripper distance
         elif self.target_shape == 'any':
-            num_need_handover = 0
+            self.num_need_handover = 0
             need_handover_goal_idx = []
             positive_side_goal_idx = []
             negative_side_goal_idx = []
+            # generate if same side list
+            if num_need_handover != None: # manually set the index need handover
+                if_other_side_list = np.zeros(self.num_blocks)
+                handover_idx = np.random.choice(np.arange(self.num_blocks), size=num_need_handover, replace=False)
+                if_other_side_list[handover_idx] = 1
+            elif self.single_side:
+                if_other_side_list = np.zeros(self.num_blocks)
+            else:
+               for _ in range(20):
+                    if_other_side_list = (self.np_random.uniform(size=self.num_blocks)<self.other_side_rate)
+                    if sum(if_other_side_list) <= self.max_num_need_handover:
+                        break
             for i in range(self.num_blocks):
                 obj_side = (float(obj_pos[i*3]>0)*2-1)
-                if_same_side = 1 if self.single_side or (num_need_handover>=self.max_num_need_handover) else (float(self.np_random.uniform()>self.other_side_rate)*2-1)
+                if_same_side = if_other_side_list[i]*(-2) + 1
                 goal_side = obj_side * if_same_side
-                num_need_handover += int(if_same_side < 0)
+                self.num_need_handover += int(if_same_side < 0)
                 for _ in range(10):
                     # sample goal
                     if self.reach_once:
@@ -283,7 +295,7 @@ class TowerBimanual(Task):
                 if if_same_side < 0:
                     need_handover_goal_idx.append(i)
                 goals.append(goal)
-            if num_need_handover == 0: # make object in the air to learn pnp
+            if self.num_need_handover == 0: # make object in the air to learn pnp
                 if len(positive_side_goal_idx) > 0:
                     idx = np.random.choice(positive_side_goal_idx)
                     goals[idx] = np.random.uniform(self.goal_range_low, self.goal_range_high)

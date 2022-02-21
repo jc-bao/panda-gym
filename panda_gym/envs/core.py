@@ -430,7 +430,7 @@ class BimanualTaskEnv(gym.GoalEnv):
             "desired_goal": self.task.get_goal(),
         }
 
-    def reset(self, goal = None, obj_pos_dict = {}, panda0_init = None, panda1_init = None) -> Dict[str, np.ndarray]:
+    def reset(self, goal = None, obj_pos_dict = {}, panda0_init = None, panda1_init = None, num_need_handover = None) -> Dict[str, np.ndarray]:
         with self.sim.no_rendering():
             good_start_pos = np.random.uniform() < self.good_init_pos_rate
             if good_start_pos:
@@ -450,7 +450,7 @@ class BimanualTaskEnv(gym.GoalEnv):
                     obj_pos_dict={block_id: self.robot0.get_ee_position()+np.array([0.08,0,0])}
                 else:
                     obj_pos_dict={block_id: self.robot1.get_ee_position()-np.array([0.08,0,0])}
-            self.task.reset(goal = goal, obj_pos_dict = obj_pos_dict)
+            self.task.reset(goal = goal, obj_pos_dict = obj_pos_dict, num_need_handover = num_need_handover)
         self.num_steps = 0
         self.delay_steps = np.random.randint(self.max_delay_steps + 1)
         self.delay_arm0 = np.random.uniform(0, 1)<0.5
