@@ -42,7 +42,9 @@ class TowerBimanual(Task):
         reward_type = 'normal', 
         subgoal_generation = False,
         debug_mode = False,
+        use_task_distribution = True
     ) -> None:
+        self.use_task_distribution = use_task_distribution
         self.task_distribution = np.ones(num_blocks+1)/(num_blocks+1) 
         self.debug_mode = debug_mode
         self.subgoal_generation = subgoal_generation
@@ -264,7 +266,7 @@ class TowerBimanual(Task):
                 if_other_side_list[handover_idx] = 1
             elif self.single_side:
                 if_other_side_list = np.zeros(self.num_blocks)
-            elif 'TaskDistribution' in self.curriculum_type:
+            elif self.use_task_distribution:
                 if_other_side_list = np.zeros(self.num_blocks)
                 num_need_handover = np.random.choice(np.arange(self.num_blocks+1), 1, p=self.task_distribution)[0]
                 handover_idx = np.random.choice(np.arange(self.num_blocks), size=num_need_handover, replace=False)
@@ -449,59 +451,64 @@ class TowerBimanual(Task):
         self.obj_range_high = np.array(self.obj_xyz_range) + self.obj_range_low
 
     def change(self, config = None):
-        if self.curriculum_type == 'gravity':
-            self.has_gravaty_rate = config
-        elif self.curriculum_type == 'os':
-            self.other_side_rate = config
-        elif self.curriculum_type == 'hand':
-            self.obj_not_in_hand_rate = config
-        elif self.curriculum_type == 'goal_in_obj':
-            self.goal_not_in_obj_rate = config
-        elif self.curriculum_type == 'goal_z':
-            self.goal_xyz_range[-1] = config*0.2
-            self.goal_range_high = np.array(self.goal_xyz_range) + self.goal_range_low
-        elif self.curriculum_type == 'num_blocks':
-            self.num_blocks = int(config)
-            self._max_episode_steps = self.base_ep_len * self.num_blocks
-        elif self.curriculum_type == 'hand_range_num_mix':
-            # goal space: config 1->1.5  goal 0.4 -> 0.9
-            # inhand rate: config 1.5->2 inhand 0.5->1
-            # 1-hand05 1.5-hand0 1.6-goal05obj04 1.7-goal07obj06 1.8-goal09obj08 2-2obj goal0.4-0.9 obj0.3-0.8
-            self.goal_xyz_range = [np.clip(config-0.6,0.4,0.9), 0.3, 0.2]
-            self.obj_xyz_range = self.goal_xyz_range.copy()
-            self.obj_xyz_range[0] = self.goal_xyz_range[0]-0.1
-            self._update_obj_goal_range()
-            self.obj_not_in_hand_rate = np.clip(config-1, 0.5, 1)
-            self.num_blocks = int(config)
-            self._max_episode_steps = self.base_ep_len * self.num_blocks
-        elif self.curriculum_type == 'musk':
-            if self.num_not_musk < self.num_blocks:
-                self.num_not_musk = int(config*self.num_blocks)+1
-        elif self.curriculum_type == 'os_num_mix':
-            # 1- os=0 num=1; 1.5- os=0.6 num=1; 2- os=0.6 num=2 ...
-            # expand number of block first
-            if config < 1.5:
-                self.num_blocks = int(config)
-                self._max_episode_steps = self.base_ep_len * self.num_blocks
-            elif config < 2: # expand otherside rate
-                self.other_side_rate = 0.8 if self.gap_distance==0 else 0.6 # 50%need two handover
-                self._max_episode_steps = self.base_ep_len * self.num_blocks
-            else: # expand number
-                self.num_blocks = int(config)
-                self._max_episode_steps = self.base_ep_len * self.num_blocks
-        elif self.curriculum_type == 'hand_num_mix':
-            # 1- hand=0.4 num=1; 1.5- hand=0.8 num=1; 2- hand=0.8 num=2 ...
-            # expand number of block first
-            if config < 1.5:
-                self.obj_not_in_hand_rate = 0.4
-                self.num_blocks = int(config)
-                self._max_episode_steps = self.base_ep_len * self.num_blocks
-            elif config < 2: # expand otherside rate
-                self.obj_not_in_hand_rate = 0.8
-                self._max_episode_steps = self.base_ep_len * self.num_blocks
-            else: # expand number
-                self.other_side_rate = 0.8
-                self.num_blocks = int(config)
-                self._max_episode_steps = self.base_ep_len * self.num_blocks
-        elif 'TaskDistribution' in self.curriculum_type:
+        if config is None:
+            return
+        elif isinstance(config, (list, np.ndarray)) and self.use_task_distribution:
             self.task_distribution = config
+            return
+        else:
+            if self.curriculum_type == 'gravity':
+                self.has_gravaty_rate = config
+            elif self.curriculum_type == 'os':
+                self.other_side_rate = config
+            elif self.curriculum_type == 'hand':
+                self.obj_not_in_hand_rate = config
+            elif self.curriculum_type == 'goal_in_obj':
+                self.goal_not_in_obj_rate = config
+            elif self.curriculum_type == 'goal_z':
+                self.goal_xyz_range[-1] = config*0.2
+                self.goal_range_high = np.array(self.goal_xyz_range) + self.goal_range_low
+            elif self.curriculum_type == 'num_blocks':
+                self.num_blocks = int(config)
+                self._max_episode_steps = self.base_ep_len * self.num_blocks
+            elif self.curriculum_type == 'hand_range_num_mix':
+                # goal space: config 1->1.5  goal 0.4 -> 0.9
+                # inhand rate: config 1.5->2 inhand 0.5->1
+                # 1-hand05 1.5-hand0 1.6-goal05obj04 1.7-goal07obj06 1.8-goal09obj08 2-2obj goal0.4-0.9 obj0.3-0.8
+                self.goal_xyz_range = [np.clip(config-0.6,0.4,0.9), 0.3, 0.2]
+                self.obj_xyz_range = self.goal_xyz_range.copy()
+                self.obj_xyz_range[0] = self.goal_xyz_range[0]-0.1
+                self._update_obj_goal_range()
+                self.obj_not_in_hand_rate = np.clip(config-1, 0.5, 1)
+                self.num_blocks = int(config)
+                self._max_episode_steps = self.base_ep_len * self.num_blocks
+            elif self.curriculum_type == 'musk':
+                if self.num_not_musk < self.num_blocks:
+                    self.num_not_musk = int(config*self.num_blocks)+1
+            elif self.curriculum_type == 'os_num_mix':
+                # 1- os=0 num=1; 1.5- os=0.6 num=1; 2- os=0.6 num=2 ...
+                # expand number of block first
+                if config < 1.5:
+                    self.num_blocks = int(config)
+                    self._max_episode_steps = self.base_ep_len * self.num_blocks
+                elif config < 2: # expand otherside rate
+                    self.other_side_rate = 0.8 if self.gap_distance==0 else 0.6 # 50%need two handover
+                    self._max_episode_steps = self.base_ep_len * self.num_blocks
+                else: # expand number
+                    self.num_blocks = int(config)
+                    self._max_episode_steps = self.base_ep_len * self.num_blocks
+            elif self.curriculum_type == 'hand_num_mix':
+                # 1- hand=0.4 num=1; 1.5- hand=0.8 num=1; 2- hand=0.8 num=2 ...
+                # expand number of block first
+                if config < 1.5:
+                    self.obj_not_in_hand_rate = 0.4
+                    self.num_blocks = int(config)
+                    self._max_episode_steps = self.base_ep_len * self.num_blocks
+                elif config < 2: # expand otherside rate
+                    self.obj_not_in_hand_rate = 0.8
+                    self._max_episode_steps = self.base_ep_len * self.num_blocks
+                else: # expand number
+                    self.other_side_rate = 0.8
+                    self.num_blocks = int(config)
+                    self._max_episode_steps = self.base_ep_len * self.num_blocks
+            return

@@ -572,7 +572,7 @@ class BimanualTaskEnv(gym.GoalEnv):
         )
 
     def change(self,config = None):
-        if config != None:
+        if config is None:
             self.task.change(config)
             self._max_episode_steps = self.task._max_episode_steps
 
