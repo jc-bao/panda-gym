@@ -248,6 +248,12 @@ register(
     max_episode_steps=50,
 )
 register(
+    id="PandaTowerBimanualInHandSubGoal-v1",
+    entry_point="panda_gym.envs:PandaTowerBimanualEnv",
+    kwargs={"control_type": 'ee', 'num_blocks': 1, 'curriculum_type': 'hand', 'subgoal_generation': True},
+    max_episode_steps=50,
+)
+register(
     id="PandaTowerBimanualGoalInObj-v2",
     entry_point="panda_gym.envs:PandaTowerBimanualEnv",
     kwargs={"control_type": 'ee', 'num_blocks': 2, 'curriculum_type': 'goal_in_obj'},

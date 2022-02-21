@@ -336,15 +336,15 @@ class TowerBimanual(Task):
                     if self.np_random.uniform() > 0.5:
                         '''this trick to relabel is useless to learn handover'''
                         # if goal is far, then generate subgoal
-                        # if self.num_blocks == 1:
-                        #     # one block case, generate subgoal in gap
-                        #     self.subgoals[idx][0] = 0 
-                        #     self.subgoals[idx][2] = 0.1 
-                        # else:
-                        if goals[idx][0] > 0.4: # if goal is far
-                            self.subgoals[idx][0] = 0.2
-                        elif goals[idx][0] < -0.4:
-                            self.subgoals[idx][0] = -0.2
+                        if self.num_blocks == 1:
+                            # one block case, generate subgoal in gap
+                            self.subgoals[idx][0] = self.np_random.uniform(low = -0.03, high=0.03)
+                            self.subgoals[idx][2] = self.np_random.uniform(low = 0.08, high=0.12)
+                        else:
+                            if goals[idx][0] > 0.4: # if goal is far
+                                self.subgoals[idx][0] = 0.2
+                            elif goals[idx][0] < -0.4:
+                                self.subgoals[idx][0] = -0.2
                         # clip to make the y range smaller
                         self.subgoals[idx][1] = np.clip(self.subgoals[idx][1], \
                             -self.goal_xyz_range[1]/2, self.goal_xyz_range[1]/2)
@@ -499,17 +499,18 @@ class TowerBimanual(Task):
                     self.num_blocks = int(config)
                     self._max_episode_steps = self.base_ep_len * self.num_blocks
             elif self.curriculum_type == 'hand_num_mix':
-                # 1- hand=0.4 num=1; 1.5- hand=0.8 num=1; 2- hand=0.8 num=2 ...
+                # 1- hand=0.5 num=1; 1.5- hand=1 num=1; 2- hand=0.8 num=2 ...
+                # curriculum step=0.01 bar=0.8
                 # expand number of block first
                 if config < 1.5:
-                    self.obj_not_in_hand_rate = 0.4
+                    self.obj_not_in_hand_rate = 1.5-config
                     self.num_blocks = int(config)
                     self._max_episode_steps = self.base_ep_len * self.num_blocks
                 elif config < 2: # expand otherside rate
-                    self.obj_not_in_hand_rate = 0.8
+                    self.obj_not_in_hand_rate = 1
                     self._max_episode_steps = self.base_ep_len * self.num_blocks
                 else: # expand number
-                    self.other_side_rate = 0.8
+                    self.other_side_rate = 1
                     self.num_blocks = int(config)
                     self._max_episode_steps = self.base_ep_len * self.num_blocks
             return
