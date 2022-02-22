@@ -25,7 +25,7 @@ class PandaBound(PyBulletRobot):
         base_orientation: np.ndarray=np.array([0,0,0,1]),
         control_type: str = "ee",
         index: int = 0,
-        bound_low = np.array([0.04, -0.35, 0]),
+        bound_low = np.array([0.0, -0.35, 0]),
         bound_high = np.array([0.95, 0.35, 0.3])
     ) -> None:
         self.bound_low = bound_low.copy()

@@ -25,7 +25,7 @@ class PandaTowerBimanualEnv(BimanualTaskEnv):
                         store_video = False, goal_range = None, debug_mode = False, obj_in_hand_rate = None, \
                             good_init_pos_rate = 0, use_task_distribution = False) -> None:
         if gap_distance == None:
-            gap_distance = block_length*0.04+0.05
+            gap_distance = block_length*0.04+0.08
         sim = PyBullet(render=render, timestep=1.0/240, n_substeps=20)
         ''' choose robot type '''
         if use_bound:
