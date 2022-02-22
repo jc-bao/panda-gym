@@ -211,7 +211,6 @@ class TowerBimanual(Task):
         return achieved_goal
 
     def reset(self, goal = None, obj_pos_dict = None, num_need_handover = None) -> None:
-        print(self.other_side_rate)
         self.reach_state = [False]*self.num_blocks
         obj_pos = self._sample_objects()
         if obj_pos_dict != None: # over write by external command.
