@@ -25,7 +25,7 @@ class PandaBound(PyBulletRobot):
         base_orientation: np.ndarray=np.array([0,0,0,1]),
         control_type: str = "ee",
         index: int = 0,
-        bound_low = np.array([-0.05, -0.35, 0]),
+        bound_low = np.array([0.04, -0.35, 0]),
         bound_high = np.array([0.95, 0.35, 0.3])
     ) -> None:
         self.bound_low = bound_low.copy()
@@ -47,7 +47,7 @@ class PandaBound(PyBulletRobot):
             base_orientation = base_orientation,
             action_space=action_space,
             joint_indices=np.array([0, 1, 2, 3, 4, 5, 6, 9, 10]),
-            joint_forces=np.array([87.0, 87.0, 87.0, 87.0, 12.0, 120.0, 120.0, 170.0, 170.0])*10, # CHANGE: large force
+            joint_forces=np.array([87.0, 87.0, 87.0, 87.0, 12.0, 120.0, 120.0, 170.0, 170.0]), # CHANGE: large force
         )
 
         self.fingers_indices = np.array([9, 10])

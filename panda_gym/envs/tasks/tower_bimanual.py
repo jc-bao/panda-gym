@@ -222,17 +222,18 @@ class TowerBimanual(Task):
             self.goal = self.subgoals.flatten()
         '''
         #For debug, manually set goal
-        obj_pos_0 = np.asarray([-0.5, 0.2, self.object_size/2])
+        obj_pos = np.asarray([-0.3, 0.2, self.object_size/2])
         # obj_pos_0 = np.append(self.get_ee_position0()+np.array([self.object_size*self.block_length/2.5,0,0]), \
         # self.get_ee_position1()-np.array([self.object_size*self.block_length/2.5,0,0]))
-        obj_pos_1 = np.asarray([0.4, -0.1, self.object_size/2])
+        # obj_pos_1 = np.asarray([0.3, -0.1, self.object_size/2])
         # obj_pos_0 = self.get_ee_position0()+np.array([self.object_size*self.block_length/2.5,0,0])
         # obj_pos_1 = self.get_ee_position1()-np.array([self.object_size*self.block_length/2.5,0,0])
-        obj_pos = np.append(obj_pos_0, obj_pos_1)
-        self.goal = np.asarray([0.2, 0.2, self.object_size/2, -0.2, -0.1, self.object_size/2])
+        # obj_pos = np.append(obj_pos_0, obj_pos_1)
+        self.goal = np.asarray([0.3, 0.2, self.object_size/2])
         # self.final_goal = np.asarray([0.8, -0.06, self.object_size/2, -0.8, 0.06, self.object_size/2])
         # self.subgoals = np.asarray([[0.18, -0.06, self.object_size/2],[-0.18, 0.06, self.object_size/2]])
         '''
+        
         for i in range(self.num_blocks):
             self.sim.set_base_pose("target"+str(i), self.goal[i*3:(i+1)*3], np.array([0.0, 0.0, 0.0, 1.0]))
             self.sim.set_base_pose("object"+str(i), obj_pos[i*3:(i+1)*3], np.array([0.0, 0.0, 0.0, 1.0]))
