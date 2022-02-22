@@ -211,6 +211,7 @@ class TowerBimanual(Task):
         return achieved_goal
 
     def reset(self, goal = None, obj_pos_dict = None, num_need_handover = None) -> None:
+        print(self.other_side_rate)
         self.reach_state = [False]*self.num_blocks
         obj_pos = self._sample_objects()
         if obj_pos_dict != None: # over write by external command.
@@ -267,11 +268,11 @@ class TowerBimanual(Task):
                 if_other_side_list[handover_idx] = 1
             elif self.single_side:
                 if_other_side_list = np.zeros(self.num_blocks)
-            elif self.use_task_distribution:
-                if_other_side_list = np.zeros(self.num_blocks)
-                num_need_handover = np.random.choice(np.arange(self.num_blocks+1), 1, p=self.task_distribution)[0]
-                handover_idx = np.random.choice(np.arange(self.num_blocks), size=num_need_handover, replace=False)
-                if_other_side_list[handover_idx] = 1
+            # elif self.use_task_distribution:
+            #     if_other_side_list = np.zeros(self.num_blocks)
+            #     num_need_handover = np.random.choice(np.arange(self.num_blocks+1), 1, p=self.task_distribution)[0]
+            #     handover_idx = np.random.choice(np.arange(self.num_blocks), size=num_need_handover, replace=False)
+            #     if_other_side_list[handover_idx] = 1
             else:
                for _ in range(20):
                     if_other_side_list = (self.np_random.uniform(size=self.num_blocks)<self.other_side_rate)
