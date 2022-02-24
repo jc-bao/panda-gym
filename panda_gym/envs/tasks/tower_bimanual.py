@@ -73,7 +73,7 @@ class TowerBimanual(Task):
         self.goal_not_in_obj_rate = goal_not_in_obj_rate
         self.max_num_blocks = 6
         self.num_blocks = num_blocks
-        self.base_ep_len = 70 if (self.parallel_robot or goal_xyz_range[0]>0.45) else 50
+        self.base_ep_len = 70 if (self.parallel_robot or goal_xyz_range[0]>0.45 or self.num_blocks>1) else 50
         self._max_episode_steps = self.base_ep_len * self.num_blocks * int(0.05/self.max_move_per_step)
         self.target_shape = target_shape
         self.goal_xyz_range = goal_xyz_range
