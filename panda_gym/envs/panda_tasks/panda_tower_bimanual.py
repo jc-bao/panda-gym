@@ -23,7 +23,7 @@ class PandaTowerBimanualEnv(BimanualTaskEnv):
                 max_num_need_handover = 10, max_move_per_step = 0.05, noise_obs = False, store_trajectory = False, \
                     parallel_robot = False, exchange_only = False, reward_type = 'normal', subgoal_rate = 0, \
                         store_video = False, goal_range = None, debug_mode = False, obj_in_hand_rate = None, \
-                            good_init_pos_rate = 0, use_task_distribution = False) -> None:
+                            good_init_pos_rate = 0, use_task_distribution = False, base_ep_len = None) -> None:
         if gap_distance == None:
             gap_distance = block_length*0.04+0.08
         sim = PyBullet(render=render, timestep=1.0/240, n_substeps=20)
@@ -98,6 +98,9 @@ class PandaTowerBimanualEnv(BimanualTaskEnv):
             goal_not_in_obj_rate = 0.5
         else:
             goal_not_in_obj_rate = 1
+        ''' episode length for 1 object'''
+        if base_ep_len == None:
+            base_ep_len = 70 if (parallel_robot or goal_xyz_range[0]>0.45 or num_blocks>1) else 50
         task = TowerBimanual(sim, robot0.get_ee_position, robot1.get_ee_position, num_blocks = num_blocks, \
             curriculum_type = curriculum_type, other_side_rate = other_side_rate, has_gravaty_rate = has_gravaty_rate, \
                 use_musk = use_musk, obj_not_in_hand_rate = obj_not_in_hand_rate, goal_xyz_range=goal_xyz_range, \
@@ -107,6 +110,7 @@ class PandaTowerBimanualEnv(BimanualTaskEnv):
                                 max_num_need_handover=max_num_need_handover, max_move_per_step = max_move_per_step, \
                                     noise_obs=noise_obs, exchange_only = exchange_only, parallel_robot = parallel_robot, \
                                         reward_type=reward_type, subgoal_rate=subgoal_rate, \
-                                            debug_mode=debug_mode, use_task_distribution=use_task_distribution)
+                                            debug_mode=debug_mode, use_task_distribution=use_task_distribution, \
+                                                base_ep_len=base_ep_len)
         super().__init__(robot0, robot1, task, max_delay_steps = max_delay_steps, store_trajectory = store_trajectory, \
             store_video = store_video, good_init_pos_rate = good_init_pos_rate)
