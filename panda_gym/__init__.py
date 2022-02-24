@@ -75,13 +75,13 @@ for i in range(1,7):
         id="PandaTowerBimanualLargeSpaceFinalRewSubgoal-v"+str(i),
         entry_point="panda_gym.envs:PandaTowerBimanualEnv",
         kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'hand_num_mix', \
-            'goal_range': [1, 0.6, 0.2], 'reward_type': 'final', 'subgoal_generation': True}
+            'goal_range': [1, 0.6, 0.2], 'reward_type': 'final', 'subgoal_rate': 0.5}
     )
     register(
         id="PandaTowerBimanualMidSpaceFinalRewSubgoal-v"+str(i),
         entry_point="panda_gym.envs:PandaTowerBimanualEnv",
         kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'hand_num_mix', \
-            'goal_range': [0.6, 0.8, 0.2], 'reward_type': 'final', 'subgoal_generation': True}
+            'goal_range': [0.6, 0.8, 0.2], 'reward_type': 'final', 'subgoal_rate': 0.5}
     )
     register(
         id="PandaTowerBimanualFinalRew-v"+str(i),
@@ -91,7 +91,7 @@ for i in range(1,7):
     register(
         id="PandaTowerBimanualFinalRewSubgoal-v"+str(i),
         entry_point="panda_gym.envs:PandaTowerBimanualEnv",
-        kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'hand_num_mix',  'reward_type': 'final', 'subgoal_generation': True}
+        kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'hand_num_mix',  'reward_type': 'final', 'subgoal_rate': 0.5}
     )
     register(
         id="PandaTowerBimanualParallel-v"+str(i),
@@ -116,7 +116,7 @@ for i in range(1,7):
     register(
         id="PandaTowerBimanualParallelFinalRewSubgoal-v"+str(i),
         entry_point="panda_gym.envs:PandaTowerBimanualEnv",
-        kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'hand_range_num_mix', "parallel_robot": True, 'reward_type': 'final', 'subgoal_generation': True}
+        kwargs={"control_type": 'ee', 'num_blocks': i, 'curriculum_type': 'hand_range_num_mix', "parallel_robot": True, 'reward_type': 'final', 'subgoal_rate': 0.5}
     )
     register(
         id="PandaTowerBimanualSlow-v"+str(i),
@@ -250,7 +250,7 @@ register(
 register(
     id="PandaTowerBimanualInHandSubGoal-v1",
     entry_point="panda_gym.envs:PandaTowerBimanualEnv",
-    kwargs={"control_type": 'ee', 'num_blocks': 1, 'curriculum_type': 'hand', 'subgoal_generation': True},
+    kwargs={"control_type": 'ee', 'num_blocks': 1, 'curriculum_type': 'hand', 'subgoal_rate': 0.5},
     max_episode_steps=50,
 )
 register(

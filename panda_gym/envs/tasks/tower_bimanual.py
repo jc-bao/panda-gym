@@ -40,14 +40,15 @@ class TowerBimanual(Task):
         exchange_only = False, 
         parallel_robot = False, 
         reward_type = 'normal', 
-        subgoal_generation = False,
+        subgoal_rate = 0,
         debug_mode = False,
         use_task_distribution = True
     ) -> None:
         self.use_task_distribution = use_task_distribution
         self.task_distribution = np.ones(num_blocks+1)/(num_blocks+1) 
         self.debug_mode = debug_mode
-        self.subgoal_generation = subgoal_generation
+        self.subgoal_generation = (subgoal_rate > 0)
+        self.subgoal_rate = subgoal_rate
         self.reward_type = reward_type
         self.noise_obs = noise_obs
         self.exchange_only = exchange_only
@@ -334,7 +335,7 @@ class TowerBimanual(Task):
                 self.subgoals = np.array(goals)
                 for idx in need_handover_goal_idx:
                     # generate goal rate: 0.5
-                    if self.np_random.uniform() > 0.5:
+                    if self.np_random.uniform() < self.subgoal_rate:
                         '''this trick to relabel is useless to learn handover'''
                         # if goal is far, then generate subgoal
                         if self.num_blocks == 1:
@@ -342,9 +343,9 @@ class TowerBimanual(Task):
                             self.subgoals[idx][0] = self.np_random.uniform(low = -0.03, high=0.03)
                             self.subgoals[idx][2] = self.np_random.uniform(low = 0.08, high=0.12)
                         else:
-                            if goals[idx][0] > 0.4: # if goal is far
+                            if goals[idx][0] > 0.2: # if goal is far
                                 self.subgoals[idx][0] = 0.2
-                            elif goals[idx][0] < -0.4:
+                            elif goals[idx][0] < -0.2:
                                 self.subgoals[idx][0] = -0.2
                         # clip to make the y range smaller
                         self.subgoals[idx][1] = np.clip(self.subgoals[idx][1], \
