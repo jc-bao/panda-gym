@@ -372,6 +372,7 @@ class BimanualTaskEnv(gym.GoalEnv):
         if store_trajectory:
             self.num_trajectory = 0
             self.trajectory = {
+                'is_success': False, 
                 'time': [], 
                 'panda0_ee': [], 
                 'panda1_ee': [], 
@@ -456,11 +457,20 @@ class BimanualTaskEnv(gym.GoalEnv):
         self.delay_arm0 = np.random.uniform(0, 1)<0.5
         self.assemble_done = False
         if self.store_trajectory:
-            self.num_trajectory += 1
-            with open(f"/Users/reedpan/Downloads/tmp/{self.num_trajectory}.pkl", 'wb') as f:
-                pickle.dump(self.trajectory, f, protocol=2)
-            print(f"trajectory{self.num_trajectory} saved!")
+            if self.trajectory['is_success']:
+                self.num_trajectory += 1
+                with open(f"/Users/reedpan/Downloads/tmp/{self.num_trajectory}.pkl", 'wb') as f:
+                    pickle.dump(self.trajectory, f, protocol=2)
+                print(f"trajectory{self.num_trajectory} saved!")
+                if self.store_video:
+                    if len(self.video)>0:
+                        path = f'/Users/reedpan/Downloads/tmp/pic{self.num_trajectory}'
+                        Path(path).mkdir(parents=True, exist_ok=True)
+                        imageio.mimwrite(f'{path}/video.mp4', self.video , fps = 30)
+                        # for j, image in enumerate(self.video):
+                        #     imageio.imwrite(f'{path}/{self.num_trajectory}_{j}.png', image)
             self.trajectory = {
+                'is_success': False, 
                 'obj_init_pos': self.task.get_achieved_goal(),
                 'goal': self.task.get_goal(),
                 'time': [0],
@@ -471,13 +481,6 @@ class BimanualTaskEnv(gym.GoalEnv):
                 'panda0_joints': [np.array([self.robot0.get_joint_angle(joint=i) for i in range(7)])], 
                 'panda1_joints': [np.array([self.robot1.get_joint_angle(joint=i) for i in range(7)])], 
             }
-        if self.store_video:
-            if len(self.video)>0:
-                path = f'/Users/reedpan/Downloads/tmp/pic{self.num_trajectory}'
-                Path(path).mkdir(parents=True, exist_ok=True)
-                imageio.mimwrite(f'{path}/video.mp4', self.video , fps = 30)
-                for j, image in enumerate(self.video):
-                    imageio.imwrite(f'{path}/{self.num_trajectory}_{j}.png', image)
             self.video = []
         return self._get_obs()
 
@@ -510,6 +513,7 @@ class BimanualTaskEnv(gym.GoalEnv):
         assert isinstance(reward, float)  # needed for pytype cheking
         self.num_steps += 1
         if self.store_trajectory:
+            self.trajectory['is_success'] = info['is_success']
             self.trajectory['time'].append(self.num_steps/12)
             self.trajectory['panda0_ee'].append(self.robot0.get_ee_position())
             self.trajectory['panda1_ee'].append(self.robot1.get_ee_position())
