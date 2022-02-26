@@ -53,6 +53,16 @@ for reward_type in ["sparse", "dense"]:
             kwargs=kwargs,
             max_episode_steps=50,
         )
+register(
+    id="PandaTowerBimanual-v0",
+    entry_point="panda_gym.envs:PandaTowerBimanualEnv",
+    kwargs={"control_type": 'ee', 'curriculum_type': 'hand_num_mix'}
+)
+register(
+    id="PandaTowerBimanualParallel-v0",
+    entry_point="panda_gym.envs:PandaTowerBimanualEnv",
+    kwargs={"control_type": 'ee', 'curriculum_type': 'num_blocks', "parallel_robot": True}
+)
 for i in range(1,7):
     register(
         id="PandaTower-v"+str(i),
