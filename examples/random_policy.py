@@ -5,7 +5,16 @@ import time
 import os
 from pybullet_data import getDataPath
 
-env = gym.make("PandaTowerBimanualParallel-v2", render=True, debug_mode = True, use_task_distribution = True)
+env = gym.make("PandaRearrangeBimanual-v0", render=True, task_kwargs = {
+    'obj_xyz_range':[0.8, 0.4, 0],
+    'num_blocks': 3, # number of blocks
+    'os_rate': 0.99, # init goal in different table
+    'os_num_dist': 'binominal', # other side number distribution 'uniform', 'binominal'
+    'obj_in_hand_rate': 1, # init obj in hand
+    'gap_distance': None, # if None, auto set
+    'debug_mode': True, # if show debug info
+    'base_ep_len': 10, 
+    })
 # env = gym.make("PandaTowerBimanualOsNumMix-v1", render=True)
 # env = gym.make("PandaRearrangeUnstable-v2", render=True)
 # env = gym.make("PandaRelativePNPBimanualObjInHand-v0", render=True)
@@ -30,13 +39,13 @@ total_rew = 0
 
 for _ in range(100):
     for i in range(env._max_episode_steps):
-        action = np.zeros_like(env.action_space.sample())
-        disp0 = [-0.05, 0, 0.2]-env.robot0.get_ee_position()
-        disp1 = [0.05,0,0.2]-env.robot1.get_ee_position()
-        action[:3] = disp0/np.linalg.norm(disp0)*0.1
+        action = (env.action_space.sample())
+        # disp0 = [-0.05, 0, 0.2]-env.robot0.get_ee_position()
+        # disp1 = [0.05,0,0.2]-env.robot1.get_ee_position()
+        # action[:3] = disp0/np.linalg.norm(disp0)*0.1
         # action[0]=-1
         # action[4]=-1
-        action[4:7] = disp1/np.linalg.norm(disp1)*0.1
+        # action[4:7] = disp1/np.linalg.norm(disp1)*0.1
         action[3]=-1
         action[7]=-1
         # action[0]=1
@@ -59,5 +68,5 @@ for _ in range(100):
             origin_ag = obs['achieved_goal']
             # print(total_rew)
             total_rew = 0
-            obs = env.reset()
+            obs = env.reset({'num_handover': 3})
 env.close()

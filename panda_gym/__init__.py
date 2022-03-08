@@ -310,3 +310,7 @@ register(
     entry_point="panda_gym.envs:PandaTowerBimanualEnv",
     kwargs={"control_type": 'ee', 'num_blocks': 1, 'curriculum_type': 'hand_num_mix'}
 )
+register(
+    id="PandaRearrangeBimanual-v0",
+    entry_point="panda_gym.envs:PandaRearrangeBimanualEnv"
+)

@@ -354,8 +354,8 @@ class BimanualTaskEnv(gym.GoalEnv):
 
     metadata = {"render.modes": ["human", "rgb_array"]}
 
-    def __init__(self, robot0: PyBulletRobot, robot1: PyBulletRobot, task: Task, max_delay_steps=0, \
-        store_trajectory = False, store_video = False, good_init_pos_rate = 0) -> None:
+    def __init__(self, robot0: PyBulletRobot, robot1: PyBulletRobot, task: Task, \
+        store_trajectory = False, store_video = False, good_init_pos_rate = 0, seed = 123) -> None:
         assert robot0.sim == task.sim, "The robot and the task must belong to the same simulation."
         assert robot0.sim == robot1.sim, "The robot must belong to the same simulation."
         self.good_init_pos_rate = good_init_pos_rate
@@ -363,7 +363,6 @@ class BimanualTaskEnv(gym.GoalEnv):
         self.robot0 = robot0
         self.robot1 = robot1
         self.task = task
-        self.max_delay_steps = max_delay_steps
         try: 
             self.num_blocks = task.num_blocks
         except:
@@ -384,7 +383,7 @@ class BimanualTaskEnv(gym.GoalEnv):
         self.store_video = store_video
         if store_video:
             self.video = []
-        self.seed()  # required for init; can be changed later
+        self.seed(seed)  # required for init; can be changed later
         obs = self.reset()
         observation_shape = obs["observation"].shape
         achieved_goal_shape = obs["achieved_goal"].shape
@@ -418,12 +417,6 @@ class BimanualTaskEnv(gym.GoalEnv):
         robot1_obs = self.robot1.get_obs()  # robot state
         task_obs = self.task.get_obs()  # object position, velococity, etc...
         observation = np.concatenate([robot0_obs, robot1_obs, task_obs])
-        # if append environment info
-        try:
-            if self.task.absolute_pos:
-                np.append(observation, float(self.assemble_done))
-        except:
-            pass
         achieved_goal = self.task.get_achieved_goal()
         return {
             "observation": observation,
@@ -431,83 +424,28 @@ class BimanualTaskEnv(gym.GoalEnv):
             "desired_goal": self.task.get_goal(),
         }
 
-    def reset(self, goal = None, obj_pos_dict = {}, panda0_init = None, panda1_init = None, num_need_handover = None) -> Dict[str, np.ndarray]:
+    def reset(self, attr_dict = {}, panda0_init = None, panda1_init = None) -> Dict[str, np.ndarray]:
         with self.sim.no_rendering():
-            good_start_pos = np.random.uniform() < self.good_init_pos_rate
-            if good_start_pos:
-                if np.random.uniform() > 0.5:
-                    panda0_init = np.random.uniform([-0.2, 0.2, 0.05], [0.0, -0.2, 0.2])
-                    if np.random.uniform() < self.good_init_pos_rate:
-                        panda1_init = panda0_init + np.array([0.16, 0, 0])
-                else:
-                    panda1_init = np.random.uniform([0.0, 0.2, 0.05], [0.2, -0.2, 0.2])
-                    if np.random.uniform() < self.good_init_pos_rate:
-                        panda0_init = panda1_init - np.array([0.16, 0, 0])
-            self.robot0.reset(init_pos = panda0_init)
-            self.robot1.reset(init_pos = panda1_init)
-            if good_start_pos:
-                block_id = np.random.choice(np.arange(self.num_blocks))
-                if np.random.uniform() > 0.5:
-                    obj_pos_dict={block_id: self.robot0.get_ee_position()+np.array([0.08,0,0])}
-                else:
-                    obj_pos_dict={block_id: self.robot1.get_ee_position()-np.array([0.08,0,0])}
-            self.task.reset(goal = goal, obj_pos_dict = obj_pos_dict, num_need_handover = num_need_handover)
+            self.task.reset(attr_dict)
+            self.robot0.reset()
+            self.robot1.reset()
         self.num_steps = 0
-        self.delay_steps = np.random.randint(self.max_delay_steps + 1)
-        self.delay_arm0 = np.random.uniform(0, 1)<0.5
-        self.assemble_done = False
         if self.store_trajectory:
-            if self.trajectory['is_success']:
-                self.num_trajectory += 1
-                with open(f"/Users/reedpan/Downloads/tmp/{self.num_trajectory}.pkl", 'wb') as f:
-                    pickle.dump(self.trajectory, f, protocol=2)
-                print(f"trajectory{self.num_trajectory} saved!")
-                if self.store_video:
-                    if len(self.video)>0:
-                        path = f'/Users/reedpan/Downloads/tmp/pic{self.num_trajectory}'
-                        Path(path).mkdir(parents=True, exist_ok=True)
-                        imageio.mimwrite(f'{path}/video.mp4', self.video , fps = 30)
-                        # for j, image in enumerate(self.video):
-                        #     imageio.imwrite(f'{path}/{self.num_trajectory}_{j}.png', image)
-            self.trajectory = {
-                'is_success': False, 
-                'obj_init_pos': self.task.get_achieved_goal(),
-                'goal': self.task.get_goal(),
-                'time': [0],
-                'panda0_ee': [self.robot0.get_ee_position()], 
-                'panda1_ee': [self.robot1.get_ee_position()], 
-                'panda0_finger': [self.robot0.get_fingers_width()], 
-                'panda1_finger': [self.robot1.get_fingers_width()], 
-                'panda0_joints': [np.array([self.robot0.get_joint_angle(joint=i) for i in range(7)])], 
-                'panda1_joints': [np.array([self.robot1.get_joint_angle(joint=i) for i in range(7)])], 
-            }
-            self.video = []
+            self._store_trajectory()
         return self._get_obs()
 
     def step(self, action: np.ndarray) -> Tuple[Dict[str, np.ndarray], float, bool, Dict[str, Any]]:
         act0 = action[:self.robot0_action_shape]
         act1 = action[self.robot0_action_shape:]
-        if self.delay_steps > self.num_steps:
-            if self.delay_arm0:
-                act0 = np.zeros_like(act0)
-            else:
-                act1 = np.zeros_like(act1)
         self.robot0.set_action(act0)
         self.robot1.set_action(act1)
         self.sim.step()
         obs = self._get_obs()
         done = False
-        try: 
-            self.assemble_done = self.assemble_done or \
-                (np.linalg.norm(obs['achieved_goal'][3:]-obs['desired_goal'][3:]) < 0.05)
-        except:
-            self.assemble_done = False
         info = {
             "is_success": self.task.is_success(obs["achieved_goal"], self.task.get_goal()), 
             "ee_pos": np.array([self.robot0.get_ee_position(), self.robot1.get_ee_position()]),
             "gripper_pos": np.array([self.robot0.get_fingers_width(), self.robot0.get_fingers_width()]),
-            "assemble_done": self.assemble_done, 
-            "obj_init_side": self.task.obj_init_side if hasattr(self.task, 'obj_init_side') else None
             }
         reward = self.task.compute_reward(obs["achieved_goal"], self.task.get_goal(), info)
         assert isinstance(reward, float)  # needed for pytype cheking
@@ -613,3 +551,53 @@ class BimanualTaskEnv(gym.GoalEnv):
                 ),
                 axis=-1),
         }[mode]
+
+    def get_spaces(self):
+        return self.observation_space, self.action_space
+
+    def _set_init_state(self):
+        good_start_pos = np.random.uniform() < self.good_init_pos_rate
+        if good_start_pos:
+            if np.random.uniform() > 0.5:
+                panda0_init = np.random.uniform([-0.2, 0.2, 0.05], [0.0, -0.2, 0.2])
+                if np.random.uniform() < self.good_init_pos_rate:
+                    panda1_init = panda0_init + np.array([0.16, 0, 0])
+            else:
+                panda1_init = np.random.uniform([0.0, 0.2, 0.05], [0.2, -0.2, 0.2])
+                if np.random.uniform() < self.good_init_pos_rate:
+                    panda0_init = panda1_init - np.array([0.16, 0, 0])
+        self.robot0.reset(init_pos = panda0_init)
+        self.robot1.reset(init_pos = panda1_init)
+        if good_start_pos:
+            block_id = np.random.choice(np.arange(self.num_blocks))
+            if np.random.uniform() > 0.5:
+                obj_pos_dict={block_id: self.robot0.get_ee_position()+np.array([0.08,0,0])}
+            else:
+                obj_pos_dict={block_id: self.robot1.get_ee_position()-np.array([0.08,0,0])}
+
+    def _store_trajectory(self):
+        if self.trajectory['is_success']:
+            self.num_trajectory += 1
+            with open(f"/Users/reedpan/Downloads/tmp/{self.num_trajectory}.pkl", 'wb') as f:
+                pickle.dump(self.trajectory, f, protocol=2)
+            print(f"trajectory{self.num_trajectory} saved!")
+            if self.store_video:
+                if len(self.video)>0:
+                    path = f'/Users/reedpan/Downloads/tmp/pic{self.num_trajectory}'
+                    Path(path).mkdir(parents=True, exist_ok=True)
+                    imageio.mimwrite(f'{path}/video.mp4', self.video , fps = 30)
+                    # for j, image in enumerate(self.video):
+                    #     imageio.imwrite(f'{path}/{self.num_trajectory}_{j}.png', image)
+        self.trajectory = {
+            'is_success': False, 
+            'obj_init_pos': self.task.get_achieved_goal(),
+            'goal': self.task.get_goal(),
+            'time': [0],
+            'panda0_ee': [self.robot0.get_ee_position()], 
+            'panda1_ee': [self.robot1.get_ee_position()], 
+            'panda0_finger': [self.robot0.get_fingers_width()], 
+            'panda1_finger': [self.robot1.get_fingers_width()], 
+            'panda0_joints': [np.array([self.robot0.get_joint_angle(joint=i) for i in range(7)])], 
+            'panda1_joints': [np.array([self.robot1.get_joint_angle(joint=i) for i in range(7)])], 
+        }
+        self.video = []

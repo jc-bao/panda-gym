@@ -18,12 +18,13 @@ class PandaTowerBimanualEnv(BimanualTaskEnv):
     """
 
     def __init__(self, render: bool = False, num_blocks: int = 1, control_type: str = "ee", curriculum_type = None, \
-        use_bound = False, use_musk = False, shared_op_space = False, gap_distance = 0.23, max_delay_steps = 0, \
+        use_bound = False, use_musk = False, shared_op_space = False, gap_distance = 0.23,\
             target_shape = 'any', reach_once = False, single_side = False, block_length = 5, os_rate = None, \
                 max_num_need_handover = 10, max_move_per_step = 0.05, noise_obs = False, store_trajectory = False, \
                     parallel_robot = False, exchange_only = False, reward_type = 'normal', subgoal_rate = 0, \
                         store_video = False, goal_range = None, debug_mode = False, obj_in_hand_rate = None, \
-                            good_init_pos_rate = 0, use_task_distribution = False, base_ep_len = None) -> None:
+                            good_init_pos_rate = 0, use_task_distribution = False, base_ep_len = None, \
+                                goal_in_obj_rate = None, seed = 123) -> None:
         if gap_distance == None:
             gap_distance = block_length*0.04+0.08
         sim = PyBullet(render=render, timestep=1.0/240, n_substeps=20)
@@ -94,7 +95,9 @@ class PandaTowerBimanualEnv(BimanualTaskEnv):
         else:
             obj_not_in_hand_rate = 0.9
         '''set goal into the object'''
-        if 'goal' in curriculum_type:
+        if not goal_in_obj_rate is None:
+            goal_not_in_obj_rate = 1 - goal_in_obj_rate
+        elif 'goal' in curriculum_type:
             goal_not_in_obj_rate = 0.5
         else:
             goal_not_in_obj_rate = 1
@@ -112,5 +115,5 @@ class PandaTowerBimanualEnv(BimanualTaskEnv):
                                         reward_type=reward_type, subgoal_rate=subgoal_rate, \
                                             debug_mode=debug_mode, use_task_distribution=use_task_distribution, \
                                                 base_ep_len=base_ep_len)
-        super().__init__(robot0, robot1, task, max_delay_steps = max_delay_steps, store_trajectory = store_trajectory, \
-            store_video = store_video, good_init_pos_rate = good_init_pos_rate)
+        super().__init__(robot0, robot1, task, store_trajectory = store_trajectory, \
+            store_video = store_video, good_init_pos_rate = good_init_pos_rate, seed = seed)
