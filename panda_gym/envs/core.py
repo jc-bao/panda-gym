@@ -355,10 +355,22 @@ class BimanualTaskEnv(gym.GoalEnv):
     metadata = {"render.modes": ["human", "rgb_array"]}
 
     def __init__(self, robot0: PyBulletRobot, robot1: PyBulletRobot, task: Task, \
-        store_trajectory = False, store_video = False, good_init_pos_rate = 0, seed = 123) -> None:
+        store_trajectory = False, store_video = False, good_init_pos_rate = 0, \
+            seed = 123, ignore_obj_rate = 0) -> None:
+        """PandaBimanual Env
+
+        Args:
+            robot0 (PyBulletRobot): _description_
+            robot1 (PyBulletRobot): _description_
+            task (Task): _description_
+            store_video (bool, optional): _description_. Defaults to False.
+            good_init_pos_rate (int, optional): _description_. Defaults to 0.
+            ignore_obj_rate (int, optional): if ignore one object. Defaults to 0.
+        """
         assert robot0.sim == task.sim, "The robot and the task must belong to the same simulation."
         assert robot0.sim == robot1.sim, "The robot must belong to the same simulation."
         self.good_init_pos_rate = good_init_pos_rate
+        self.ignore_obj_rate = ignore_obj_rate
         self.sim = robot0.sim
         self.robot0 = robot0
         self.robot1 = robot1
@@ -442,10 +454,14 @@ class BimanualTaskEnv(gym.GoalEnv):
         self.sim.step()
         obs = self._get_obs()
         done = False
+        mask = np.zeros(self.num_blocks)
+        mask[np.random.randint(self.num_blocks)] = np.random.uniform() < self.ignore_obj_rate
+        # Note: make the info ndarray to store them in the buffer
         info = {
             "is_success": self.task.is_success(obs["achieved_goal"], self.task.get_goal()), 
             "ee_pos": np.array([self.robot0.get_ee_position(), self.robot1.get_ee_position()]),
             "gripper_pos": np.array([self.robot0.get_fingers_width(), self.robot0.get_fingers_width()]),
+            "mask": mask # number of object to ignore. 1 is ignore
             }
         reward = self.task.compute_reward(obs["achieved_goal"], self.task.get_goal(), info)
         assert isinstance(reward, float)  # needed for pytype cheking

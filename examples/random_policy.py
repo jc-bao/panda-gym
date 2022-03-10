@@ -5,17 +5,17 @@ import time
 import os
 from pybullet_data import getDataPath
 
-env = gym.make("PandaRearrangeBimanual-v0", render=True, task_kwargs = {
-    'obj_xyz_range':[0.8, 0.4, 0],
-    'num_blocks': 3, # number of blocks
-    'os_rate': 0.99, # init goal in different table
-    'os_num_dist': 'binominal', # other side number distribution 'uniform', 'binominal'
-    'obj_in_hand_rate': 1, # init obj in hand
-    'gap_distance': None, # if None, auto set
-    'debug_mode': True, # if show debug info
-    'base_ep_len': 10, 
-    })
-# env = gym.make("PandaTowerBimanualOsNumMix-v1", render=True)
+# env = gym.make("PandaRearrangeBimanual-v0", render=True, task_kwargs = {
+#     'obj_xyz_range':[0.3, 0.4, 0],
+#     'num_blocks': 3, # number of blocks
+#     'os_rate': 0.99, # init goal in different table
+#     'os_num_dist': 'binominal', # other side number distribution 'uniform', 'binominal'
+#     'obj_in_hand_rate': 1, # init obj in hand
+#     'gap_distance': None, # if None, auto set
+#     'debug_mode': True, # if show debug info
+#     'base_ep_len': 10, 
+#     })
+env = gym.make("PandaTowerBimanual-v1", render=True)
 # env = gym.make("PandaRearrangeUnstable-v2", render=True)
 # env = gym.make("PandaRelativePNPBimanualObjInHand-v0", render=True)
 # env = gym.make("PandaTowerBimanualSharedOpSpace-v0", render=True)
@@ -68,5 +68,5 @@ for _ in range(100):
             origin_ag = obs['achieved_goal']
             # print(total_rew)
             total_rew = 0
-            obs = env.reset({'num_handover': 3})
+            obs = env.reset()
 env.close()

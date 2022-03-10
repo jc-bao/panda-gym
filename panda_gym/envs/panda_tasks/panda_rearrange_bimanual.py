@@ -17,7 +17,7 @@ class PandaRearrangeBimanualEnv(BimanualTaskEnv):
             Defaults to "ee".
     """
 
-    def __init__(self, render=False, store_trajectory=False, store_video=False, seed=0, task_kwargs={}) -> None:
+    def __init__(self, render=False, store_trajectory=False, store_video=False, seed=0, task_kwargs={}, ignore_obj_rate = 0) -> None:
         sim = PyBullet(render=render, timestep=1.0/240, n_substeps=20)
         ''' choose robot type '''
         robot0 = PandaBound(sim, index=0, block_gripper=False, base_position=np.array([-0.6, -0.4, 0.0]),
@@ -27,4 +27,4 @@ class PandaRearrangeBimanualEnv(BimanualTaskEnv):
         task = RearrangeBimanual(
             sim, robot0.get_ee_position, robot1.get_ee_position, seed=seed, **task_kwargs)
         super().__init__(robot0, robot1, task, store_trajectory=store_trajectory,
-                         store_video=store_video, good_init_pos_rate=0, seed=seed)
+                         store_video=store_video, good_init_pos_rate=0, seed=seed, ignore_obj_rate=ignore_obj_rate)

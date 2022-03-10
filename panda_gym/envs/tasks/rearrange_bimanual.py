@@ -15,6 +15,7 @@ class RearrangeBimanual(Task):
         get_ee_position1,
         seed = 0, 
         obj_xyz_range=[0.3, 0.4, 0],
+        goal_xyz_range=None,
         num_blocks = 1, # number of blocks
         os_rate = 0.5, # init goal in different table
         os_num_dist = 'uniform', # other side number distribution 'uniform', 'binominal'
@@ -46,7 +47,7 @@ class RearrangeBimanual(Task):
         else:
             self.base_ep_len = base_ep_len
         self._max_episode_steps = self.base_ep_len * self.num_blocks
-        self.goal_space, self.obj_space = self._get_goal_obj_space(obj_xyz_range = obj_xyz_range)
+        self.goal_space, self.obj_space = self._get_goal_obj_space(goal_xyz_range, obj_xyz_range)
         # sim parameters
         self.debug_mode = debug_mode
         self.get_ee_position0 = get_ee_position0
@@ -185,7 +186,7 @@ class RearrangeBimanual(Task):
         else: # to process multi dimension input
             return rew
 
-    def _get_goal_obj_space(self, obj_xyz_range, goal_xyz_range = None):
+    def _get_goal_obj_space(self, goal_xyz_range, obj_xyz_range):
         obj_range_low = np.array([self.gap_distance/2+self.block_size[0]/2, -obj_xyz_range[1] / 2, self.block_size[2]/2])
         obj_range_high = np.array(obj_xyz_range) + obj_range_low
         obj_space = gym.spaces.Box(low = obj_range_low, high = obj_range_high)
