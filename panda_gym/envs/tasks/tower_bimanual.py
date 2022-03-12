@@ -248,7 +248,6 @@ class TowerBimanual(Task):
         # self.final_goal = np.asarray([0.8, -0.06, self.object_size/2, -0.8, 0.06, self.object_size/2])
         # self.subgoals = np.asarray([[0.18, -0.06, self.object_size/2],[-0.18, 0.06, self.object_size/2]])
         '''
-
         for i in range(self.num_blocks):
             self.sim.set_base_pose(
                 "target"+str(i), self.goal[i*3:(i+1)*3], np.array([0.0, 0.0, 0.0, 1.0]))

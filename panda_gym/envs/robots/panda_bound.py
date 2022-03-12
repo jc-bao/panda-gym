@@ -49,7 +49,6 @@ class PandaBound(PyBulletRobot):
             base_orientation=base_orientation,
             action_space=action_space,
             joint_indices=np.array([0, 1, 2, 3, 4, 5, 6, 9, 10]),
-            # CHANGE: large force
             joint_forces=np.array(
                 [87.0, 87.0, 87.0, 87.0, 12.0, 120.0, 120.0, 170.0, 170.0]),
         )

@@ -438,9 +438,9 @@ class BimanualTaskEnv(gym.GoalEnv):
 
     def reset(self, attr_dict = {}, panda0_init = None, panda1_init = None) -> Dict[str, np.ndarray]:
         with self.sim.no_rendering():
-            self.task.reset(attr_dict)
             self.robot0.reset()
             self.robot1.reset()
+            self.task.reset(attr_dict)
         self.num_steps = 0
         if self.store_trajectory:
             self._store_trajectory()
