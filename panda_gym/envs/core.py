@@ -477,7 +477,7 @@ class BimanualTaskEnv(gym.GoalEnv):
             self.trajectory['panda1_joints'].append(np.array([self.robot1.get_joint_angle(joint=i) for i in range(7)]))
         if self.store_video:
             self.video.append(self.render(mode='rgb_array'))
-        done = self.num_steps >= self._max_episode_steps
+        done = self.num_steps >= self._max_episode_steps or info['is_success']
         return obs, reward, done, info
 
     def seed(self, seed: Optional[int] = None) -> int:
