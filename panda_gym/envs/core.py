@@ -405,6 +405,18 @@ class BimanualTaskEnv(gym.GoalEnv):
                 observation=gym.spaces.Box(-10.0, 10.0, shape=observation_shape, dtype=np.float32),
                 desired_goal=gym.spaces.Box(-10.0, 10.0, shape=achieved_goal_shape, dtype=np.float32),
                 achieved_goal=gym.spaces.Box(-10.0, 10.0, shape=desired_goal_shape, dtype=np.float32),
+                gripper_arr=gym.spaces.Box(
+                    -np.inf, np.inf, shape=obs["gripper_arr"].shape, dtype="float32"
+                ),
+                object_arr=gym.spaces.Box(
+                    -np.inf, np.inf, shape=obs["object_arr"].shape, dtype="float32"
+                ),
+                desired_goal_arr=gym.spaces.Box(
+                    -np.inf, np.inf, shape=obs["desired_goal_arr"].shape, dtype="float32"
+                ),
+                achieved_goal_arr=gym.spaces.Box(
+                    -np.inf, np.inf, shape=obs["achieved_goal_arr"].shape, dtype="float32"
+                ),
             )
         )
         self.robot_obs_size_0 = len(self.robot0.get_obs())
@@ -431,6 +443,12 @@ class BimanualTaskEnv(gym.GoalEnv):
         observation = np.concatenate([robot0_obs, robot1_obs, task_obs])
         achieved_goal = self.task.get_achieved_goal()
         return {
+            # tmp
+            "gripper_arr": np.concatenate([robot0_obs, robot1_obs]),
+            "object_arr": task_obs.reshape(self.num_blocks, -1),
+            "achieved_goal_arr": achieved_goal.reshape(self.num_blocks, -1),
+            "desired_goal_arr": self.task.get_goal().reshape(self.num_blocks, -1),
+            # real
             "observation": observation,
             "achieved_goal": achieved_goal,
             "desired_goal": self.task.get_goal(),
