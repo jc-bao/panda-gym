@@ -15,7 +15,7 @@ class RearrangeBimanual(Task):
         get_ee_position1,
         seed = 0, 
         obj_xyz_range=[0.3, 0.4, 0],
-        goal_xyz_range=None,
+        goal_z=0.2,
         num_blocks = 1, # number of blocks
         os_rate = 0.5, # init goal in different table
         os_num_dist = 'uniform', # other side number distribution 'uniform', 'binominal'
@@ -47,7 +47,7 @@ class RearrangeBimanual(Task):
         else:
             self.base_ep_len = base_ep_len
         self._max_episode_steps = self.base_ep_len * self.num_blocks
-        self.goal_space, self.obj_space = self._get_goal_obj_space(goal_xyz_range, obj_xyz_range)
+        self.goal_space, self.obj_space = self._get_goal_obj_space(goal_z, obj_xyz_range)
         # sim parameters
         self.debug_mode = debug_mode
         self.get_ee_position0 = get_ee_position0
@@ -136,7 +136,7 @@ class RearrangeBimanual(Task):
             if_same_side = -1 if i in handover_idx else 1
             goal_side = obj_side * if_same_side
             for _ in range(10): # max trail time: 10
-                if self.num_blocks == 1:
+                if self.num_blocks == 1 or num_need_handover == 0:
                     goal = self.goal_space.sample()
                 else:
                     goal = self.obj_space.sample()
@@ -186,19 +186,15 @@ class RearrangeBimanual(Task):
         else: # to process multi dimension input
             return rew
 
-    def _get_goal_obj_space(self, goal_xyz_range, obj_xyz_range):
+    def _get_goal_obj_space(self, goal_z, obj_xyz_range):
         obj_range_low = np.array([self.gap_distance/2+self.block_size[0]/2, -obj_xyz_range[1] / 2, self.block_size[2]/2])
         obj_range_high = np.array(obj_xyz_range) + obj_range_low
         obj_space = gym.spaces.Box(low = obj_range_low, high = obj_range_high)
-        if goal_xyz_range is None:
-            goal_range_low = obj_range_low
-            goal_range_low[0] = 0 # extend goal space to gap
-            goal_range_high = obj_range_high
-            goal_space = gym.spaces.Box(low = goal_range_low, high = goal_range_high)
-        else:
-            goal_range_low = np.array([0, -goal_xyz_range[1]/2, self.block_size[2]/2])
-            goal_range_high = np.array(goal_xyz_range) + goal_range_low
-            goal_space = gym.spaces.Box(low = goal_range_low, high = goal_range_high)
+        goal_range_low = obj_range_low
+        goal_range_low[0] = 0 # extend goal space to gap
+        goal_range_high = obj_range_high
+        goal_range_high[2] += goal_z
+        goal_space = gym.spaces.Box(low = goal_range_low, high = goal_range_high)
         return goal_space, obj_space
 
     def _show_goal_obj_space(self):
