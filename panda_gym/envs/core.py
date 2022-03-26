@@ -356,7 +356,7 @@ class BimanualTaskEnv(gym.GoalEnv):
 
     def __init__(self, robot0: PyBulletRobot, robot1: PyBulletRobot, task: Task, \
         store_trajectory = False, store_video = False, good_init_pos_rate = 0, \
-            seed = 123, ignore_obj_rate = 0) -> None:
+            seed = 123, ignore_obj_rate = 0, fix_horizon = True) -> None:
         """PandaBimanual Env
 
         Args:
@@ -375,6 +375,7 @@ class BimanualTaskEnv(gym.GoalEnv):
         self.robot0 = robot0
         self.robot1 = robot1
         self.task = task
+        self.fix_horizon = fix_horizon
         try: 
             self.num_blocks = task.num_blocks
         except:
@@ -495,7 +496,10 @@ class BimanualTaskEnv(gym.GoalEnv):
             self.trajectory['panda1_joints'].append(np.array([self.robot1.get_joint_angle(joint=i) for i in range(7)]))
         if self.store_video:
             self.video.append(self.render(mode='rgb_array'))
-        done = self.num_steps >= self._max_episode_steps or bool(info['is_success'])
+        if self.fix_horizon:
+            done = self.num_steps >= self._max_episode_steps 
+        else:
+            done = self.num_steps >= self._max_episode_steps or bool(info['is_success'])
         return obs, reward, done, info
 
     def seed(self, seed: Optional[int] = None) -> int:

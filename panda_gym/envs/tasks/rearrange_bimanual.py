@@ -15,10 +15,10 @@ class RearrangeBimanual(Task):
         get_ee_position1,
         seed = 0, 
         obj_xyz_range=[0.3, 0.4, 0],
-        goal_z=0.2,
+        goal_z=0,
         num_blocks = 1, # number of blocks
-        os_rate = 0.5, # init goal in different table
-        os_num_dist = 'uniform', # other side number distribution 'uniform', 'binominal'
+        os_rate = 0.6, # init goal in different table
+        os_num_dist = 'binominal', # other side number distribution 'uniform', 'binominal'
         obj_in_hand_rate = 0.2, # init obj in hand
         gap_distance = None, # if None, auto set
         debug_mode = False, # if show debug info
