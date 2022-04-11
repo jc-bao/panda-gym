@@ -1,3 +1,4 @@
+from re import S
 from typing import Any, Dict, Tuple, Union
 import numpy as np
 import panda_gym
@@ -86,16 +87,19 @@ class RearrangeBimanual(Task):
     def get_obs(self) -> np.ndarray:
         # position, rotation of the object
         obs = []
+        self.obj_pos = []
         for i in range(self.num_blocks):
             # [NOTE]trick: reset object orientation to aviod z rotation
             pos = self.sim.get_base_position("object"+str(i))
             ori = np.array([0, self.sim.get_base_rotation("object"+str(i))[1], 0])
             self.sim.set_base_pose("object"+str(i), pos, ori)
             obs.append(pos)
+            self.obj_pos.append(pos)
             obs.append(ori)
             obs.append(self.sim.get_base_velocity("object"+str(i)))
             obs.append(self.sim.get_base_angular_velocity("object"+str(i)))
         observation = np.array(obs).flatten()
+        self.obj_pos = np.array(self.obj_pos).flatten()
         return observation
 
     def get_achieved_goal(self) -> np.ndarray:
@@ -122,6 +126,7 @@ class RearrangeBimanual(Task):
             else:
                 num_need_handover = self.np_random.choice(a=self.num_blocks+1, size=1,p=self.os_num_dist)[0]
             self.goal = self._sample_goal(num_need_handover)
+        self.init_obj_pos = self.obj_pos.copy() 
         # set blocks
         for i in range(self.num_blocks):
             self.sim.set_base_pose("target"+str(i), self.goal[i*3:(i+1)*3], np.array([0.0, 0.0, 0.0, 1.0]))

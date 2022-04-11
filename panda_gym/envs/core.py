@@ -476,8 +476,10 @@ class BimanualTaskEnv(gym.GoalEnv):
         mask = np.zeros(self.num_blocks)
         mask[np.random.randint(self.num_blocks)] = np.random.uniform() < self.ignore_obj_rate
         # Note: make the info ndarray to store them in the buffer
+        if_drop = (self.task.obj_pos.reshape(-1,3)[:,2] < 0).any()
         info = {
             "is_success": self.task.is_success(obs["achieved_goal"], self.task.get_goal()), 
+            "dropout": np.max(self.task.init_obj_pos - self.task.obj_pos) < self.task.distance_threshold or if_drop,
             "ee_pos": np.array([self.robot0.get_ee_position(), self.robot1.get_ee_position()]),
             "gripper_pos": np.array([self.robot0.get_fingers_width(), self.robot0.get_fingers_width()]),
             "mask": mask # number of object to ignore. 1 is ignore
