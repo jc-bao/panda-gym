@@ -81,7 +81,7 @@ class RearrangeBimanual(Task):
                 rgba_color=np.append(color, 0.5),
             )
         if self.debug_mode:
-            self._show_goal_obj_space()
+            self._show_goal_obj_space()        
 
     def get_obs(self) -> np.ndarray:
         # position, rotation of the object
@@ -122,9 +122,14 @@ class RearrangeBimanual(Task):
             else:
                 num_need_handover = self.np_random.choice(a=self.num_blocks+1, size=1,p=self.os_num_dist)[0]
             self.goal = self._sample_goal(num_need_handover)
+        # set blocks
         for i in range(self.num_blocks):
             self.sim.set_base_pose("target"+str(i), self.goal[i*3:(i+1)*3], np.array([0.0, 0.0, 0.0, 1.0]))
             self.sim.set_base_pose("object"+str(i), self.obj_pos[i*3:(i+1)*3], np.array([0.0, 0.0, 0.0, 1.0]))
+        # set tables
+        table_x = 0.5 + self.gap_distance/2
+        self.sim.set_base_pose("table0", np.array([-table_x, 0, -0.2]), [1,0,0,0])
+        self.sim.set_base_pose("table1", np.array([table_x, 0, -0.2]), [1,0,0,0])
         assert len(self.obj_pos)%self.num_blocks==0, 'task observation shape linear to num blocks'
         return self.get_obs()
 

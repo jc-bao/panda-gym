@@ -8,14 +8,14 @@ from pybullet_data import getDataPath
 env = gym.make("PandaRearrangeBimanual-v0", render=True, task_kwargs = {
     'obj_xyz_range':[0.3, 0.4, 0],
     'num_blocks': 1, # number of blocks
-    'os_rate': 0.5, # init goal in different table
+    'os_rate': 0.6, # init goal in different table
     'os_num_dist': 'binominal', # other side number distribution 'uniform', 'binominal'
-    'obj_in_hand_rate': 0.5, # init obj in hand
+    'obj_in_hand_rate': 0.2, # init obj in hand
     'gap_distance': None, # if None, auto set
     'debug_mode': True, # if show debug info
-    'base_ep_len': 10, 
+    'base_ep_len': 50, 
     })
-# env = gym.make("PandaTowerBimanual-v1", render=True, debug_mode = True, obj_in_hand_rate=1)
+# env = gym.make("PandaTowerBimanualInHand-v1", render=True, debug_mode = True)
 # env = gym.make("PandaRearrangeUnstable-v2", render=True)
 # env = gym.make("PandaRelativePNPBimanualObjInHand-v0", render=True)
 # env = gym.make("PandaTowerBimanualSharedOpSpace-v0", render=True)
@@ -24,7 +24,7 @@ obs = env.reset()
 origin_ag = obs['achieved_goal']
 done = False
 
-param = 1
+param = 0
 total_rew = 0
 # env.task.obj_not_in_hand_rate=0
 # count = 0
@@ -39,7 +39,7 @@ total_rew = 0
 
 for _ in range(100):
     for i in range(env._max_episode_steps):
-        action = (env.action_space.sample())
+        action = np.zeros_like(env.action_space.sample())
         # disp0 = [-0.05, 0, 0.2]-env.robot0.get_ee_position()
         # disp1 = [0.05,0,0.2]-env.robot1.get_ee_position()
         # action[:3] = disp0/np.linalg.norm(disp0)*0.1
@@ -48,7 +48,7 @@ for _ in range(100):
         # action[4:7] = disp1/np.linalg.norm(disp1)*0.1
         action[3]=-1
         action[7]=-1
-        # action[0]=1
+        action[0]=1
         # action[1]=-0.2
         # action[4]=-1
         # action[5]=0.2
@@ -68,5 +68,6 @@ for _ in range(100):
             origin_ag = obs['achieved_goal']
             # print(total_rew)
             total_rew = 0
-            obs = env.reset()
+            obs = env.reset({'gap_distance': param})
+            param += 0.1
 env.close()
