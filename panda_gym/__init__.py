@@ -65,6 +65,12 @@ register(
 )
 for i in range(1,7):
     register(
+        id="PandaHandoverBimanual-v" + str(i),
+        entry_point="panda_gym.envs:PandaBimanualHandoverEnv",
+        kwargs={'num_blocks': i},
+        max_episode_steps=100 * i,
+    )
+    register(
         id="PandaTower-v"+str(i),
         entry_point="panda_gym.envs:PandaTowerEnv",
         kwargs={"reward_type": 'sparse', "control_type": 'ee', 'num_blocks': i},

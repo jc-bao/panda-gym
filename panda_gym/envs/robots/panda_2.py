@@ -25,7 +25,8 @@ class Panda(PyBulletRobot):
         control_type: str = "ee",
         index: int = 0,
         max_move_per_step = 0.05, 
-        noise_obs = False
+        noise_obs = False,
+        eef_orientation=np.array([1.0, 0., 0., 0.]),
     ) -> None:
         self.noise_obs = noise_obs
         self.max_move_per_step = max_move_per_step
@@ -34,7 +35,7 @@ class Panda(PyBulletRobot):
         n_action = 3 if self.control_type == "ee" else 7  # control (x, y z) if "ee", else, control the 7 joints
         n_action += 0 if self.block_gripper else 1
         action_space = spaces.Box(-1.0, 1.0, shape=(n_action,), dtype=np.float32)
-        self.index = index # CHANGE
+        self.eef_orientation = eef_orientation
         super().__init__(
             sim,
             body_name="panda"+str(index),
@@ -89,14 +90,9 @@ class Panda(PyBulletRobot):
         # Clip the height target. For some reason, it has a great impact on learning
         target_ee_position[2] = np.max((0, target_ee_position[2]))
         # compute the new joint angles
-        if self.index == 0:
-            target_arm_angles = self.inverse_kinematics(
-                link=self.ee_link, position=target_ee_position, orientation=np.array([1.0, 0.0, 0.0, 0.0])
-            )
-        else: 
-            target_arm_angles = self.inverse_kinematics(
-                link=self.ee_link, position=target_ee_position, orientation=np.array([0.0, -1.0, 0.0, 0.0])
-            )
+        target_arm_angles = self.inverse_kinematics(
+            link=self.ee_link, position=target_ee_position, orientation=self.eef_orientation
+        )
         target_arm_angles = target_arm_angles[:7]  # remove fingers angles
         return target_arm_angles
 
@@ -131,21 +127,21 @@ class Panda(PyBulletRobot):
             obs[6] += np.random.randn(1)*0.0008 # max 0.08
         return obs
 
-    def reset(self, init_pos = None) -> None:
+    def reset(self, init_pos=None) -> None:
         self.set_joint_neutral()
         # set initial position
         if isinstance(init_pos, (np.ndarray, np.generic)):
-            for _ in range(1):
-                if self.index == 0:
-                    target_arm_angles = self.inverse_kinematics(
-                        link=self.ee_link, position=init_pos, orientation=np.array([1.0, 0.0, 0.0, 0.0])
-                    )
-                else: 
-                    target_arm_angles = self.inverse_kinematics(
-                        link=self.ee_link, position=init_pos, orientation=np.array([0.0, -1.0, 0.0, 0.0])
-                    )
-                self.set_joint_angles(target_angles = target_arm_angles)
-                self.sim.step()
+            assert len(init_pos) == 3
+            target_arm_angles = self.inverse_kinematics(
+                link=self.ee_link, position=init_pos, orientation=self.eef_orientation
+            )
+            self.set_joint_angles(target_arm_angles)
+            # for _ in range(10):
+            #     target_arm_angles = self.inverse_kinematics(
+            #         link=self.ee_link, position=init_pos, orientation=self.eef_orientation
+            #     )
+            #     self.control_joints(target_angles=target_arm_angles)
+            #     self.sim.step()
 
     def set_joint_neutral(self) -> None:
         """Set the robot to its neutral pose."""
@@ -164,3 +160,6 @@ class Panda(PyBulletRobot):
     def get_ee_velocity(self) -> np.ndarray:
         """Returns the velocity of the end-effector as (vx, vy, vz)"""
         return self.get_link_velocity(self.ee_link)
+
+    def get_ee_orn(self):
+        return self.sim.get_link_orientation(self.body_name, self.ee_link)
