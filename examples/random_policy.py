@@ -16,7 +16,7 @@ from pybullet_data import getDataPath
 #     'base_ep_len': 50, 
     # })
 
-env = gym.make("PandaHandoverBimanual-v1", render=True)
+env = gym.make("PandaRearrangeBimanual-v0", render=True, task_kwargs={'goal_scale':0.5})
 # env = gym.make("PandaRearrangeUnstable-v2", render=True)
 # env = gym.make("PandaRelativePNPBimanualObjInHand-v0", render=True)
 # env = gym.make("PandaTowerBimanualSharedOpSpace-v0", render=True)

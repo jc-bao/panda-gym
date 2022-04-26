@@ -18,6 +18,7 @@ class RearrangeBimanual(Task):
       seed=0,
       obj_xyz_range=[0.3, 0.4, 0],
       goal_z=0,
+      goal_scale = 1, 
       num_blocks=1,  # number of blocks
       os_rate=0.6,  # init goal in different table
       os_num_dist='binominal',  # other side number distribution 'uniform', 'binominal'
@@ -51,7 +52,7 @@ class RearrangeBimanual(Task):
     self._max_episode_steps = self.base_ep_len * self.num_blocks
     self.goal_z = goal_z
     self.obj_xyz_range = obj_xyz_range
-    self.goal_scale = 1
+    self.goal_scale = goal_scale
     self.goal_space, self.obj_space = self._get_goal_obj_space(
       goal_z, obj_xyz_range, self.goal_scale)
     # sim parameters
@@ -217,7 +218,7 @@ class RearrangeBimanual(Task):
 
   def _get_goal_obj_space(self, goal_z, obj_xyz_range, goal_scale):
     goal_z = goal_z * goal_scale
-    obj_xyz_range = obj_xyz_range * goal_scale
+    obj_xyz_range = np.array(obj_xyz_range) * goal_scale
     obj_range_low = np.array(
       [self.gap_distance/2+self.block_size[0]/2, -obj_xyz_range[1] / 2, self.block_size[2]/2])
     obj_range_high = np.array(obj_xyz_range) + obj_range_low
