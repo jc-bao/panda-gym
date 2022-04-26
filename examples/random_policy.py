@@ -16,7 +16,7 @@ from pybullet_data import getDataPath
 #     'base_ep_len': 50, 
     # })
 
-env = gym.make("PandaRearrangeBimanual-v0", render=True, task_kwargs={'goal_scale':0.5})
+env = gym.make("PandaRearrangeBimanual-v0", render=True, task_kwargs={'goal_scale':0.5,'debug_mode':True, 'obj_in_hand_rate':1})
 # env = gym.make("PandaRearrangeUnstable-v2", render=True)
 # env = gym.make("PandaRelativePNPBimanualObjInHand-v0", render=True)
 # env = gym.make("PandaTowerBimanualSharedOpSpace-v0", render=True)
@@ -47,8 +47,8 @@ for _ in range(100):
         # action[0]=-1
         # action[4]=-1
         # action[4:7] = disp1/np.linalg.norm(disp1)*0.1
-        # action[3]=-1
-        # action[7]=-1
+        action[3]=-1
+        action[7]=-1
         # action[0]=1
         # action[1]=-0.2
         # action[4]=-1
@@ -69,7 +69,7 @@ for _ in range(100):
             origin_ag = obs['achieved_goal']
             # print(total_rew)
             total_rew = 0
-            obs = env.reset()
+            obs = env.reset({'os_rate':1.0})
             param += 0.1
             # print(info['dropout'])
 env.close()

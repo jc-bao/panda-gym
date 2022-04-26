@@ -39,11 +39,12 @@ class RearrangeBimanual(Task):
       self.gap_distance = gap_distance
     self.num_blocks = num_blocks
     self.os_rate = os_rate
+    self.os_num_dist_type = os_num_dist
     self.os_num_dist = {
       'uniform': np.ones(self.num_blocks+1)/(self.num_blocks+1),
       'binominal': [binom.pmf(r, self.num_blocks, self.os_rate)
                     for r in np.arange(self.num_blocks+1)]
-    }[os_num_dist]
+    }[self.os_num_dist_type]
     self.obj_in_hand_rate = obj_in_hand_rate
     if base_ep_len is None:
       self.base_ep_len = int(50/0.3*obj_xyz_range[0])
@@ -126,6 +127,11 @@ class RearrangeBimanual(Task):
       else:
         print(f'[DEBUG] task has no attribute {k}')
     self.goal_space, self.obj_space = self._get_goal_obj_space(self.goal_z, self.obj_xyz_range, self.goal_scale)
+    self.os_num_dist = {
+      'uniform': np.ones(self.num_blocks+1)/(self.num_blocks+1),
+      'binominal': [binom.pmf(r, self.num_blocks, self.os_rate)
+                    for r in np.arange(self.num_blocks+1)]
+    }[self.os_num_dist_type]
     # get pos
     if not 'obj_pos' in attr_dict.keys():
       self.obj_pos = self._sample_objects()
