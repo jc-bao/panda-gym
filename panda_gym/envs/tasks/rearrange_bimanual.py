@@ -124,7 +124,7 @@ class RearrangeBimanual(Task):
         setattr(self, k, v)
       else:
         print(f'[DEBUG] task has no attribute {k}')
-    self.goal_space, self.obj_space = self._get_goal_obj_space(self.goal_z, self.obj_xyz_range)
+    self.goal_space, self.obj_space = self._get_goal_obj_space(self.goal_z, self.obj_xyz_range, self.goal_scale)
     # get pos
     if not 'obj_pos' in attr_dict.keys():
       self.obj_pos = self._sample_objects()
@@ -217,7 +217,7 @@ class RearrangeBimanual(Task):
 
   def _get_goal_obj_space(self, goal_z, obj_xyz_range, goal_scale):
     goal_z = goal_z * goal_scale
-    obj_xyz_range = obj_xyz_range * goal_scale
+    obj_xyz_range = np.array(obj_xyz_range) * goal_scale
     obj_range_low = np.array(
       [self.gap_distance/2+self.block_size[0]/2, -obj_xyz_range[1] / 2, self.block_size[2]/2])
     obj_range_high = np.array(obj_xyz_range) + obj_range_low
