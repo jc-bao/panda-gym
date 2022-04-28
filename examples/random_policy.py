@@ -16,7 +16,7 @@ from pybullet_data import getDataPath
 #     'base_ep_len': 50, 
     # })
 
-env = gym.make("PandaRearrangeBimanual-v0", render=True, task_kwargs={'goal_scale':0.5,'debug_mode':True, 'obj_in_hand_rate':1})
+env = gym.make("PandaRearrangeBimanual-v0", render=True, task_kwargs={'goal_scale':1,'debug_mode':True, 'obj_in_hand_rate':0, 'gap_distance': 0})
 # env = gym.make("PandaRearrangeUnstable-v2", render=True)
 # env = gym.make("PandaRelativePNPBimanualObjInHand-v0", render=True)
 # env = gym.make("PandaTowerBimanualSharedOpSpace-v0", render=True)
@@ -38,17 +38,18 @@ total_rew = 0
 # print(count/100)
 # exit()
 
-for _ in range(100):
+for _ in range(200):
     for i in range(env._max_episode_steps):
-        action = (env.action_space.sample())
-        # disp0 = [-0.05, 0, 0.2]-env.robot0.get_ee_position()
-        # disp1 = [0.05,0,0.2]-env.robot1.get_ee_position()
+        action = np.zeros_like(env.action_space.sample())
+        # disp0 = [-0.15, 0, 0.05]-env.robot0.get_ee_position()
+        # disp1 = [0.15,0,0.05]-env.robot1.get_ee_position()
         # action[:3] = disp0/np.linalg.norm(disp0)*0.1
-        # action[0]=-1
-        # action[4]=-1
+        # action[:3] = disp0
         # action[4:7] = disp1/np.linalg.norm(disp1)*0.1
-        action[3]=-1
-        action[7]=-1
+        # action[4:7] = disp1
+        # print([env.robot0.get_joint_angle(joint=i) for i in range(7)])
+        # action[3]=-1
+        # action[7]=-1
         # action[0]=1
         # action[1]=-0.2
         # action[4]=-1
@@ -69,7 +70,8 @@ for _ in range(100):
             origin_ag = obs['achieved_goal']
             # print(total_rew)
             total_rew = 0
-            obs = env.reset({'os_rate':1.0})
-            param += 0.1
+            if param < 0.9:
+                param += 0.1
+            obs = env.reset({'os_rate':param})
             # print(info['dropout'])
 env.close()

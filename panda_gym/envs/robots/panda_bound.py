@@ -55,8 +55,10 @@ class PandaBound(PyBulletRobot):
 
         self.fingers_indices = np.array([9, 10])
         # self.neutral_joint_values = np.array([0.00, 0.41, 0.00, -1.85, 0.00, 2.26, 0.79, 0.00, 0.00])
-        self.neutral_joint_values = np.array([-0.12593504068329087, 0.2317273297268855, -0.39855150509205445, -
-                                             2.4891976287831454, 0.2079942120401763, 2.694932460185828, 1.6530547720778208])
+        # self.neutral_joint_values = np.array([-0.12593504068329087, 0.2317273297268855, -0.39855150509205445, -
+        #                                      2.4891976287831454, 0.2079942120401763, 2.694932460185828, 1.6530547720778208])
+        self.neutral_joint_values = np.array([-0.49900537865104694, 0.6262097379966177, 
+        -0.3356264886296224, -2.0005094802712136, 0.36447697446109195, 2.569231889878566, 1.2713414655687456])
         self.ee_link = 11
         self.sim.set_lateral_friction(
             self.body_name, self.fingers_indices[0], lateral_friction=1.0)

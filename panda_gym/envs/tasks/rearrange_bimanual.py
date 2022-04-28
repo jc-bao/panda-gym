@@ -226,7 +226,7 @@ class RearrangeBimanual(Task):
     goal_z = goal_z * goal_scale
     obj_xyz_range = np.array(obj_xyz_range) * goal_scale
     obj_range_low = np.array(
-      [self.gap_distance/2+self.block_size[0]/2, -obj_xyz_range[1] / 2, self.block_size[2]/2])
+      [self.gap_distance/2+self.block_size[0]/4, -obj_xyz_range[1] / 2, self.block_size[2]/2])
     obj_range_high = np.array(obj_xyz_range) + obj_range_low
     obj_space = gym.spaces.Box(low=obj_range_low, high=obj_range_high)
     goal_range_low = obj_range_low
